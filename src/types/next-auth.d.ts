@@ -1,5 +1,3 @@
-import NextAuth from "next-auth"
-
 declare module "next-auth" {
   interface Session {
     user: {
@@ -20,3 +18,9 @@ declare module "next-auth/jwt" {
     role: 'USER' | 'ADMIN' | 'MODERATOR'
   }
 }
+
+declare module "next-auth/next" {
+  export { getServerSession } from "next-auth"
+}
+
+declare module "next-auth/react"

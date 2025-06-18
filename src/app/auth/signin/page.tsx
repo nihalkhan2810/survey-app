@@ -30,12 +30,7 @@ export default function SignIn() {
       if (result?.error) {
         setError('Invalid email or password')
       } else {
-        const session = await getSession()
-        if (session?.user?.role === 'ADMIN') {
-          router.push('/admin')
-        } else {
-          router.push('/surveys')
-        }
+        router.push('/dashboard')
       }
     } catch (error) {
       setError('An error occurred. Please try again.')

@@ -3,8 +3,8 @@ import { DynamoDBDocumentClient, GetCommand, PutCommand, ScanCommand, QueryComma
 
 const client = new DynamoDBClient({
   region: process.env.NEXT_PUBLIC_AWS_REGION || 'us-east-1',
-  // AWS credentials are automatically provided in AWS environments
-  // For local development, use AWS CLI or environment variables
+  // AWS automatically provides credentials in AWS environments
+  // No need to specify endpoint for AWS DynamoDB
 })
 
 export const dynamodb = DynamoDBDocumentClient.from(client)

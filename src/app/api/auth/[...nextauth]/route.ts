@@ -1,6 +1,6 @@
 import NextAuth, { AuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
-import { userOperations } from '@/lib/dynamodb'
+import { simpleDb } from '@/lib/simple-db'
 import bcrypt from 'bcryptjs'
 
 export const authOptions: AuthOptions = {
@@ -16,7 +16,7 @@ export const authOptions: AuthOptions = {
           return null
         }
 
-        const user = await userOperations.findByEmail(credentials.email)
+        const user = await simpleDb.findUserByEmail(credentials.email)
 
         if (!user) {
           return null

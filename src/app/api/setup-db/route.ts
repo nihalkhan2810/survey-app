@@ -7,6 +7,7 @@ import { nanoid } from 'nanoid'
 
 const client = new DynamoDBClient({
   region: process.env.NEXT_PUBLIC_AWS_REGION || 'us-east-1',
+  // AWS automatically provides credentials in AWS environments
 })
 
 async function createTable(tableName: string) {

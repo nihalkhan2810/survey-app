@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/app/api/auth/[...nextauth]/route'
-import { dynamodb, TABLES } from '@/lib/dynamodb'
-import { ScanCommand } from '@aws-sdk/lib-dynamodb'
+import { simpleDb } from '@/lib/simple-db'
 
 export async function GET(req: NextRequest) {
   try {
@@ -19,20 +18,10 @@ export async function GET(req: NextRequest) {
     const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1)
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
 
-    // Get dashboard statistics using DynamoDB
-    const [
-      usersResult,
-      surveysResult,
-      responsesResult
-    ] = await Promise.all([
-      dynamodb.send(new ScanCommand({ TableName: TABLES.USERS })),
-      dynamodb.send(new ScanCommand({ TableName: TABLES.SURVEYS })),
-      dynamodb.send(new ScanCommand({ TableName: TABLES.RESPONSES }))
-    ])
-
-    const users = usersResult.Items || []
-    const surveys = surveysResult.Items || []
-    const responses = responsesResult.Items || []
+    // Get dashboard statistics using simple database
+    const users = await simpleDb.getAllUsers()
+    const surveys = await simpleDb.getAllSurveys()
+    const responses = await simpleDb.getAllResponses()
 
     // Calculate statistics
     const totalUsers = users.length

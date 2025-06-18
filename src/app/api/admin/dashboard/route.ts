@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/app/api/auth/[...nextauth]/route'
-import { prisma } from '@/lib/prisma'
+import { dynamodb, TABLES } from '@/lib/dynamodb'
+import { ScanCommand } from '@aws-sdk/lib-dynamodb'
 
 export async function GET(req: NextRequest) {
   try {
@@ -16,41 +17,39 @@ export async function GET(req: NextRequest) {
 
     const currentDate = new Date()
     const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1)
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
 
-    // Get dashboard statistics
+    // Get dashboard statistics using DynamoDB
     const [
-      totalUsers,
-      totalSurveys,
-      totalResponses,
-      activeUsers,
-      surveysThisMonth,
-      responsesThisMonth
+      usersResult,
+      surveysResult,
+      responsesResult
     ] = await Promise.all([
-      prisma.user.count(),
-      prisma.survey.count(),
-      prisma.response.count(),
-      prisma.user.count({
-        where: {
-          updatedAt: {
-            gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // Last 30 days
-          }
-        }
-      }),
-      prisma.survey.count({
-        where: {
-          createdAt: {
-            gte: startOfMonth
-          }
-        }
-      }),
-      prisma.response.count({
-        where: {
-          submittedAt: {
-            gte: startOfMonth
-          }
-        }
-      })
+      dynamodb.send(new ScanCommand({ TableName: TABLES.USERS })),
+      dynamodb.send(new ScanCommand({ TableName: TABLES.SURVEYS })),
+      dynamodb.send(new ScanCommand({ TableName: TABLES.RESPONSES }))
     ])
+
+    const users = usersResult.Items || []
+    const surveys = surveysResult.Items || []
+    const responses = responsesResult.Items || []
+
+    // Calculate statistics
+    const totalUsers = users.length
+    const totalSurveys = surveys.length
+    const totalResponses = responses.length
+    
+    const activeUsers = users.filter(user => 
+      new Date(user.updatedAt) >= thirtyDaysAgo
+    ).length
+    
+    const surveysThisMonth = surveys.filter(survey => 
+      new Date(survey.createdAt) >= startOfMonth
+    ).length
+    
+    const responsesThisMonth = responses.filter(response => 
+      new Date(response.submittedAt) >= startOfMonth
+    ).length
 
     return NextResponse.json({
       totalUsers,

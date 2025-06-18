@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { userOperations } from '@/lib/dynamodb'
 import bcrypt from 'bcryptjs'
+import { nanoid } from 'nanoid'
 
 export async function POST(req: NextRequest) {
   try {
@@ -21,9 +22,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email }
-    })
+    const existingUser = await userOperations.findByEmail(email)
 
     if (existingUser) {
       return NextResponse.json(
@@ -36,23 +35,20 @@ export async function POST(req: NextRequest) {
     const hashedPassword = await bcrypt.hash(password, 12)
 
     // Create user
-    const user = await prisma.user.create({
-      data: {
-        name,
-        email,
-        password: hashedPassword,
-        role: 'USER', // Default role
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-      }
+    const userId = nanoid()
+    const user = await userOperations.create({
+      id: userId,
+      name,
+      email,
+      password: hashedPassword,
+      role: 'USER',
     })
 
+    // Return user without password
+    const { password: _, ...userWithoutPassword } = user
+
     return NextResponse.json(
-      { message: 'User created successfully', user },
+      { message: 'User created successfully', user: userWithoutPassword },
       { status: 201 }
     )
   } catch (error) {

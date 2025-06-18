@@ -1,0 +1,107 @@
+{
+  "callSid": "CAea0b3d247f30d64e71c8dc61f7d30201",
+  "survey": {
+    "id": "OiKHzTmAJ9",
+    "topic": "just create 2 questions. did you like the professor? and what was your subject",
+    "questions": [
+      {
+        "text": "Did you like the professor?",
+        "type": "multiple-choice",
+        "options": [
+          "Yes",
+          "No",
+          "Neutral",
+          "Unsure"
+        ]
+      },
+      {
+        "text": "What was your subject?",
+        "type": "text"
+      }
+    ],
+    "createdAt": "2025-06-16T14:14:39.201Z"
+  },
+  "history": [
+    {
+      "role": "model",
+      "parts": [
+        {
+          "text": "First question: Did you like the professor?\n"
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "parts": [
+        {
+          "text": "Yes. Yes, I did. Who is this, by the way?"
+        }
+      ]
+    },
+    {
+      "role": "model",
+      "parts": [
+        {
+          "text": "That's great to hear! Thanks for answering.  Just a friendly survey agent.  Next question: What was your subject?\n"
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "parts": [
+        {
+          "text": "my son's request computer, William"
+        }
+      ]
+    },
+    {
+      "role": "model",
+      "parts": [
+        {
+          "text": "Okay, so the subject was computer science? Is that right?\n"
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "parts": [
+        {
+          "text": "No, I'll be subject was computer vision."
+        }
+      ]
+    },
+    {
+      "role": "model",
+      "parts": [
+        {
+          "text": "Okay, thanks!\n\n{\"status\": \"complete\", \"answers\": {\"0\": \"Yes, I did\", \"1\": \"Computer vision\"}}\n"
+        }
+      ]
+    },
+    {
+      "role": "model",
+      "parts": [
+        {
+          "text": ""
+        }
+      ]
+    },
+    {
+      "role": "model",
+      "parts": [
+        {
+          "text": "Okay, thanks!\n\n{\"status\": \"complete\", \"answers\": {\"0\": \"Yes, I did\", \"1\": \"Computer vision\"}}\n"
+        }
+      ]
+    },
+    {
+      "role": "model",
+      "parts": [
+        {
+          "text": ""
+        }
+      ]
+    }
+  ],
+  "startTime": "2025-06-16T16:13:46.272Z"
+}

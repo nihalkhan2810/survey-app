@@ -1,0 +1,57 @@
+{
+  "id": "Ve_Db43NV6",
+  "topic": "student satisfaction",
+  "questions": [
+    {
+      "text": "Overall, how satisfied are you with your academic experience?",
+      "type": "rating",
+      "min": 1,
+      "max": 10
+    },
+    {
+      "text": "What aspects of your academic experience could be improved?",
+      "type": "text"
+    },
+    {
+      "text": "How satisfied are you with the quality of teaching?",
+      "type": "rating",
+      "min": 1,
+      "max": 10
+    },
+    {
+      "text": "What type of support services have you used?",
+      "type": "multiple-choice",
+      "options": [
+        "Academic advising",
+        "Career services",
+        "Financial aid",
+        "Health services",
+        "Counseling services"
+      ]
+    },
+    {
+      "text": "How satisfied are you with the available student support services?",
+      "type": "rating",
+      "min": 1,
+      "max": 10
+    },
+    {
+      "text": "Would you recommend this program to other students?",
+      "type": "single-choice",
+      "options": [
+        "Definitely yes",
+        "Probably yes",
+        "Neutral",
+        "Probably not",
+        "Definitely not"
+      ]
+    }
+  ],
+  "start_date": "2025-06-18T00:16",
+  "end_date": "2025-06-21T12:15",
+  "reminder_dates": [
+    "2025-06-18T00:16",
+    "2025-06-21T12:15"
+  ],
+  "createdAt": "2025-06-18T16:14:26.276Z"
+}

@@ -1,0 +1,19 @@
+{
+  "id": "Za5JB9CI5h",
+  "topic": "a survey on the fifa club worldcup",
+  "questions": [
+    {
+      "text": "How are you? ",
+      "type": "multiple-choice",
+      "options": [
+        "good",
+        "bad"
+      ]
+    },
+    {
+      "text": "",
+      "type": "text"
+    }
+  ],
+  "createdAt": "2025-06-16T14:24:22.469Z"
+}

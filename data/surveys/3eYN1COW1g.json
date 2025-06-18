@@ -1,0 +1,54 @@
+{
+  "id": "3eYN1COW1g",
+  "topic": "student satisfaction",
+  "questions": [
+    {
+      "text": "Overall, how satisfied are you with your academic experience?",
+      "type": "multiple-choice",
+      "options": [
+        "Very Satisfied",
+        "Satisfied",
+        "Neutral",
+        "Dissatisfied",
+        "Very Dissatisfied"
+      ]
+    },
+    {
+      "text": "How satisfied are you with the quality of teaching in your courses?",
+      "type": "multiple-choice",
+      "options": [
+        "Very Satisfied",
+        "Satisfied",
+        "Neutral",
+        "Dissatisfied",
+        "Very Dissatisfied"
+      ]
+    },
+    {
+      "text": "How satisfied are you with the available learning resources (library, technology, etc.)?",
+      "type": "multiple-choice",
+      "options": [
+        "Very Satisfied",
+        "Satisfied",
+        "Neutral",
+        "Dissatisfied",
+        "Very Dissatisfied"
+      ]
+    },
+    {
+      "text": "How would you rate the support you've received from your academic advisor?",
+      "type": "multiple-choice",
+      "options": [
+        "Excellent",
+        "Good",
+        "Fair",
+        "Poor"
+      ]
+    },
+    {
+      "text": "Is there anything else you would like to share about your overall satisfaction with your studies?",
+      "type": "text"
+    }
+  ],
+  "createdAt": "2025-06-16T18:21:05.953Z"
+}

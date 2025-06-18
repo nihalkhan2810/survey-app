@@ -1,0 +1,105 @@
+{
+  "callSid": "CA07404bbeb846363528ffa4f8d4e64925",
+  "survey": {
+    "id": "Za5JB9CI5h",
+    "topic": "a survey on the fifa club worldcup",
+    "questions": [
+      {
+        "text": "How are you? ",
+        "type": "multiple-choice",
+        "options": [
+          "good",
+          "bad"
+        ]
+      },
+      {
+        "text": "",
+        "type": "text"
+      }
+    ],
+    "createdAt": "2025-06-16T14:24:22.469Z"
+  },
+  "history": [
+    {
+      "role": "model",
+      "parts": [
+        {
+          "text": "My name is Sara, and I'm calling from the university.  We're conducting a short survey on the FIFA Club World Cup, and I'd love to get your input.  How are you doing today?\n"
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "parts": [
+        {
+          "text": "I'm doing good."
+        }
+      ]
+    },
+    {
+      "role": "model",
+      "parts": [
+        {
+          "text": "That's great to hear!  Thanks for participating.  \n\nI have just one more question.  To get started,  can you tell me a little about what you think about the FIFA Club World Cup?\n"
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "parts": [
+        {
+          "text": "It's pretty good. I would say."
+        }
+      ]
+    },
+    {
+      "role": "model",
+      "parts": [
+        {
+          "text": "Okay, great! Thank you so much for your time.\n\n```json\n{\"status\": \"complete\", \"answers\": {\"0\": \"I'm doing good\", \"1\": \"It's pretty good. I would say.\"}}\n```\n"
+        }
+      ]
+    },
+    {
+      "role": "model",
+      "parts": [
+        {
+          "text": ""
+        }
+      ]
+    },
+    {
+      "role": "model",
+      "parts": [
+        {
+          "text": ""
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "parts": [
+        {
+          "text": "Goodbye."
+        }
+      ]
+    },
+    {
+      "role": "model",
+      "parts": [
+        {
+          "text": "Goodbye!\n"
+        }
+      ]
+    },
+    {
+      "role": "model",
+      "parts": [
+        {
+          "text": ""
+        }
+      ]
+    }
+  ],
+  "startTime": "2025-06-16T14:28:27.484Z"
+}

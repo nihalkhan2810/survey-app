@@ -1,0 +1,277 @@
+{
+  "callSid": "CA8ccac7ab7bf325018be28270d96e981f",
+  "survey": {
+    "id": "9NJbWq8y2E",
+    "topic": "professor survey",
+    "questions": [
+      {
+        "text": "What is your overall impression of this course?",
+        "type": "multiple-choice",
+        "options": [
+          "Excellent",
+          "Good",
+          "Fair",
+          "Poor"
+        ]
+      },
+      {
+        "text": "How effective was the instructor in conveying the course material?",
+        "type": "multiple-choice",
+        "options": [
+          "Very Effective",
+          "Effective",
+          "Somewhat Effective",
+          "Not Effective"
+        ]
+      },
+      {
+        "text": "How would you rate the workload for this course?",
+        "type": "multiple-choice",
+        "options": [
+          "Too Heavy",
+          "Appropriate",
+          "Too Light"
+        ]
+      },
+      {
+        "text": "What aspects of the course did you find most helpful?",
+        "type": "text"
+      },
+      {
+        "text": "What aspects of the course could be improved?",
+        "type": "text"
+      },
+      {
+        "text": "How engaged were you in class?",
+        "type": "multiple-choice",
+        "options": [
+          "Very Engaged",
+          "Engaged",
+          "Somewhat Engaged",
+          "Not Engaged"
+        ]
+      },
+      {
+        "text": "Would you recommend this course to other students?",
+        "type": "multiple-choice",
+        "options": [
+          "Yes",
+          "No",
+          "Maybe"
+        ]
+      }
+    ],
+    "createdAt": "2025-06-16T08:24:10.894Z"
+  },
+  "history": [
+    {
+      "role": "model",
+      "parts": [
+        {
+          "text": "First, what is your overall impression of this course?\n"
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "parts": [
+        {
+          "text": "Yo, it's pretty good."
+        }
+      ]
+    },
+    {
+      "role": "model",
+      "parts": [
+        {
+          "text": "Great! Thanks. Next, how effective was the instructor in conveying the course material?\n"
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "parts": [
+        {
+          "text": "Nah, dude, I saw. Who are you buy doing?"
+        }
+      ]
+    },
+    {
+      "role": "model",
+      "parts": [
+        {
+          "text": "I'm conducting a student survey about the course.  Could you tell me how effective the instructor was in conveying the course material?\n"
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "parts": [
+        {
+          "text": "He was pretty good."
+        }
+      ]
+    },
+    {
+      "role": "model",
+      "parts": [
+        {
+          "text": "Okay, thanks!  How would you rate the workload for this course?  Was it light, moderate, or heavy?\n"
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "parts": [
+        {
+          "text": "Pretty heavy I would say. Don't you think that's bad?"
+        }
+      ]
+    },
+    {
+      "role": "model",
+      "parts": [
+        {
+          "text": "I understand your concern about the workload.  We're just gathering data for the survey.  Thanks for sharing your thoughts.  Moving on, what aspects of the course did you find most helpful?\n\n"
+        }
+      ]
+    },
+    {
+      "role": "model",
+      "parts": [
+        {
+          "text": ""
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "parts": [
+        {
+          "text": "Do you have any observations Alex?"
+        }
+      ]
+    },
+    {
+      "role": "model",
+      "parts": [
+        {
+          "text": "I'm sorry, I'm focusing on the survey right now. What aspects of the course did you find most helpful?\n"
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "parts": [
+        {
+          "text": "Nothing much."
+        }
+      ]
+    },
+    {
+      "role": "model",
+      "parts": [
+        {
+          "text": "Okay.  What aspects of the course could be improved?\n"
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "parts": [
+        {
+          "text": "I don't know."
+        }
+      ]
+    },
+    {
+      "role": "model",
+      "parts": [
+        {
+          "text": "That's alright.  How engaged were you in class? Would you say very engaged, somewhat engaged, or not very engaged?\n\n"
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "parts": [
+        {
+          "text": "Not winning."
+        }
+      ]
+    },
+    {
+      "role": "model",
+      "parts": [
+        {
+          "text": "Okay. To clarify, would you say you were not very engaged in class?\n\n\n"
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "parts": [
+        {
+          "text": "Yes, I was not really engaged in class."
+        }
+      ]
+    },
+    {
+      "role": "model",
+      "parts": [
+        {
+          "text": "Thank you. Last question: Would you recommend this course to other students?\n\n\n"
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "parts": [
+        {
+          "text": "Absolutely not."
+        }
+      ]
+    },
+    {
+      "role": "model",
+      "parts": [
+        {
+          "text": "```json\n{\"status\": \"complete\", \"answers\": {\"0\": \"pretty good\", \"1\": \"pretty good\", \"2\": \"heavy\", \"3\": \"nothing much\", \"4\": \"I don't know\", \"5\": \"not very engaged\", \"6\": \"Absolutely not\"}}\n```\n"
+        }
+      ]
+    },
+    {
+      "role": "model",
+      "parts": [
+        {
+          "text": ""
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "parts": [
+        {
+          "text": "Okay."
+        }
+      ]
+    },
+    {
+      "role": "model",
+      "parts": [
+        {
+          "text": "Great!  Is there anything else I can help you with today?\n"
+        }
+      ]
+    },
+    {
+      "role": "model",
+      "parts": [
+        {
+          "text": ""
+        }
+      ]
+    }
+  ],
+  "startTime": "2025-06-16T14:08:52.211Z"
+}

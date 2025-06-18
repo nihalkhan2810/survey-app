@@ -1,0 +1,62 @@
+{
+  "id": "21QGbXXrLg",
+  "topic": "best tv shows",
+  "questions": [
+    {
+      "text": "What are your three favorite TV shows of all time?",
+      "type": "multiple-choice",
+      "options": [
+        "Breaking Bad",
+        "Game of Thrones",
+        "Stranger Things",
+        "The Crown",
+        "The Simpsons"
+      ]
+    },
+    {
+      "text": "What genre of TV show do you enjoy most?",
+      "type": "single-choice",
+      "options": [
+        "Drama",
+        "Comedy",
+        "Sci-Fi",
+        "Fantasy",
+        "Reality"
+      ]
+    },
+    {
+      "text": "How would you rate your overall satisfaction with the quality of TV shows available today?",
+      "type": "rating",
+      "min": 1,
+      "max": 10
+    },
+    {
+      "text": "Which streaming service do you use most to watch TV shows?",
+      "type": "single-choice",
+      "options": [
+        "Netflix",
+        "Hulu",
+        "Amazon Prime Video",
+        "Disney+",
+        "HBO Max"
+      ]
+    },
+    {
+      "text": "Is there a TV show you think is underrated and deserves more recognition? Please explain.",
+      "type": "text"
+    },
+    {
+      "text": "On a scale of 1 to 10, how important is it to you that a TV show has a satisfying ending?",
+      "type": "rating",
+      "min": 1,
+      "max": 10
+    }
+  ],
+  "start_date": "2025-06-17T14:38",
+  "end_date": "2025-06-18T06:39",
+  "reminder_dates": [
+    "2025-06-17T14:38",
+    "2025-06-18T06:39"
+  ],
+  "createdAt": "2025-06-17T18:38:53.366Z"
+}

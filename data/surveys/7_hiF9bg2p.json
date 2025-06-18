@@ -1,0 +1,56 @@
+{
+  "id": "7_hiF9bg2p",
+  "topic": "need a survey for beef tenderloin among my company ",
+  "questions": [
+    {
+      "text": "On a scale of 1 to 10, how satisfied are you with the quality of our beef tenderloin?",
+      "type": "rating",
+      "min": 1,
+      "max": 10
+    },
+    {
+      "text": "How would you rate the tenderness of the beef tenderloin?",
+      "type": "rating",
+      "min": 1,
+      "max": 10
+    },
+    {
+      "text": "How often do you purchase beef tenderloin?",
+      "type": "single-choice",
+      "options": [
+        "Weekly",
+        "Monthly",
+        "Quarterly",
+        "Annually",
+        "Less than annually"
+      ]
+    },
+    {
+      "text": "Which of the following best describes your reason for purchasing beef tenderloin?",
+      "type": "multiple-choice",
+      "options": [
+        "Personal Consumption",
+        "Corporate Events",
+        "Client Gifts",
+        "Other"
+      ]
+    },
+    {
+      "text": "What aspects of our beef tenderloin could be improved?",
+      "type": "text"
+    },
+    {
+      "text": "How would you rate the value for money of our beef tenderloin?",
+      "type": "rating",
+      "min": 1,
+      "max": 10
+    }
+  ],
+  "start_date": "2025-06-18T12:01",
+  "end_date": "2025-06-27T12:59",
+  "reminder_dates": [
+    "2025-06-18T12:01",
+    "2025-06-27T12:59"
+  ],
+  "createdAt": "2025-06-18T17:00:01.752Z"
+}

@@ -1,0 +1,50 @@
+{
+  "id": "kbL_TmXjdw",
+  "topic": "student satisfaction",
+  "questions": [
+    {
+      "text": "Overall, how satisfied are you with your learning experience?",
+      "type": "rating",
+      "min": 1,
+      "max": 10
+    },
+    {
+      "text": "What aspects of your learning experience could be improved?",
+      "type": "text"
+    },
+    {
+      "text": "How satisfied are you with the quality of teaching?",
+      "type": "rating",
+      "min": 1,
+      "max": 10
+    },
+    {
+      "text": "How would you rate the course materials (textbooks, online resources, etc.)?",
+      "type": "rating",
+      "min": 1,
+      "max": 10
+    },
+    {
+      "text": "Which of the following best describes your overall experience?",
+      "type": "single-choice",
+      "options": [
+        "Very Satisfied",
+        "Satisfied",
+        "Neutral",
+        "Dissatisfied",
+        "Very Dissatisfied"
+      ]
+    },
+    {
+      "text": "What additional resources or support would have improved your learning experience?",
+      "type": "text"
+    }
+  ],
+  "start_date": "2025-06-17T13:12",
+  "end_date": "2025-06-17T13:13",
+  "reminder_dates": [
+    "2025-06-17T13:12",
+    "2025-06-17T13:13"
+  ],
+  "createdAt": "2025-06-17T17:09:01.986Z"
+}

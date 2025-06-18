@@ -1,0 +1,20 @@
+{
+  "id": "RDMzpM-1Sw",
+  "topic": "student satisfaction",
+  "questions": [
+    {
+      "text": "ok ",
+      "type": "single-choice",
+      "options": [
+        "good"
+      ]
+    }
+  ],
+  "start_date": "2025-06-17T09:16",
+  "end_date": "2025-06-17T09:17",
+  "reminder_dates": [
+    "2025-06-17T09:16",
+    "2025-06-17T09:17"
+  ],
+  "createdAt": "2025-06-17T13:14:55.583Z"
+}

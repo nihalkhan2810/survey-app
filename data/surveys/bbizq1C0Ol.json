@@ -1,0 +1,50 @@
+{
+  "id": "bbizq1C0Ol",
+  "topic": "professor survey",
+  "questions": [
+    {
+      "text": "How would you rate the overall effectiveness of the professor's teaching methods?",
+      "type": "rating",
+      "min": 1,
+      "max": 10
+    },
+    {
+      "text": "How would you rate your satisfaction with the course materials provided?",
+      "type": "rating",
+      "min": 1,
+      "max": 10
+    },
+    {
+      "text": "How clear and concise was the professor's communication (e.g., instructions, explanations)?",
+      "type": "rating",
+      "min": 1,
+      "max": 10
+    },
+    {
+      "text": "What aspects of the course did you find most helpful?",
+      "type": "text"
+    },
+    {
+      "text": "What aspects of the course could be improved?",
+      "type": "text"
+    },
+    {
+      "text": "How would you rate the professor's responsiveness and availability to students?",
+      "type": "rating",
+      "min": 1,
+      "max": 10
+    },
+    {
+      "text": "What type of assessment methods were most effective for you in this course?",
+      "type": "multiple-choice",
+      "options": [
+        "Exams",
+        "Quizzes",
+        "Homework Assignments",
+        "Projects",
+        "Class Participation"
+      ]
+    }
+  ],
+  "createdAt": "2025-06-17T12:57:25.160Z"
+}

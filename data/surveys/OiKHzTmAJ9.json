@@ -1,0 +1,21 @@
+{
+  "id": "OiKHzTmAJ9",
+  "topic": "just create 2 questions. did you like the professor? and what was your subject",
+  "questions": [
+    {
+      "text": "Did you like the professor?",
+      "type": "multiple-choice",
+      "options": [
+        "Yes",
+        "No",
+        "Neutral",
+        "Unsure"
+      ]
+    },
+    {
+      "text": "What was your subject?",
+      "type": "text"
+    }
+  ],
+  "createdAt": "2025-06-16T14:14:39.201Z"
+}

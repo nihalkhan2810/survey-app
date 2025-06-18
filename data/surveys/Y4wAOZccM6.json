@@ -1,0 +1,62 @@
+{
+  "id": "Y4wAOZccM6",
+  "topic": "a survey for rating the professor performance",
+  "questions": [
+    {
+      "text": "Overall, how would you rate this professor's teaching effectiveness?",
+      "type": "multiple-choice",
+      "options": [
+        "Excellent",
+        "Good",
+        "Fair",
+        "Poor"
+      ]
+    },
+    {
+      "text": "How would you rate the professor's clarity and organization of course material?",
+      "type": "multiple-choice",
+      "options": [
+        "Excellent",
+        "Good",
+        "Fair",
+        "Poor"
+      ]
+    },
+    {
+      "text": "How effectively did the professor engage students in the course?",
+      "type": "multiple-choice",
+      "options": [
+        "Excellent",
+        "Good",
+        "Fair",
+        "Poor"
+      ]
+    },
+    {
+      "text": "How would you rate the professor's responsiveness and availability to students?",
+      "type": "multiple-choice",
+      "options": [
+        "Excellent",
+        "Good",
+        "Fair",
+        "Poor"
+      ]
+    },
+    {
+      "text": "How helpful was the professor's feedback on assignments and assessments?",
+      "type": "multiple-choice",
+      "options": [
+        "Excellent",
+        "Good",
+        "Fair",
+        "Poor"
+      ]
+    },
+    {
+      "text": "What suggestions do you have for improvement?",
+      "type": "text",
+      "options": []
+    }
+  ],
+  "createdAt": "2025-06-16T16:07:10.016Z"
+}

@@ -1,12 +1,7 @@
 {
-  "framework": "nextjs",
-  "buildCommand": "next build",
-  "outputDirectory": ".next",
-  "installCommand": "npm install",
   "functions": {
     "src/app/api/**/*.ts": {
       "runtime": "nodejs20.x"
     }
-  },
-  "regions": ["iad1"]
+  }
 } 

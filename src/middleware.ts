@@ -51,10 +51,6 @@ export default withAuth(
 
 export const config = {
   matcher: [
-    '/admin/:path*',
-    '/surveys/:path*',
-    '/calendar/:path*',
-    '/api/surveys/:path*',
-    '/api/responses/:path*',
+    '/((?!api/auth|_next/static|_next/image|favicon.ico|public).*)',
   ]
 }

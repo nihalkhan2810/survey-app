@@ -5,11 +5,14 @@ const nextConfig: NextConfig = {
     // Disable ESLint during production builds
     ignoreDuringBuilds: true,
   },
+  reactStrictMode: true,
   typescript: {
-    // Disable TypeScript errors during production builds  
+    // !! WARN !!
+    // Dangerously allow production builds to successfully complete even if
+    // your project has type errors.
+    // !! WARN !!
     ignoreBuildErrors: true,
   },
-  output: 'standalone',
   images: {
     domains: ['localhost'],
   },

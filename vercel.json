@@ -1,0 +1,25 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "framework": "nextjs",
+  "env": {
+    "DYNAMODB_REGION": "@dynamodb_region",
+    "DYNAMODB_ACCESS_KEY_ID": "@dynamodb_access_key_id",
+    "DYNAMODB_SECRET_ACCESS_KEY": "@dynamodb_secret_access_key",
+    "USE_DYNAMODB": "@use_dynamodb",
+    "NEXTAUTH_URL": "@nextauth_url",
+    "NEXTAUTH_SECRET": "@nextauth_secret",
+    "NEXT_PUBLIC_APP_URL": "@next_public_app_url"
+  },
+  "build": {
+    "env": {
+      "DYNAMODB_REGION": "@dynamodb_region",
+      "DYNAMODB_ACCESS_KEY_ID": "@dynamodb_access_key_id",
+      "DYNAMODB_SECRET_ACCESS_KEY": "@dynamodb_secret_access_key",
+      "USE_DYNAMODB": "@use_dynamodb",
+      "NEXTAUTH_URL": "@nextauth_url",
+      "NEXTAUTH_SECRET": "@nextauth_secret",
+      "NEXT_PUBLIC_APP_URL": "@next_public_app_url"
+    }
+  }
+} 

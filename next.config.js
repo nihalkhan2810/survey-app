@@ -13,16 +13,32 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    domains: ['localhost'],
+    domains: ['localhost', '3.133.91.18'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+      {
+        protocol: 'http',
+        hostname: '**',
+      },
+    ],
   },
   env: {
     // Make these available to the browser
-    NEXT_PUBLIC_APP_URL: process.env.NEXTAUTH_URL || 'http://localhost:3000',
+    NEXT_PUBLIC_APP_URL: process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
   },
   // Enable standalone output for better AWS deployment
   output: 'standalone',
   // Optimize for AWS deployment
   outputFileTracingRoot: __dirname,
+  // Add experimental features for better production support
+  experimental: {
+    serverActions: {
+      allowedOrigins: ['localhost:3000', '3.133.91.18', '*.amazonaws.com'],
+    },
+  },
 };
 
 module.exports = nextConfig; 

@@ -7,106 +7,181 @@ const USE_DYNAMODB = process.env.USE_DYNAMODB === 'true' &&
                      ((process.env.DYNAMODB_ACCESS_KEY_ID && process.env.DYNAMODB_SECRET_ACCESS_KEY) ||
                       (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY))
 
+// Log database configuration in production for debugging
+if (process.env.NODE_ENV === 'production') {
+  console.log('Database Configuration:', {
+    USE_DYNAMODB,
+    hasCredentials: !!(process.env.DYNAMODB_ACCESS_KEY_ID || process.env.AWS_ACCESS_KEY_ID),
+    region: process.env.DYNAMODB_REGION || process.env.AWS_REGION,
+    tablesConfigured: !!process.env.DYNAMODB_USERS_TABLE
+  })
+}
+
 export const database = {
   // User operations
   async findUserByEmail(email: string) {
-    if (USE_DYNAMODB) {
-      return await userOperations.findByEmail(email)
+    try {
+      if (USE_DYNAMODB) {
+        return await userOperations.findByEmail(email)
+      }
+      return await simpleDb.findUserByEmail(email)
+    } catch (error) {
+      console.error('Error finding user by email:', error)
+      throw error
     }
-    return await simpleDb.findUserByEmail(email)
   },
 
   async findUserById(id: string) {
-    if (USE_DYNAMODB) {
-      return await userOperations.findById(id)
+    try {
+      if (USE_DYNAMODB) {
+        return await userOperations.findById(id)
+      }
+      return await simpleDb.findUserById(id)
+    } catch (error) {
+      console.error('Error finding user by id:', error)
+      throw error
     }
-    return await simpleDb.findUserById(id)
   },
 
   async createUser(userData: any) {
-    if (USE_DYNAMODB) {
-      return await userOperations.create(userData)
+    try {
+      if (USE_DYNAMODB) {
+        return await userOperations.create(userData)
+      }
+      return await simpleDb.createUser(userData)
+    } catch (error) {
+      console.error('Error creating user:', error)
+      throw error
     }
-    return await simpleDb.createUser(userData)
   },
 
   async updateUser(id: string, updates: any) {
-    if (USE_DYNAMODB) {
-      return await userOperations.update(id, updates)
+    try {
+      if (USE_DYNAMODB) {
+        return await userOperations.update(id, updates)
+      }
+      // Simple DB doesn't have update, so we'll just return the user
+      return await simpleDb.findUserById(id)
+    } catch (error) {
+      console.error('Error updating user:', error)
+      throw error
     }
-    // Simple DB doesn't have update, so we'll just return the user
-    return await simpleDb.findUserById(id)
   },
 
   async getAllUsers() {
-    if (USE_DYNAMODB) {
-      // For now, scan all users (not efficient for large datasets)
-      const { ScanCommand } = await import('@aws-sdk/lib-dynamodb')
-      const { dynamodb, TABLES } = await import('./dynamodb')
-      const command = new ScanCommand({ TableName: TABLES.USERS })
-      const result = await dynamodb.send(command)
-      return result.Items || []
+    try {
+      if (USE_DYNAMODB) {
+        // For now, scan all users (not efficient for large datasets)
+        const { ScanCommand } = await import('@aws-sdk/lib-dynamodb')
+        const { dynamodb, TABLES } = await import('./dynamodb')
+        const command = new ScanCommand({ TableName: TABLES.USERS })
+        const result = await dynamodb.send(command)
+        return result.Items || []
+      }
+      return await simpleDb.getAllUsers()
+    } catch (error) {
+      console.error('Error getting all users:', error)
+      throw error
     }
-    return await simpleDb.getAllUsers()
   },
 
   // Survey operations
   async createSurvey(surveyData: any) {
-    if (USE_DYNAMODB) {
-      return await surveyOperations.create(surveyData)
+    try {
+      if (USE_DYNAMODB) {
+        return await surveyOperations.create(surveyData)
+      }
+      // Simple DB doesn't have survey operations, return mock
+      return surveyData
+    } catch (error) {
+      console.error('Error creating survey:', error)
+      throw error
     }
-    // Simple DB doesn't have survey operations, return mock
-    return surveyData
   },
 
   async findSurveyById(id: string) {
-    if (USE_DYNAMODB) {
-      return await surveyOperations.findById(id)
+    try {
+      if (USE_DYNAMODB) {
+        return await surveyOperations.findById(id)
+      }
+      return null
+    } catch (error) {
+      console.error('Error finding survey by id:', error)
+      throw error
     }
-    return null
   },
 
   async getAllSurveys() {
-    if (USE_DYNAMODB) {
-      return await surveyOperations.getAll()
+    try {
+      if (USE_DYNAMODB) {
+        return await surveyOperations.getAll()
+      }
+      return await simpleDb.getAllSurveys()
+    } catch (error) {
+      console.error('Error getting all surveys:', error)
+      throw error
     }
-    return await simpleDb.getAllSurveys()
   },
 
   async updateSurvey(id: string, updates: any) {
-    if (USE_DYNAMODB) {
-      return await surveyOperations.update(id, updates)
+    try {
+      if (USE_DYNAMODB) {
+        return await surveyOperations.update(id, updates)
+      }
+      return null
+    } catch (error) {
+      console.error('Error updating survey:', error)
+      throw error
     }
-    return null
   },
 
   async deleteSurvey(id: string) {
-    if (USE_DYNAMODB) {
-      return await surveyOperations.delete(id)
+    try {
+      if (USE_DYNAMODB) {
+        return await surveyOperations.delete(id)
+      }
+      return null
+    } catch (error) {
+      console.error('Error deleting survey:', error)
+      throw error
     }
-    return null
   },
 
   // Response operations
   async createResponse(responseData: any) {
-    if (USE_DYNAMODB) {
-      return await responseOperations.create(responseData)
+    try {
+      if (USE_DYNAMODB) {
+        return await responseOperations.create(responseData)
+      }
+      return responseData
+    } catch (error) {
+      console.error('Error creating response:', error)
+      throw error
     }
-    return responseData
   },
 
   async getAllResponses() {
-    if (USE_DYNAMODB) {
-      return await responseOperations.getAll()
+    try {
+      if (USE_DYNAMODB) {
+        return await responseOperations.getAll()
+      }
+      return await simpleDb.getAllResponses()
+    } catch (error) {
+      console.error('Error getting all responses:', error)
+      throw error
     }
-    return await simpleDb.getAllResponses()
   },
 
   async getResponsesBySurvey(surveyId: string) {
-    if (USE_DYNAMODB) {
-      return await responseOperations.findBySurvey(surveyId)
+    try {
+      if (USE_DYNAMODB) {
+        return await responseOperations.findBySurvey(surveyId)
+      }
+      return []
+    } catch (error) {
+      console.error('Error getting responses by survey:', error)
+      throw error
     }
-    return []
   },
 
   // Utility function to check database status
@@ -125,6 +200,7 @@ export const database = {
       }
       return { connected: true, type: 'In-Memory' }
     } catch (error) {
+      console.error('Database connection check failed:', error)
       return { 
         connected: false, 
         type: USE_DYNAMODB ? 'DynamoDB' : 'In-Memory',

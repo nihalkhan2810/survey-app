@@ -18,32 +18,38 @@ export const authOptions: any = {
           return null
         }
 
-        const user = await database.findUserByEmail(credentials.email)
+        try {
+          const user = await database.findUserByEmail(credentials.email)
 
-        if (!user) {
+          if (!user) {
+            return null
+          }
+
+          const isPasswordValid = await bcrypt.compare(
+            credentials.password,
+            user.password
+          )
+
+          if (!isPasswordValid) {
+            return null
+          }
+
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            role: user.role as 'USER' | 'ADMIN' | 'MODERATOR',
+          }
+        } catch (error) {
+          console.error('NextAuth authorization error:', error)
           return null
-        }
-
-        const isPasswordValid = await bcrypt.compare(
-          credentials.password,
-          user.password
-        )
-
-        if (!isPasswordValid) {
-          return null
-        }
-
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role as 'USER' | 'ADMIN' | 'MODERATOR',
         }
       }
     })
   ],
   session: {
     strategy: 'jwt' as const,
+    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   callbacks: {
     jwt: async ({ token, user }: any) => {
@@ -63,7 +69,26 @@ export const authOptions: any = {
   pages: {
     signIn: '/auth/signin',
     signUp: '/auth/signup',
+    error: '/auth/signin',
   },
+  // Production configuration
+  trustHost: true,
+  secret: process.env.NEXTAUTH_SECRET,
+  // Add better error handling
+  debug: process.env.NODE_ENV === 'development',
+  logger: {
+    error(code: any, metadata: any) {
+      console.error('NextAuth Error:', code, metadata)
+    },
+    warn(code: any) {
+      console.warn('NextAuth Warning:', code)
+    },
+    debug(code: any, metadata: any) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('NextAuth Debug:', code, metadata)
+      }
+    }
+  }
 }
 
 // @ts-ignore

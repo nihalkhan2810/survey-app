@@ -24,6 +24,17 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Log environment in production for debugging
+  if (process.env.NODE_ENV === 'production') {
+    console.log('App Environment:', {
+      NODE_ENV: process.env.NODE_ENV,
+      NEXTAUTH_URL: process.env.NEXTAUTH_URL,
+      USE_DYNAMODB: process.env.USE_DYNAMODB,
+      hasNextAuthSecret: !!process.env.NEXTAUTH_SECRET,
+      timestamp: new Date().toISOString()
+    });
+  }
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body

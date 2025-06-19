@@ -22,10 +22,7 @@ const nextConfig = {
   // Enable standalone output for better AWS deployment
   output: 'standalone',
   // Optimize for AWS deployment
-  experimental: {
-    // Improve AWS Lambda cold starts
-    outputFileTracingRoot: __dirname,
-  },
+  outputFileTracingRoot: __dirname,
 };
 
 module.exports = nextConfig; 

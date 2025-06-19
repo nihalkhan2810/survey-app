@@ -15,7 +15,7 @@ export default function Home() {
     if (status === 'loading') return
 
     if (session) {
-      if (session.user.role === 'ADMIN') {
+      if (session.user?.role === 'ADMIN') {
         router.push('/admin')
       } else {
         router.push('/surveys')

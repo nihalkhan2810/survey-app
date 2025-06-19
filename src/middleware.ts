@@ -27,13 +27,18 @@ export default withAuth(
       authorized: ({ token, req }) => {
         const { pathname } = req.nextUrl
 
+        // Always allow root path
+        if (pathname === '/') {
+          return true
+        }
+
         // Allow access to auth pages
         if (pathname.startsWith('/auth')) {
           return true
         }
 
-        // Allow access to public API routes
-        if (pathname.startsWith('/api/auth')) {
+        // Allow access to all API routes
+        if (pathname.startsWith('/api')) {
           return true
         }
 
@@ -42,8 +47,18 @@ export default withAuth(
           return true
         }
 
-        // Require authentication for all other protected routes
-        return !!token
+        // Allow access to static files
+        if (pathname.startsWith('/_next') || pathname.startsWith('/favicon') || pathname.startsWith('/public')) {
+          return true
+        }
+
+        // Require authentication for protected routes
+        if (pathname.startsWith('/admin') || pathname.startsWith('/surveys') || pathname.startsWith('/calendar')) {
+          return !!token
+        }
+
+        // Allow everything else for now
+        return true
       },
     },
   }
@@ -51,6 +66,6 @@ export default withAuth(
 
 export const config = {
   matcher: [
-    '/((?!api/auth|_next/static|_next/image|favicon.ico|public).*)',
+    '/((?!_next/static|_next/image|favicon.ico|public).*)',
   ]
 }

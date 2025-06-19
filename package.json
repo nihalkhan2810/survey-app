@@ -28,6 +28,10 @@
     "tailwind-merge": "^3.3.1",
     "twilio": "^5.7.1"
   },
+  "engines": {
+    "node": ">=18.17.0",
+    "npm": ">=8.0.0"
+  },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^22.10.2",

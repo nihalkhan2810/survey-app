@@ -1,26 +1,23 @@
+import { type ClassValue, clsx } from "clsx"
+import { twMerge } from "tailwind-merge"
+
+const appUrl = process.env.NEXT_PUBLIC_APP_URL || 
+  (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000');
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
+}
+
 export function getSurveyUrl(surveyId: string): string {
-  // Check if we're in production or have a custom domain set
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 
-                  (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000');
-  
+  const baseUrl = appUrl;
   return `${baseUrl}/survey/${surveyId}`;
 }
 
-export function getBaseUrl(): string {
-  // Production URL from environment variable
-  if (process.env.NEXT_PUBLIC_SITE_URL) {
-    return process.env.NEXT_PUBLIC_SITE_URL;
-  }
-  
-  // For Vercel deployments
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}`;
-  }
-  
-  // Fallback to localhost for development
-  return typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
+export function getSubmitUrl(surveyId: string): string {
+  const baseUrl = appUrl;
+  return `${baseUrl}/api/submit`;
 }
 
-export function cn(...classes: (string | undefined | null | boolean)[]): string {
-  return classes.filter(Boolean).join(' ');
+export function getBaseUrl(): string {
+  return appUrl;
 }

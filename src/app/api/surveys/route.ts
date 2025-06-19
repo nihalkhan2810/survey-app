@@ -1,20 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { promises as fs } from 'fs';
-import path from 'path';
 import { nanoid } from 'nanoid';
-
-// Ensure the surveys directory exists
-const surveysDir = path.join(process.cwd(), 'data', 'surveys');
-
-async function ensureDirExists() {
-  try {
-    await fs.access(surveysDir);
-  } catch (error) {
-    await fs.mkdir(surveysDir, { recursive: true });
-  }
-}
-
-ensureDirExists();
+import { database } from '@/lib/database';
 
 export async function POST(req: NextRequest) {
   try {
@@ -28,7 +14,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: 'Start date and end date are required' }, { status: 400 });
     }
 
-    const surveyId = nanoid(10); // Generate a 10-character unique ID
+    const surveyId = nanoid(10);
     const surveyData = {
       id: surveyId,
       topic,
@@ -37,10 +23,11 @@ export async function POST(req: NextRequest) {
       end_date,
       reminder_dates: reminder_dates || [],
       createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
 
-    const filePath = path.join(surveysDir, `${surveyId}.json`);
-    await fs.writeFile(filePath, JSON.stringify(surveyData, null, 2));
+    // Save to database (DynamoDB or in-memory based on configuration)
+    await database.createSurvey(surveyData);
 
     return NextResponse.json({ surveyId }, { status: 201 });
   } catch (error) {
@@ -49,39 +36,28 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// New GET function to list all surveys
 export async function GET(req: NextRequest) {
   try {
-    const files = await fs.readdir(surveysDir);
-    const surveys = await Promise.all(
-      files
-        .filter((file) => file.endsWith('.json'))
-        .map(async (file) => {
-          const filePath = path.join(surveysDir, file);
-          const fileContents = await fs.readFile(filePath, 'utf8');
-          const surveyData = JSON.parse(fileContents);
-          return {
-            id: surveyData.id,
-            topic: surveyData.topic,
-            createdAt: surveyData.createdAt,
-            created_at: surveyData.createdAt, // For compatibility
-            start_date: surveyData.start_date,
-            end_date: surveyData.end_date,
-            reminder_dates: surveyData.reminder_dates,
-          };
-        })
-    );
+    // Get all surveys from database
+    const surveys = await database.getAllSurveys();
+    
+    // Transform data for compatibility with frontend
+    const formattedSurveys = surveys.map(survey => ({
+      id: survey.id,
+      topic: survey.topic,
+      createdAt: survey.createdAt,
+      created_at: survey.createdAt, // For compatibility
+      start_date: survey.start_date,
+      end_date: survey.end_date,
+      reminder_dates: survey.reminder_dates,
+    }));
 
     // Sort surveys by creation date, newest first
-    surveys.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    formattedSurveys.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
-    return NextResponse.json(surveys, { status: 200 });
+    return NextResponse.json(formattedSurveys, { status: 200 });
   } catch (error) {
     console.error('Failed to list surveys:', error);
-    // This could happen if the directory doesn't exist yet, which is not an error in that case.
-    if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
-      return NextResponse.json([], { status: 200 }); // Return empty array if no surveys directory
-    }
     return NextResponse.json({ message: 'Failed to list surveys' }, { status: 500 });
   }
 } 

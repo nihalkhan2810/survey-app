@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/app/api/auth/[...nextauth]/route'
-import { simpleDb } from '@/lib/simple-db'
+import { database, getDatabaseType } from '@/lib/database'
 
 export async function GET(req: NextRequest) {
   try {
@@ -18,10 +18,10 @@ export async function GET(req: NextRequest) {
     const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1)
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
 
-    // Get dashboard statistics using simple database
-    const users = await simpleDb.getAllUsers()
-    const surveys = await simpleDb.getAllSurveys()
-    const responses = await simpleDb.getAllResponses()
+    // Get dashboard statistics using database
+    const users = await database.getAllUsers()
+    const surveys = await database.getAllSurveys()
+    const responses = await database.getAllResponses()
 
     // Calculate statistics
     const totalUsers = users.length

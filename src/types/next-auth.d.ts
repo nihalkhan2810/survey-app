@@ -24,3 +24,5 @@ declare module "next-auth/next" {
 }
 
 declare module "next-auth/react"
+
+declare module "next-auth/providers/credentials"

@@ -7,13 +7,19 @@ const {
 const bcrypt = require('bcryptjs')
 const { nanoid } = require('nanoid')
 
+// Use environment variables directly
+// Next.js loads .env.local automatically when running scripts
+
 const client = new DynamoDBClient({
-  region: process.env.NEXT_PUBLIC_AWS_REGION || 'us-east-1',
-  endpoint: process.env.DYNAMODB_ENDPOINT || 'http://localhost:8000',
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID || 'dummy',
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || 'dummy'
-  }
+  region: process.env.DYNAMODB_REGION || process.env.AWS_REGION || 'us-east-1',
+  // Use alternative environment variable names for AWS
+  credentials: (process.env.DYNAMODB_ACCESS_KEY_ID && process.env.DYNAMODB_SECRET_ACCESS_KEY) ? {
+    accessKeyId: process.env.DYNAMODB_ACCESS_KEY_ID,
+    secretAccessKey: process.env.DYNAMODB_SECRET_ACCESS_KEY
+  } : (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY) ? {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+  } : undefined
 })
 
 const TABLES = {

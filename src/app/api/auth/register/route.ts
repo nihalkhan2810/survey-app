@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { simpleDb } from '@/lib/simple-db'
+import { database } from '@/lib/database'
 import bcrypt from 'bcryptjs'
 import { nanoid } from 'nanoid'
 
@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Check if user already exists
-    const existingUser = await simpleDb.findUserByEmail(email)
+    const existingUser = await database.findUserByEmail(email)
 
     if (existingUser) {
       return NextResponse.json(
@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
 
     // Create user
     const userId = nanoid()
-    const user = await simpleDb.createUser({
+    const user = await database.createUser({
       id: userId,
       name,
       email,

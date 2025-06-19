@@ -1,10 +1,16 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
 import { DynamoDBDocumentClient, GetCommand, PutCommand, ScanCommand, QueryCommand, UpdateCommand, DeleteCommand } from '@aws-sdk/lib-dynamodb'
 
+// Create DynamoDB client with alternative environment variable names for AWS
 const client = new DynamoDBClient({
-  region: process.env.NEXT_PUBLIC_AWS_REGION || 'us-east-1',
-  // AWS automatically provides credentials in AWS environments
-  // No need to specify endpoint for AWS DynamoDB
+  region: process.env.DYNAMODB_REGION || process.env.AWS_REGION || 'us-east-1',
+  credentials: (process.env.DYNAMODB_ACCESS_KEY_ID && process.env.DYNAMODB_SECRET_ACCESS_KEY) ? {
+    accessKeyId: process.env.DYNAMODB_ACCESS_KEY_ID,
+    secretAccessKey: process.env.DYNAMODB_SECRET_ACCESS_KEY,
+  } : (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY) ? {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  } : undefined,
 })
 
 export const dynamodb = DynamoDBDocumentClient.from(client)

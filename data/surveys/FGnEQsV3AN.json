@@ -1,0 +1,60 @@
+{
+  "id": "FGnEQsV3AN",
+  "topic": "cristiano",
+  "questions": [
+    {
+      "text": "What is your overall opinion of Cristiano Ronaldo's career?",
+      "type": "rating",
+      "min": 1,
+      "max": 10
+    },
+    {
+      "text": "Which of Cristiano Ronaldo's achievements is most impressive to you?",
+      "type": "single-choice",
+      "options": [
+        "Ballon d'Or wins",
+        "Champions League titles",
+        "International goals",
+        "Goalscoring records",
+        "Other"
+      ]
+    },
+    {
+      "text": "How would you describe Cristiano Ronaldo's playing style?",
+      "type": "multiple-choice",
+      "options": [
+        "Fast and skillful",
+        "Powerful and clinical",
+        "Strategic and creative",
+        "Physical and determined",
+        "Other"
+      ]
+    },
+    {
+      "text": "How familiar are you with Cristiano Ronaldo's philanthropic activities?",
+      "type": "rating",
+      "min": 1,
+      "max": 5
+    },
+    {
+      "text": "What is your opinion on Cristiano Ronaldo's personality and public image?",
+      "type": "text"
+    },
+    {
+      "text": "Do you think Cristiano Ronaldo is one of the greatest soccer players of all time?",
+      "type": "single-choice",
+      "options": [
+        "Yes",
+        "No",
+        "Unsure"
+      ]
+    }
+  ],
+  "start_date": "2025-06-27T07:42",
+  "end_date": "2025-06-30T04:46",
+  "reminder_dates": [
+    "2025-06-27T07:42",
+    "2025-06-30T04:46"
+  ],
+  "createdAt": "2025-06-19T08:42:43.251Z"
+}

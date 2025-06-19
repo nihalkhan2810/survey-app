@@ -4,6 +4,7 @@ import { PutCommand } from '@aws-sdk/lib-dynamodb'
 import { dynamodb, TABLES } from '@/lib/dynamodb'
 import bcrypt from 'bcryptjs'
 import { nanoid } from 'nanoid'
+import { database, getDatabaseType } from '@/lib/database'
 
 const client = new DynamoDBClient({
   region: process.env.NEXT_PUBLIC_AWS_REGION || 'us-east-1',
@@ -33,65 +34,66 @@ async function createTable(tableName: string) {
   return { created: true, tableName }
 }
 
+export async function GET(req: NextRequest) {
+  try {
+    // Check database connection
+    const dbStatus = await database.checkConnection()
+    
+    return NextResponse.json({
+      status: 'ok',
+      database: {
+        ...dbStatus,
+        type: getDatabaseType()
+      },
+      message: dbStatus.connected 
+        ? `Connected to ${dbStatus.type} database` 
+        : `Failed to connect to ${dbStatus.type}: ${dbStatus.error}`
+    })
+  } catch (error) {
+    console.error('Database check error:', error)
+    return NextResponse.json(
+      { 
+        status: 'error',
+        message: 'Failed to check database connection',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      },
+      { status: 500 }
+    )
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
-    const results = []
-
-    // Create all tables
-    for (const tableName of Object.values(TABLES)) {
-      const result = await createTable(tableName)
-      results.push(result)
+    // This endpoint can be used to trigger database setup
+    // For now, it just returns the connection status
+    const dbType = getDatabaseType()
+    
+    if (dbType === 'DynamoDB') {
+      return NextResponse.json({
+        message: 'DynamoDB is configured. Run "npm run setup-db" to create tables.',
+        instructions: [
+          '1. Ensure AWS credentials are set in .env.local',
+          '2. Run: npm run setup-db',
+          '3. Check AWS DynamoDB console to verify tables'
+        ]
+      })
     }
-
-    // Wait a bit for tables to be ready
-    await new Promise(resolve => setTimeout(resolve, 2000))
-
-    // Create demo users
-    const adminId = nanoid()
-    const userId = nanoid()
-    const adminPassword = await bcrypt.hash('admin123', 12)
-    const userPassword = await bcrypt.hash('user123', 12)
-
-    await Promise.all([
-      dynamodb.send(new PutCommand({
-        TableName: TABLES.USERS,
-        Item: {
-          id: adminId,
-          email: 'admin@sayz.com',
-          name: 'Admin User',
-          password: adminPassword,
-          role: 'ADMIN',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-      })),
-      dynamodb.send(new PutCommand({
-        TableName: TABLES.USERS,
-        Item: {
-          id: userId,
-          email: 'user@sayz.com',
-          name: 'Demo User',
-          password: userPassword,
-          role: 'USER',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-      }))
-    ])
-
+    
     return NextResponse.json({
-      success: true,
-      message: 'Database setup completed!',
-      tables: results,
-      demoAccounts: [
-        { email: 'admin@sayz.com', password: 'admin123', role: 'ADMIN' },
-        { email: 'user@sayz.com', password: 'user123', role: 'USER' }
+      message: 'Using in-memory database. Configure AWS credentials to use DynamoDB.',
+      instructions: [
+        '1. Add AWS credentials to .env.local',
+        '2. Set USE_DYNAMODB=true',
+        '3. Restart the application'
       ]
     })
   } catch (error) {
-    console.error('Setup error:', error)
+    console.error('Setup check error:', error)
     return NextResponse.json(
-      { error: 'Setup failed', details: error },
+      { 
+        message: 'Failed to check setup status',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     )
   }

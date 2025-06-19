@@ -8,8 +8,8 @@ const surveys = new Map()
 // Create demo users
 async function initializeUsers() {
   if (users.size === 0) {
-    const adminPassword = await bcrypt.hash('admin123', 12)
-    const userPassword = await bcrypt.hash('user123', 12)
+    const adminPassword = await bcrypt.hash('demo123', 12)
+    const userPassword = await bcrypt.hash('demo123', 12)
     
     users.set('admin@sayz.com', {
       id: nanoid(),

@@ -11,7 +11,8 @@
       "Bash(DATABASE_URL=\"postgresql://neondb_owner:npg_gv7Q5WZoIzYL@ep-aged-mouse-a8d03xws-pooler.eastus2.azure.neon.tech/neondb?sslmode=require\" npx prisma db seed)",
       "Bash(find:*)",
       "Bash(npm run setup-db:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(chmod:*)"
     ],
     "deny": []
   }

@@ -19,6 +19,13 @@ const nextConfig = {
     // Make these available to the browser
     NEXT_PUBLIC_APP_URL: process.env.NEXTAUTH_URL || 'http://localhost:3000',
   },
+  // Enable standalone output for better AWS deployment
+  output: 'standalone',
+  // Optimize for AWS deployment
+  experimental: {
+    // Improve AWS Lambda cold starts
+    outputFileTracingRoot: __dirname,
+  },
 };
 
 module.exports = nextConfig; 

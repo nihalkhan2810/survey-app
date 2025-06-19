@@ -2,7 +2,7 @@ import { withAuth } from "next-auth/middleware"
 import { NextResponse } from "next/server"
 
 export default withAuth(
-  function middleware(req) {
+  function middleware(req: any) {
     const token = req.nextauth.token
     const { pathname } = req.nextUrl
 
@@ -24,7 +24,7 @@ export default withAuth(
   },
   {
     callbacks: {
-      authorized: ({ token, req }) => {
+      authorized: ({ token, req }: any) => {
         const { pathname } = req.nextUrl
 
         // Always allow root path

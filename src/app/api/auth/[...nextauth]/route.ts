@@ -1,6 +1,6 @@
 // @ts-ignore
 import NextAuth from 'next-auth'
-// @ts-ignore
+// @ts-ignore  
 import CredentialsProvider from 'next-auth/providers/credentials'
 import { database } from '@/lib/database'
 import bcrypt from 'bcryptjs'
@@ -13,7 +13,7 @@ export const authOptions: any = {
         email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' }
       },
-      async authorize(credentials: any) {
+      async authorize(credentials: Record<string, string> | undefined) {
         if (!credentials?.email || !credentials?.password) {
           return null
         }
@@ -48,14 +48,14 @@ export const authOptions: any = {
   callbacks: {
     jwt: async ({ token, user }: any) => {
       if (user) {
-        token.role = user.role
+        token.role = (user as any).role
       }
       return token
     },
     session: async ({ session, token }: any) => {
       if (token && session.user) {
-        session.user.id = token.sub
-        session.user.role = token.role
+        (session.user as any).id = token.sub
+        ;(session.user as any).role = token.role
       }
       return session
     },

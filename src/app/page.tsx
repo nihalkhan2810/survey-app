@@ -2,7 +2,7 @@
 
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { ArrowRight, BarChart3, Users, Calendar } from 'lucide-react'
 import Link from 'next/link'
@@ -10,15 +10,35 @@ import Link from 'next/link'
 export default function Home() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const [debugInfo, setDebugInfo] = useState<any>(null)
 
   useEffect(() => {
+    // Add debug logging for production
+    if (process.env.NODE_ENV === 'production') {
+      const info = {
+        sessionStatus: status,
+        hasSession: !!session,
+        userRole: session?.user?.role,
+        timestamp: new Date().toISOString(),
+        userAgent: typeof window !== 'undefined' ? window.navigator.userAgent : 'SSR',
+        url: typeof window !== 'undefined' ? window.location.href : 'SSR'
+      }
+      console.log('Homepage Debug Info:', info)
+      setDebugInfo(info)
+    }
+
     if (status === 'loading') return
 
     if (session) {
-      if (session.user?.role === 'ADMIN') {
-        router.push('/admin')
-      } else {
-        router.push('/surveys')
+      try {
+        if (session.user?.role === 'ADMIN') {
+          router.push('/admin')
+        } else {
+          router.push('/surveys')
+        }
+      } catch (error) {
+        console.error('Navigation error:', error)
+        // Stay on homepage if navigation fails
       }
     }
   }, [session, status, router])
@@ -26,7 +46,18 @@ export default function Home() {
   if (status === 'loading') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
-        <div className="h-12 w-12 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin"></div>
+        <div className="text-center">
+          <div className="h-12 w-12 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">Loading...</p>
+          {process.env.NODE_ENV === 'production' && debugInfo && (
+            <details className="mt-4 text-xs text-gray-500">
+              <summary>Debug Info</summary>
+              <pre className="text-left mt-2 p-2 bg-gray-100 dark:bg-gray-800 rounded">
+                {JSON.stringify(debugInfo, null, 2)}
+              </pre>
+            </details>
+          )}
+        </div>
       </div>
     )
   }
@@ -34,7 +65,20 @@ export default function Home() {
   if (session) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
-        <div className="h-12 w-12 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin"></div>
+        <div className="text-center">
+          <div className="h-12 w-12 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">Redirecting...</p>
+          {process.env.NODE_ENV === 'production' && (
+            <details className="mt-4 text-xs text-gray-500">
+              <summary>Session Info</summary>
+              <div className="text-left mt-2 p-2 bg-gray-100 dark:bg-gray-800 rounded">
+                <p>User: {session.user?.email}</p>
+                <p>Role: {session.user?.role}</p>
+                <p>Status: {status}</p>
+              </div>
+            </details>
+          )}
+        </div>
       </div>
     )
   }
@@ -145,6 +189,26 @@ export default function Home() {
               Password: demo123
             </p>
           </motion.div>
+
+          {/* Production Debug Info */}
+          {process.env.NODE_ENV === 'production' && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.8 }}
+              className="mt-8"
+            >
+              <details className="text-xs text-gray-500">
+                <summary className="cursor-pointer">System Status</summary>
+                <div className="mt-2 p-3 bg-gray-100 dark:bg-gray-800 rounded text-left">
+                  <p>Environment: {process.env.NODE_ENV}</p>
+                  <p>Session Status: {status}</p>
+                  <p>Timestamp: {new Date().toISOString()}</p>
+                  <p>NextAuth URL: {process.env.NEXTAUTH_URL || 'Not set'}</p>
+                </div>
+              </details>
+            </motion.div>
+          )}
         </motion.div>
       </div>
     </div>

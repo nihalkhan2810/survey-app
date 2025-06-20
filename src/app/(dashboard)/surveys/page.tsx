@@ -8,14 +8,16 @@ import { Sparkles } from 'lucide-react';
 import { getSurveyUrl } from '@/lib/utils';
 import { ResultsModal } from "@/components/surveys/ResultsModal";
 import { CallModal } from "@/components/surveys/CallModal";
+import VapiCallModal from "@/components/surveys/VapiCallModal";
 
 type Survey = {
   id: string;
   topic: string;
   created_at: string;
+  questions?: Array<{ text: string }>;
 };
 
-type ModalType = 'results' | 'call' | null;
+type ModalType = 'results' | 'call' | 'vapi-call' | null;
 
 const gradients = [
   'from-emerald-500 to-teal-600',
@@ -35,6 +37,7 @@ export default function SurveysPage() {
   const [activeModal, setActiveModal] = useState<ModalType>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [loadingFullSurvey, setLoadingFullSurvey] = useState(false);
 
 
   useEffect(() => {
@@ -51,8 +54,32 @@ export default function SurveysPage() {
       });
   }, []);
 
-  const openModal = (survey: Survey, modal: ModalType) => {
-    setActiveSurvey(survey);
+  const fetchFullSurvey = async (surveyId: string): Promise<Survey | null> => {
+    try {
+      const response = await fetch(`/api/surveys/${surveyId}`);
+      if (response.ok) {
+        return await response.json();
+      }
+      return null;
+    } catch (error) {
+      console.error('Failed to fetch survey details:', error);
+      return null;
+    }
+  };
+
+  const openModal = async (survey: Survey, modal: ModalType) => {
+    if (modal === 'vapi-call') {
+      setLoadingFullSurvey(true);
+      const fullSurvey = await fetchFullSurvey(survey.id);
+      if (fullSurvey) {
+        setActiveSurvey(fullSurvey);
+      } else {
+        setActiveSurvey(survey);
+      }
+      setLoadingFullSurvey(false);
+    } else {
+      setActiveSurvey(survey);
+    }
     setActiveModal(modal);
   };
 
@@ -231,11 +258,11 @@ export default function SurveysPage() {
                       </motion.button>
                     </Link>
                     <motion.button 
-                      onClick={() => openModal(survey, 'call')} 
+                      onClick={() => openModal(survey, 'vapi-call')} 
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
                       className="p-2 text-gray-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors rounded-lg hover:bg-white/50 dark:hover:bg-gray-800/50" 
-                      title="Start Voice Survey"
+                      title="VAPI Voice Call"
                     >
                       <PhoneArrowUpRightIcon className="h-5 w-5"/>
                     </motion.button>
@@ -281,6 +308,17 @@ export default function SurveysPage() {
       <AnimatePresence>
         {activeModal === 'results' && activeSurvey && <ResultsModal surveyId={activeSurvey.id} onClose={closeModal} />}
         {activeModal === 'call' && activeSurvey && <CallModal survey={activeSurvey} onClose={closeModal} />}
+        {activeModal === 'vapi-call' && activeSurvey && !loadingFullSurvey && (
+          <VapiCallModal 
+            isOpen={true}
+            onClose={closeModal}
+            surveyData={{
+              id: activeSurvey.id,
+              topic: activeSurvey.topic,
+              questions: activeSurvey.questions || []
+            }}
+          />
+        )}
       </AnimatePresence>
     </>
   );

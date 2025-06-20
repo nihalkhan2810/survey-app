@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "next lint",
     "setup-db": "node scripts/setup-dynamodb.js",
-    "create-tables": "node scripts/create-tables.mjs"
+    "create-tables": "node scripts/create-tables.mjs",
+    "setup-vapi": "node scripts/setup-vapi.js",
+    "vapi-webhook": "node scripts/setup-vapi.js --webhook"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.709.0",

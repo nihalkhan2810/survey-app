@@ -127,7 +127,7 @@ export default function CalendarPage() {
     
     // Empty cells for days before the first day of the month
     for (let i = 0; i < firstDay; i++) {
-      days.push(<div key={`empty-${i}`} className="h-24"></div>);
+      days.push(<div key={`empty-${i}`} className="h-28 bg-gray-50 dark:bg-gray-900"></div>);
     }
     
     // Days of the month
@@ -142,7 +142,7 @@ export default function CalendarPage() {
           key={day}
           whileHover={{ scale: 1.02 }}
           onClick={() => setSelectedDate(isSelected ? null : dateStr)}
-          className={`h-24 p-2 border border-gray-200 dark:border-gray-700 cursor-pointer transition-all ${
+          className={`h-28 p-2 border border-gray-200 dark:border-gray-700 cursor-pointer transition-all ${
             isSelected 
               ? 'bg-violet-50 border-violet-300 dark:bg-violet-900/20 dark:border-violet-600' 
               : 'hover:bg-gray-50 dark:hover:bg-gray-800'
@@ -155,11 +155,11 @@ export default function CalendarPage() {
               {day}
             </span>
             {dayEvents.length > 0 && (
-              <div className="flex flex-col gap-1 flex-1 ml-1">
-                {dayEvents.slice(0, 3).map(event => (
+              <div className="flex flex-col gap-1 flex-1 ml-1 min-w-0">
+                {dayEvents.slice(0, 2).map(event => (
                   <div
                     key={event.id}
-                    className={`text-xs px-1 py-0.5 rounded truncate ${
+                    className={`text-xs px-2 py-1 rounded-md truncate font-medium ${
                       event.type === 'start' 
                         ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
                         : event.type === 'end'
@@ -168,12 +168,17 @@ export default function CalendarPage() {
                     }`}
                     title={event.title}
                   >
-                    {event.type === 'start' ? '📅' : event.type === 'end' ? '🔚' : '🔔'} {event.survey.topic}
+                    <div className="flex items-center gap-1">
+                      <span className="flex-shrink-0">
+                        {event.type === 'start' ? '🚀' : event.type === 'end' ? '🔒' : '🔔'}
+                      </span>
+                      <span className="truncate">{event.survey.topic}</span>
+                    </div>
                   </div>
                 ))}
-                {dayEvents.length > 3 && (
-                  <div className="text-xs text-gray-500 dark:text-gray-400">
-                    +{dayEvents.length - 3} more
+                {dayEvents.length > 2 && (
+                  <div className="text-xs text-gray-500 dark:text-gray-400 px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded-md">
+                    +{dayEvents.length - 2} more
                   </div>
                 )}
               </div>

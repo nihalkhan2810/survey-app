@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Sparkles, FileText, Copy, Send, Plus, Trash2, ArrowLeft, Calendar } from 'lucide-react';
-import { getSurveyUrl } from '@/lib/utils';
+import { Sparkles, FileText, Copy, Send, Plus, Trash2, ArrowLeft, Calendar, Clock, MessageSquare, Bot, Edit3 } from 'lucide-react';
+import { getSurveyUrl, calculateReminderDates, generateAIReminderMessage, validateReminderMessage, type ReminderConfig } from '@/lib/utils';
 
 type Question = {
   text: string;
@@ -20,6 +20,8 @@ type Survey = {
   start_date?: string;
   end_date?: string;
   reminder_dates?: string[];
+  reminder_config?: any[];
+  auto_send_reminders?: boolean;
 };
 
 export function CreateSurveyForm() {
@@ -36,9 +38,43 @@ export function CreateSurveyForm() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   
+  // Professional Reminder System states
+  const [useAIReminders, setUseAIReminders] = useState(true);
+  const [autoSendReminders, setAutoSendReminders] = useState(false);
+  const [customReminderMessage, setCustomReminderMessage] = useState('');
+  const [calculatedReminders, setCalculatedReminders] = useState<ReminderConfig[]>([]);
+  const [reminderError, setReminderError] = useState('');
+  
   // AI Assistant states
   const [aiSuggestions, setAiSuggestions] = useState<Question[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+
+  // Professional reminder calculation effect
+  useEffect(() => {
+    if (startDate && endDate) {
+      try {
+        const reminders = calculateReminderDates(startDate, endDate);
+        setCalculatedReminders(reminders);
+        setReminderError('');
+      } catch (error) {
+        setReminderError('Invalid date range selected');
+        setCalculatedReminders([]);
+      }
+    } else {
+      setCalculatedReminders([]);
+      setReminderError('');
+    }
+  }, [startDate, endDate]);
+
+  // Validate custom reminder message when it changes
+  useEffect(() => {
+    if (!useAIReminders && customReminderMessage) {
+      const validation = validateReminderMessage(customReminderMessage);
+      setReminderError(validation.isValid ? '' : validation.error || '');
+    } else {
+      setReminderError('');
+    }
+  }, [useAIReminders, customReminderMessage]);
 
   const handleGenerateQuestions = async () => {
     if (!topic) {
@@ -168,17 +204,34 @@ export function CreateSurveyForm() {
       setStatus('End date must be after start date.');
       return;
     }
+    
+    // Professional reminder validation
+    if (autoSendReminders && !useAIReminders) {
+      const validation = validateReminderMessage(customReminderMessage);
+      if (!validation.isValid) {
+        setStatus(`Reminder message error: ${validation.error}`);
+        return;
+      }
+    }
+    
+    if (calculatedReminders.length === 0) {
+      setStatus('No reminders calculated. Please check your date range.');
+      return;
+    }
+    
     setLoading(true);
     setStatus('');
 
     try {
-      // Calculate reminder dates
-      const start = new Date(startDate);
-      const end = new Date(endDate);
-      const reminderDates = [
-        startDate, // Reminder on start date
-        endDate    // Reminder on end date
-      ];
+      // Prepare professional reminder data
+      const reminderData = calculatedReminders.map(reminder => ({
+        dates: reminder.dates,
+        type: reminder.type,
+        description: reminder.description,
+        useAI: useAIReminders,
+        autoSend: autoSendReminders,
+        customMessage: useAIReminders ? null : customReminderMessage
+      }));
 
       const response = await fetch('/api/surveys', {
         method: 'POST',
@@ -188,7 +241,8 @@ export function CreateSurveyForm() {
           questions,
           start_date: startDate,
           end_date: endDate,
-          reminder_dates: reminderDates
+          reminder_dates: calculatedReminders.flatMap(r => r.dates),
+          reminder_config: reminderData
         }),
       });
 
@@ -206,7 +260,9 @@ export function CreateSurveyForm() {
         created_at: new Date().toISOString(),
         start_date: startDate,
         end_date: endDate,
-        reminder_dates: reminderDates
+        reminder_dates: calculatedReminders.flatMap(r => r.dates),
+        reminder_config: reminderData,
+        auto_send_reminders: autoSendReminders
       });
       setStatus('Survey created successfully! Check your calendar to see the scheduled dates.');
     } catch (error: any) {
@@ -320,6 +376,153 @@ export function CreateSurveyForm() {
           <p className="text-xs text-gray-500 dark:text-gray-400">
             Survey will be active from start date to end date. Links will expire after the end date.
           </p>
+
+          {/* Professional Reminder System */}
+          {calculatedReminders.length > 0 && (
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-6 border border-blue-200 dark:border-blue-700">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="flex items-center justify-center w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                  <Clock className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-300">Smart Reminders</h3>
+                  <p className="text-sm text-blue-700 dark:text-blue-400">Automatically calculated based on your survey duration</p>
+                </div>
+              </div>
+
+              {/* Calculated Reminders Display */}
+              <div className="space-y-2 mb-6">
+                {calculatedReminders.map((reminder, index) => (
+                  <div key={index} className="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg border border-blue-200 dark:border-blue-600">
+                    <div className={`w-3 h-3 rounded-full flex-shrink-0 ${
+                      reminder.type === 'opening' ? 'bg-green-500' :
+                      reminder.type === 'midpoint' ? 'bg-yellow-500' : 'bg-red-500'
+                    }`} />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-gray-900 dark:text-white text-sm">{reminder.description}</p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400 truncate">
+                        {reminder.dates.map(date => new Date(date).toLocaleDateString()).join(', ')}
+                      </p>
+                    </div>
+                    <div className={`px-2 py-1 rounded-full text-xs font-medium flex-shrink-0 ${
+                      reminder.type === 'opening' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
+                      reminder.type === 'midpoint' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' :
+                      'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                    }`}>
+                      {reminder.type}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Reminder Configuration */}
+              <div className="space-y-4">
+                {/* Enable Reminders Toggle */}
+                <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-lg border border-emerald-200 dark:border-emerald-600">
+                  <div className="flex items-center gap-3">
+                    <Clock className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                    <div>
+                      <p className="font-medium text-gray-900 dark:text-white">
+                        Send Automatic Reminders
+                      </p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        Reminders will be sent automatically on calculated dates when survey is distributed
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setAutoSendReminders(!autoSendReminders)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      autoSendReminders ? 'bg-emerald-600' : 'bg-gray-200 dark:bg-gray-700'
+                    }`}
+                  >
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      autoSendReminders ? 'translate-x-6' : 'translate-x-1'
+                    }`} />
+                  </button>
+                </div>
+
+                {autoSendReminders && (
+                  <>
+                    {/* AI vs Custom Message Toggle */}
+                    <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-lg border border-blue-200 dark:border-blue-600">
+                      <div className="flex items-center gap-3">
+                        {useAIReminders ? (
+                          <Bot className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                        ) : (
+                          <Edit3 className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                        )}
+                        <div>
+                          <p className="font-medium text-gray-900 dark:text-white">
+                            {useAIReminders ? 'AI-Generated Messages' : 'Custom Message'}
+                          </p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            {useAIReminders 
+                              ? 'Professionally crafted reminder messages with survey links'
+                              : 'Write your own personalized reminder message'
+                            }
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setUseAIReminders(!useAIReminders)}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                          useAIReminders ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'
+                        }`}
+                      >
+                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          useAIReminders ? 'translate-x-6' : 'translate-x-1'
+                        }`} />
+                      </button>
+                    </div>
+
+                {/* Custom Message Input */}
+                {!useAIReminders && (
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      <MessageSquare className="h-4 w-4 inline mr-2" />
+                      Custom Reminder Message
+                    </label>
+                    <textarea
+                      value={customReminderMessage}
+                      onChange={(e) => setCustomReminderMessage(e.target.value)}
+                      placeholder="Write your personalized reminder message. The survey link will be automatically included."
+                      rows={4}
+                      className="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all resize-none"
+                    />
+                    {reminderError && (
+                      <p className="text-sm text-red-600 dark:text-red-400">{reminderError}</p>
+                    )}
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      Message will be used for all reminder types. Survey link will be automatically appended.
+                    </p>
+                  </div>
+                )}
+
+                    {/* AI Message Preview */}
+                    {useAIReminders && topic && (
+                      <div className="space-y-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                          <Bot className="h-4 w-4 inline mr-2" />
+                          AI Message Preview (Closing Reminder)
+                        </label>
+                        <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+                          <pre className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap font-sans">
+                            {generateAIReminderMessage(topic, getSurveyUrl('SURVEY_ID'), 'closing')}
+                          </pre>
+                        </div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          Different messages will be generated for opening, midpoint, and closing reminders.
+                        </p>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* AI Assistant Mode */}

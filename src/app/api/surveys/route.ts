@@ -4,7 +4,7 @@ import { database } from '@/lib/database';
 
 export async function POST(req: NextRequest) {
   try {
-    const { topic, questions, start_date, end_date, reminder_dates } = await req.json();
+    const { topic, questions, start_date, end_date, reminder_dates, reminder_config, auto_send_reminders } = await req.json();
 
     if (!topic || !questions || !Array.isArray(questions) || questions.length === 0) {
       return NextResponse.json({ message: 'Invalid survey data' }, { status: 400 });
@@ -12,6 +12,11 @@ export async function POST(req: NextRequest) {
 
     if (!start_date || !end_date) {
       return NextResponse.json({ message: 'Start date and end date are required' }, { status: 400 });
+    }
+
+    // Professional validation for reminder configuration
+    if (reminder_config && !Array.isArray(reminder_config)) {
+      return NextResponse.json({ message: 'Invalid reminder configuration' }, { status: 400 });
     }
 
     const surveyId = nanoid(10);
@@ -22,6 +27,8 @@ export async function POST(req: NextRequest) {
       start_date,
       end_date,
       reminder_dates: reminder_dates || [],
+      reminder_config: reminder_config || [],
+      auto_send_reminders: auto_send_reminders || false,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -50,6 +57,8 @@ export async function GET(req: NextRequest) {
       start_date: survey.start_date,
       end_date: survey.end_date,
       reminder_dates: survey.reminder_dates,
+      reminder_config: survey.reminder_config || [],
+      auto_send_reminders: survey.auto_send_reminders || false,
     }));
 
     // Sort surveys by creation date, newest first

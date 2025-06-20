@@ -2,13 +2,15 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ArrowLeft, Send, Sparkles, Users, Mail } from 'lucide-react';
+import { ArrowLeft, Send, Sparkles, Users, Mail, Clock } from 'lucide-react';
 import { getSurveyUrl } from '@/lib/utils';
 
 type Survey = {
   id: string;
   topic: string;
   created_at?: string;
+  reminder_config?: any[];
+  auto_send_reminders?: boolean;
 };
 
 type TargetAudience = {
@@ -124,6 +126,26 @@ export default function SendSurveyPage() {
 
   const surveyLink = selectedSurvey ? getSurveyUrl(selectedSurvey.id) : '';
 
+  // Calculate current emails for reminder component
+  const getCurrentEmails = (): string[] => {
+    if (emailInputMethod === 'manual') {
+      return studentEmails.split(',').map((email) => email.trim()).filter(Boolean);
+    } else {
+      const selectedAudienceData = mockTargetAudiences.filter(audience => 
+        selectedAudiences.includes(audience.id)
+      );
+      const totalCount = selectedAudienceData.reduce((sum, audience) => sum + audience.count, 0);
+      return Array(totalCount).fill(0).map((_, i) => `student${i + 1}@example.com`);
+    }
+  };
+
+  const currentEmails = getCurrentEmails();
+  const currentEmailCount = emailInputMethod === 'manual' 
+    ? currentEmails.length 
+    : mockTargetAudiences
+        .filter(audience => selectedAudiences.includes(audience.id))
+        .reduce((sum, audience) => sum + audience.count, 0);
+
   const handleAudienceToggle = (audienceId: string) => {
     setSelectedAudiences(prev => 
       prev.includes(audienceId)
@@ -192,17 +214,7 @@ export default function SendSurveyPage() {
     setIsSending(true);
     setStatus('Sending...');
 
-    let emails: string[] = [];
-    
-    if (emailInputMethod === 'manual') {
-      emails = studentEmails.split(',').map((email) => email.trim()).filter(Boolean);
-    } else {
-      const selectedAudienceData = mockTargetAudiences.filter(audience => 
-        selectedAudiences.includes(audience.id)
-      );
-      const totalCount = selectedAudienceData.reduce((sum, audience) => sum + audience.count, 0);
-      emails = Array(totalCount).fill(0).map((_, i) => `student${i + 1}@example.com`);
-    }
+    const emails = getCurrentEmails();
     
     try {
       const response = await fetch('/api/send-survey', {
@@ -593,6 +605,29 @@ export default function SendSurveyPage() {
                     </p>
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* Reminder Status Display */}
+            {selectedSurvey && selectedSurvey.auto_send_reminders && (
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                  <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                  Automatic Reminders Enabled
+                </h3>
+                <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-xl p-4 border border-emerald-200 dark:border-emerald-700">
+                  <div className="flex items-center gap-3">
+                    <Clock className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                    <div>
+                      <p className="font-medium text-emerald-900 dark:text-emerald-300">
+                        Reminders will be sent automatically
+                      </p>
+                      <p className="text-sm text-emerald-700 dark:text-emerald-400">
+                        When you send this survey, reminders will be automatically scheduled and sent according to the calculated dates.
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
             

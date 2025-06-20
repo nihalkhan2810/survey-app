@@ -12,7 +12,10 @@
       "Bash(find:*)",
       "Bash(npm run setup-db:*)",
       "Bash(npm install:*)",
-      "Bash(chmod:*)"
+      "Bash(chmod:*)",
+      "Bash(node test-vapi.js)",
+      "Bash(node:*)",
+      "Bash(ls:*)"
     ],
     "deny": []
   }

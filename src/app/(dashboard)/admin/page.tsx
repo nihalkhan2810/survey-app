@@ -30,6 +30,19 @@ const DatabaseStatus = dynamic(
   }
 );
 
+// Dynamically import VapiSettings
+const VapiSettings = dynamic(
+  () => import('@/components/admin/VapiSettings').then(mod => ({ default: mod.VapiSettings })),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+        <p className="text-gray-600 dark:text-gray-400">Loading VAPI settings...</p>
+      </div>
+    )
+  }
+);
+
 export default function AdminPage() {
   return (
     <div className="space-y-6">
@@ -86,6 +99,8 @@ export default function AdminPage() {
       </motion.div>
 
       <DatabaseStatus />
+      
+      <VapiSettings />
       
       <SalesforceIntegration />
     </div>

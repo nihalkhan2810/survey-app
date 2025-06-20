@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs'
 // Simple in-memory database for testing - replace with DynamoDB later
 const users = new Map()
 const surveys = new Map()
+const responses = new Map() // Add responses storage
 
 // Create demo users
 async function initializeUsers() {
@@ -63,6 +64,25 @@ export const simpleDb = {
   },
 
   async getAllResponses() {
-    return [] as Array<{ submittedAt: string }>
+    return Array.from(responses.values()).map(responseArray => responseArray).flat()
   }
+}
+
+// Export standalone function for saving responses
+export async function saveResponse(surveyId: string, responseData: any) {
+  const responseId = nanoid()
+  const response = {
+    id: responseId,
+    surveyId,
+    submittedAt: new Date().toISOString(),
+    type: responseData.metadata?.provider || 'unknown',
+    ...responseData
+  }
+
+  if (!responses.has(surveyId)) {
+    responses.set(surveyId, [])
+  }
+  
+  responses.get(surveyId).push(response)
+  return response
 }

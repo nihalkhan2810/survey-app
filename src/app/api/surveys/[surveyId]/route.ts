@@ -3,10 +3,10 @@ import { database } from '@/lib/database';
 
 export async function GET(
   req: NextRequest,
-  context: { params: { surveyId: string } }
+  context: { params: Promise<{ surveyId: string }> }
 ) {
   try {
-    const { surveyId } = context.params;
+    const { surveyId } = await context.params;
     
     const surveyData = await database.findSurveyById(surveyId);
     
@@ -23,10 +23,10 @@ export async function GET(
 
 export async function DELETE(
   req: NextRequest,
-  context: { params: { surveyId: string } }
+  context: { params: Promise<{ surveyId: string }> }
 ) {
   try {
-    const { surveyId } = context.params;
+    const { surveyId } = await context.params;
     
     // Check if survey exists
     const existingSurvey = await database.findSurveyById(surveyId);

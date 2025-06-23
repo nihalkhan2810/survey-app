@@ -36,6 +36,7 @@ async function saveSurveyResponse(surveyId: string, answers: Record<string, stri
   try {
     const responseData = {
       answers,
+      identity: { isAnonymous: true }, // Voice responses are anonymous by default
       metadata: {
         callId: callData.call?.id,
         duration: callData.call?.duration,

@@ -1,0 +1,23 @@
+[
+  {
+    "id": "02I8An7jLvRGjdGfTpamI",
+    "surveyId": "9NJbWq8y2E",
+    "submittedAt": "2025-06-16T14:08:52.211Z",
+    "answers": {
+      "0": "pretty good",
+      "1": "pretty good",
+      "2": "heavy",
+      "3": "nothing much",
+      "4": "I don't know",
+      "5": "not very engaged",
+      "6": "Absolutely not"
+    },
+    "type": "voice-extracted",
+    "callSid": "CA8ccac7ab7bf325018be28270d96e981f",
+    "metadata": {
+      "extractedFrom": "CA8ccac7ab7bf325018be28270d96e981f.json",
+      "questionCount": 7,
+      "extractedAnswers": 7
+    }
+  }
+]

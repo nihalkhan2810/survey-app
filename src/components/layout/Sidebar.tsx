@@ -3,12 +3,13 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Home, ClipboardList, FolderKanban, Calendar, LayoutGrid, ChartBar, Sparkles } from 'lucide-react';
+import { Home, ClipboardList, Calendar, LayoutGrid, ChartBar, MessageCircle } from 'lucide-react';
+import { SayzIcon } from '@/components/SayzLogo';
 
 const navItems = [
     { name: 'Dashboard', href: '/dashboard', icon: Home, gradient: 'from-violet-500 to-purple-600' },
     { name: 'Surveys', href: '/surveys', icon: ClipboardList, gradient: 'from-blue-500 to-cyan-600' },
-    { name: 'Projects', href: '/projects', icon: FolderKanban, gradient: 'from-emerald-500 to-teal-600' },
+    { name: 'Responses', href: '/responses', icon: MessageCircle, gradient: 'from-emerald-500 to-teal-600' },
     { name: 'Calendar', href: '/calendar', icon: Calendar, gradient: 'from-orange-500 to-pink-600' },
     { name: 'Analytics', href: '/analytics', icon: ChartBar, gradient: 'from-rose-500 to-pink-600' },
     { name: 'Admin', href: '/admin', icon: LayoutGrid, gradient: 'from-indigo-500 to-purple-600' },
@@ -22,16 +23,11 @@ export function Sidebar() {
             <div className="p-6 border-b border-gray-200/50 dark:border-gray-800/50">
                 <Link href="/dashboard">
                     <motion.div 
-                        className="flex items-center gap-2"
+                        className="flex items-center justify-center"
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                     >
-                        <div className="p-2 bg-gradient-to-br from-violet-600 to-indigo-600 rounded-xl shadow-lg">
-                            <Sparkles className="h-6 w-6 text-white" />
-                        </div>
-                        <h1 className="text-2xl font-bold bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">
-                            Sayz
-                        </h1>
+                        <SayzIcon size={60} />
                     </motion.div>
                 </Link>
             </div>

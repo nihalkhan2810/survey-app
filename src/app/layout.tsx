@@ -17,6 +17,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Sayz - Modern Survey Platform",
   description: "Create and manage surveys with AI-powered insights",
+  icons: {
+    icon: '/logo_t.png',
+    shortcut: '/logo_t.png',
+    apple: '/logo_t.png',
+  },
 };
 
 export default function RootLayout({
@@ -40,7 +45,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950`}
       >
-        <SessionProvider session={null}>
+        <SessionProvider>
           <ThemeProvider
             attribute="class"
             defaultTheme="system"

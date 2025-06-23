@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { nanoid } from 'nanoid';
 import { database } from '@/lib/database';
+import { generateDummyResponses } from '@/lib/dummy-responses';
 
 export async function POST(req: NextRequest) {
   try {
@@ -51,6 +52,7 @@ export async function GET(req: NextRequest) {
     // Transform data for compatibility with frontend
     const formattedSurveys = surveys.map(survey => ({
       id: survey.id,
+      title: survey.topic || survey.title,
       topic: survey.topic,
       createdAt: survey.createdAt,
       created_at: survey.createdAt, // For compatibility
@@ -59,6 +61,7 @@ export async function GET(req: NextRequest) {
       reminder_dates: survey.reminder_dates,
       reminder_config: survey.reminder_config || [],
       auto_send_reminders: survey.auto_send_reminders || false,
+      questions: survey.questions || []
     }));
 
     // Sort surveys by creation date, newest first
@@ -67,6 +70,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(formattedSurveys, { status: 200 });
   } catch (error) {
     console.error('Failed to list surveys:', error);
-    return NextResponse.json({ message: 'Failed to list surveys' }, { status: 500 });
+    return NextResponse.json([], { status: 200 });
   }
 } 

@@ -18,27 +18,232 @@ type TargetAudience = {
   name: string;
   description: string;
   count: number;
+  category: string;
+  emails: string[];
 };
 
 const mockTargetAudiences: TargetAudience[] = [
-  { id: 'mba-1st', name: 'MBA 1st Year', description: 'First year MBA students', count: 45 },
-  { id: 'mba-2nd', name: 'MBA 2nd Year', description: 'Second year MBA students', count: 42 },
-  { id: 'ece-class1', name: 'ECE Class 1', description: 'Electronics and Communication Engineering - Class 1', count: 38 },
-  { id: 'ece-class2', name: 'ECE Class 2', description: 'Electronics and Communication Engineering - Class 2', count: 35 },
-  { id: 'cs-freshmen', name: 'CS Freshmen', description: 'Computer Science first year students', count: 67 },
-  { id: 'cs-sophomores', name: 'CS Sophomores', description: 'Computer Science second year students', count: 59 },
-  { id: 'cs-juniors', name: 'CS Juniors', description: 'Computer Science third year students', count: 54 },
-  { id: 'cs-seniors', name: 'CS Seniors', description: 'Computer Science senior students', count: 52 },
-  { id: 'business-exec', name: 'Business Executives', description: 'Executive MBA program participants', count: 28 },
-  { id: 'me-1st', name: 'ME 1st Year', description: 'Mechanical Engineering first year students', count: 41 },
-  { id: 'me-2nd', name: 'ME 2nd Year', description: 'Mechanical Engineering second year students', count: 39 },
-  { id: 'alumni-2020', name: 'Alumni 2020', description: '2020 batch alumni network', count: 156 },
-  { id: 'alumni-2021', name: 'Alumni 2021', description: '2021 batch alumni network', count: 143 },
-  { id: 'alumni-2022', name: 'Alumni 2022', description: '2022 batch alumni network', count: 134 },
-  { id: 'faculty-cs', name: 'CS Faculty', description: 'Computer Science department faculty', count: 12 },
-  { id: 'faculty-business', name: 'Business Faculty', description: 'Business school faculty members', count: 15 },
-  { id: 'staff-admin', name: 'Administrative Staff', description: 'Administrative and support staff', count: 89 },
-  { id: 'phd-students', name: 'PhD Students', description: 'Doctoral program students across all departments', count: 78 },
+  // Engineering Students - Year-wise
+  { 
+    id: 'ece-1st', 
+    name: 'ECE 1st Year', 
+    description: 'Electronics and Communication Engineering - First Year', 
+    count: 45, 
+    category: 'Engineering',
+    emails: Array.from({length: 45}, (_, i) => `ece1st.${String(i+1).padStart(3, '0')}@university.edu`)
+  },
+  { 
+    id: 'ece-2nd', 
+    name: 'ECE 2nd Year', 
+    description: 'Electronics and Communication Engineering - Second Year', 
+    count: 42, 
+    category: 'Engineering',
+    emails: Array.from({length: 42}, (_, i) => `ece2nd.${String(i+1).padStart(3, '0')}@university.edu`)
+  },
+  { 
+    id: 'ece-3rd', 
+    name: 'ECE 3rd Year', 
+    description: 'Electronics and Communication Engineering - Third Year', 
+    count: 38, 
+    category: 'Engineering',
+    emails: Array.from({length: 38}, (_, i) => `ece3rd.${String(i+1).padStart(3, '0')}@university.edu`)
+  },
+  { 
+    id: 'ece-4th', 
+    name: 'ECE 4th Year', 
+    description: 'Electronics and Communication Engineering - Final Year', 
+    count: 35, 
+    category: 'Engineering',
+    emails: Array.from({length: 35}, (_, i) => `ece4th.${String(i+1).padStart(3, '0')}@university.edu`)
+  },
+  
+  // Computer Science Students
+  { 
+    id: 'cs-1st', 
+    name: 'CS 1st Year', 
+    description: 'Computer Science - First Year', 
+    count: 67, 
+    category: 'Engineering',
+    emails: Array.from({length: 67}, (_, i) => `cs1st.${String(i+1).padStart(3, '0')}@university.edu`)
+  },
+  { 
+    id: 'cs-2nd', 
+    name: 'CS 2nd Year', 
+    description: 'Computer Science - Second Year', 
+    count: 59, 
+    category: 'Engineering',
+    emails: Array.from({length: 59}, (_, i) => `cs2nd.${String(i+1).padStart(3, '0')}@university.edu`)
+  },
+  { 
+    id: 'cs-3rd', 
+    name: 'CS 3rd Year', 
+    description: 'Computer Science - Third Year', 
+    count: 54, 
+    category: 'Engineering',
+    emails: Array.from({length: 54}, (_, i) => `cs3rd.${String(i+1).padStart(3, '0')}@university.edu`)
+  },
+  { 
+    id: 'cs-4th', 
+    name: 'CS 4th Year', 
+    description: 'Computer Science - Final Year', 
+    count: 52, 
+    category: 'Engineering',
+    emails: Array.from({length: 52}, (_, i) => `cs4th.${String(i+1).padStart(3, '0')}@university.edu`)
+  },
+  
+  // Mechanical Engineering Students
+  { 
+    id: 'me-1st', 
+    name: 'ME 1st Year', 
+    description: 'Mechanical Engineering - First Year', 
+    count: 41, 
+    category: 'Engineering',
+    emails: Array.from({length: 41}, (_, i) => `me1st.${String(i+1).padStart(3, '0')}@university.edu`)
+  },
+  { 
+    id: 'me-2nd', 
+    name: 'ME 2nd Year', 
+    description: 'Mechanical Engineering - Second Year', 
+    count: 39, 
+    category: 'Engineering',
+    emails: Array.from({length: 39}, (_, i) => `me2nd.${String(i+1).padStart(3, '0')}@university.edu`)
+  },
+  { 
+    id: 'me-3rd', 
+    name: 'ME 3rd Year', 
+    description: 'Mechanical Engineering - Third Year', 
+    count: 37, 
+    category: 'Engineering',
+    emails: Array.from({length: 37}, (_, i) => `me3rd.${String(i+1).padStart(3, '0')}@university.edu`)
+  },
+  { 
+    id: 'me-4th', 
+    name: 'ME 4th Year', 
+    description: 'Mechanical Engineering - Final Year', 
+    count: 34, 
+    category: 'Engineering',
+    emails: Array.from({length: 34}, (_, i) => `me4th.${String(i+1).padStart(3, '0')}@university.edu`)
+  },
+  
+  // Business Students
+  { 
+    id: 'mba-1st', 
+    name: 'MBA 1st Year', 
+    description: 'Master of Business Administration - First Year', 
+    count: 45, 
+    category: 'Business',
+    emails: Array.from({length: 45}, (_, i) => `mba1st.${String(i+1).padStart(3, '0')}@business.university.edu`)
+  },
+  { 
+    id: 'mba-2nd', 
+    name: 'MBA 2nd Year', 
+    description: 'Master of Business Administration - Second Year', 
+    count: 42, 
+    category: 'Business',
+    emails: Array.from({length: 42}, (_, i) => `mba2nd.${String(i+1).padStart(3, '0')}@business.university.edu`)
+  },
+  { 
+    id: 'business-undergrad', 
+    name: 'Business Undergrad', 
+    description: 'Undergraduate Business Students (All Years)', 
+    count: 89, 
+    category: 'Business',
+    emails: Array.from({length: 89}, (_, i) => `busundergrad.${String(i+1).padStart(3, '0')}@business.university.edu`)
+  },
+  
+  // Alumni Groups
+  { 
+    id: 'alumni-2020', 
+    name: 'Alumni 2020', 
+    description: '2020 Graduation Batch - All Departments', 
+    count: 156, 
+    category: 'Alumni',
+    emails: Array.from({length: 156}, (_, i) => `alumni2020.${String(i+1).padStart(3, '0')}@alumni.university.edu`)
+  },
+  { 
+    id: 'alumni-2021', 
+    name: 'Alumni 2021', 
+    description: '2021 Graduation Batch - All Departments', 
+    count: 143, 
+    category: 'Alumni',
+    emails: Array.from({length: 143}, (_, i) => `alumni2021.${String(i+1).padStart(3, '0')}@alumni.university.edu`)
+  },
+  { 
+    id: 'alumni-2022', 
+    name: 'Alumni 2022', 
+    description: '2022 Graduation Batch - All Departments', 
+    count: 134, 
+    category: 'Alumni',
+    emails: Array.from({length: 134}, (_, i) => `alumni2022.${String(i+1).padStart(3, '0')}@alumni.university.edu`)
+  },
+  { 
+    id: 'alumni-2023', 
+    name: 'Alumni 2023', 
+    description: '2023 Graduation Batch - All Departments', 
+    count: 128, 
+    category: 'Alumni',
+    emails: Array.from({length: 128}, (_, i) => `alumni2023.${String(i+1).padStart(3, '0')}@alumni.university.edu`)
+  },
+  
+  // Faculty and Staff
+  { 
+    id: 'faculty-cs', 
+    name: 'CS Faculty', 
+    description: 'Computer Science Department Faculty', 
+    count: 12, 
+    category: 'Faculty',
+    emails: Array.from({length: 12}, (_, i) => `csfaculty.${String(i+1).padStart(2, '0')}@faculty.university.edu`)
+  },
+  { 
+    id: 'faculty-ece', 
+    name: 'ECE Faculty', 
+    description: 'Electronics and Communication Engineering Faculty', 
+    count: 10, 
+    category: 'Faculty',
+    emails: Array.from({length: 10}, (_, i) => `ecefaculty.${String(i+1).padStart(2, '0')}@faculty.university.edu`)
+  },
+  { 
+    id: 'faculty-business', 
+    name: 'Business Faculty', 
+    description: 'Business School Faculty Members', 
+    count: 15, 
+    category: 'Faculty',
+    emails: Array.from({length: 15}, (_, i) => `bizfaculty.${String(i+1).padStart(2, '0')}@business.university.edu`)
+  },
+  { 
+    id: 'staff-admin', 
+    name: 'Administrative Staff', 
+    description: 'University Administrative and Support Staff', 
+    count: 89, 
+    category: 'Staff',
+    emails: Array.from({length: 89}, (_, i) => `admin.${String(i+1).padStart(3, '0')}@admin.university.edu`)
+  },
+  
+  // Research Students
+  { 
+    id: 'phd-engineering', 
+    name: 'PhD Engineering', 
+    description: 'Doctoral Students - Engineering Departments', 
+    count: 45, 
+    category: 'Research',
+    emails: Array.from({length: 45}, (_, i) => `phdeng.${String(i+1).padStart(3, '0')}@research.university.edu`)
+  },
+  { 
+    id: 'phd-business', 
+    name: 'PhD Business', 
+    description: 'Doctoral Students - Business School', 
+    count: 18, 
+    category: 'Research',
+    emails: Array.from({length: 18}, (_, i) => `phdbiz.${String(i+1).padStart(2, '0')}@research.university.edu`)
+  },
+  { 
+    id: 'research-associates', 
+    name: 'Research Associates', 
+    description: 'Post-doctoral and Research Associates', 
+    count: 25, 
+    category: 'Research',
+    emails: Array.from({length: 25}, (_, i) => `research.${String(i+1).padStart(2, '0')}@research.university.edu`)
+  },
 ];
 
 export default function SendSurveyPage() {
@@ -60,6 +265,9 @@ export default function SendSurveyPage() {
   const [isSending, setIsSending] = useState(false);
   const [showSalesforceImport, setShowSalesforceImport] = useState(false);
   
+  // Email exclusion state - NEW
+  const [excludedEmails, setExcludedEmails] = useState<Set<string>>(new Set());
+  
   // AI Reminder states
   const [generatingReminder, setGeneratingReminder] = useState(false);
   const [showReminderOptions, setShowReminderOptions] = useState(false);
@@ -76,6 +284,7 @@ export default function SendSurveyPage() {
   // Search functionality for audiences
   const [audienceSearch, setAudienceSearch] = useState('');
   const [showAudienceDropdown, setShowAudienceDropdown] = useState(false);
+  const [showEmailPreview, setShowEmailPreview] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -134,24 +343,53 @@ export default function SendSurveyPage() {
       const selectedAudienceData = mockTargetAudiences.filter(audience => 
         selectedAudiences.includes(audience.id)
       );
-      const totalCount = selectedAudienceData.reduce((sum, audience) => sum + audience.count, 0);
-      return Array(totalCount).fill(0).map((_, i) => `student${i + 1}@example.com`);
+      // Use the actual email addresses from our detailed audience data and filter out excluded emails
+      const allEmails = selectedAudienceData.flatMap(audience => audience.emails);
+      return allEmails.filter(email => !excludedEmails.has(email));
     }
   };
 
   const currentEmails = getCurrentEmails();
   const currentEmailCount = emailInputMethod === 'manual' 
     ? currentEmails.length 
-    : mockTargetAudiences
-        .filter(audience => selectedAudiences.includes(audience.id))
-        .reduce((sum, audience) => sum + audience.count, 0);
+    : currentEmails.length; // Changed to use filtered currentEmails.length
 
   const handleAudienceToggle = (audienceId: string) => {
-    setSelectedAudiences(prev => 
-      prev.includes(audienceId)
+    setSelectedAudiences(prev => {
+      const newSelection = prev.includes(audienceId)
         ? prev.filter(id => id !== audienceId)
-        : [...prev, audienceId]
-    );
+        : [...prev, audienceId];
+      
+      return newSelection;
+    });
+    
+    // Clear excluded emails when audiences change
+    setExcludedEmails(new Set());
+  };
+
+  // NEW: Handle email exclusion
+  const handleEmailToggle = (email: string) => {
+    setExcludedEmails(prev => {
+      const newExcluded = new Set(prev);
+      if (newExcluded.has(email)) {
+        newExcluded.delete(email);
+      } else {
+        newExcluded.add(email);
+      }
+      return newExcluded;
+    });
+  };
+
+  // NEW: Get all emails including excluded ones for display
+  const getAllEmails = (): string[] => {
+    if (emailInputMethod === 'manual') {
+      return studentEmails.split(',').map((email) => email.trim()).filter(Boolean);
+    } else {
+      const selectedAudienceData = mockTargetAudiences.filter(audience => 
+        selectedAudiences.includes(audience.id)
+      );
+      return selectedAudienceData.flatMap(audience => audience.emails);
+    }
   };
 
   const handleSalesforceImport = () => {
@@ -347,56 +585,117 @@ export default function SendSurveyPage() {
                     </button>
                   </div>
                   
-                  {/* Search Input */}
+                  {/* Search Input with Dropdown Toggle */}
                   <div ref={searchRef} className="relative">
-                    <input
-                      type="text"
-                      placeholder="Search audiences (e.g., '1st', 'CS', 'MBA')..."
-                      value={audienceSearch}
-                      onChange={(e) => setAudienceSearch(e.target.value)}
-                      onFocus={() => setShowAudienceDropdown(true)}
-                      className="w-full px-4 py-3 pr-10 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200"
-                    />
-                    <div className="absolute right-3 top-3.5">
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="Search audiences (e.g., 'ECE 1st year', 'CS', 'MBA')..."
+                        value={audienceSearch}
+                        onChange={(e) => setAudienceSearch(e.target.value)}
+                        onFocus={() => setShowAudienceDropdown(true)}
+                        className="flex-1 px-4 py-3 pr-10 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowAudienceDropdown(!showAudienceDropdown)}
+                        className="px-4 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors flex items-center gap-2"
+                      >
+                        <svg className={`h-4 w-4 transition-transform ${showAudienceDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                        Browse
+                      </button>
+                    </div>
+                    <div className="absolute right-[120px] top-3.5 pointer-events-none">
                       <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                       </svg>
                     </div>
                   </div>
                   
+                  
+                  {/* IMMEDIATE EMAIL DISPLAY - Show emails the moment an audience is selected */}
+                  {selectedAudiences.length > 0 && (
+                    <div className="p-6 bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-300 dark:border-blue-600 rounded-xl animate-pulse">
+                      <h3 className="text-lg font-bold text-blue-900 dark:text-blue-100 mb-4">
+                        📧 SELECTED EMAILS ({currentEmails.length} total recipients)
+                      </h3>
+                      
+                      <div className="bg-white dark:bg-gray-800 rounded-lg p-4 max-h-60 overflow-y-auto border-2 border-blue-200 dark:border-blue-700">
+                        <div className="text-sm font-mono space-y-1">
+                          {currentEmails.map((email, idx) => (
+                            <div key={idx} className="text-blue-700 dark:text-blue-300 p-1 hover:bg-blue-100 dark:hover:bg-blue-800 rounded">
+                              {idx + 1}. {email}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      <div className="mt-4 p-3 bg-green-100 dark:bg-green-900/30 rounded-lg border border-green-300 dark:border-green-600">
+                        <div className="text-sm text-green-800 dark:text-green-300 font-medium">
+                          ✅ These {currentEmails.length} email addresses will receive your survey when you click "Send Survey"
+                        </div>
+                        <div className="text-xs text-green-700 dark:text-green-400 mt-1">
+                          Selected from: {selectedAudiences.map(id => {
+                            const audience = mockTargetAudiences.find(a => a.id === id);
+                            return audience ? audience.name : '';
+                          }).filter(Boolean).join(', ')}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
                   {/* Dropdown Results */}
-                  {showAudienceDropdown && audienceSearch && (
+                  {showAudienceDropdown && (
                     <div className="relative">
                       <div className="absolute top-0 left-0 right-0 z-10 max-h-64 overflow-y-auto bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg">
                         {filteredAudiences.length > 0 ? (
-                          filteredAudiences.map(audience => (
-                            <div
-                              key={audience.id}
-                              onClick={() => {
-                                handleAudienceToggle(audience.id);
-                                setAudienceSearch('');
-                                setShowAudienceDropdown(false);
-                              }}
-                              className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-b-0 transition-colors"
-                            >
-                              <div className="flex items-center justify-between">
-                                <div className="flex-1">
-                                  <h4 className="font-medium text-gray-900 dark:text-white">{audience.name}</h4>
-                                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{audience.description}</p>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                  <span className="text-lg font-bold text-indigo-600 dark:text-indigo-400">{audience.count}</span>
-                                  {selectedAudiences.includes(audience.id) && (
-                                    <div className="w-5 h-5 bg-indigo-600 rounded-full flex items-center justify-center">
-                                      <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                      </svg>
+                          <>
+                            {/* Group by Category */}
+                            {['Engineering', 'Business', 'Alumni', 'Faculty', 'Staff', 'Research'].map(category => {
+                              const categoryAudiences = filteredAudiences.filter(aud => aud.category === category);
+                              if (categoryAudiences.length === 0) return null;
+                              
+                              return (
+                                <div key={category}>
+                                  <div className="px-4 py-2 bg-emerald-100 dark:bg-emerald-700 border-b border-emerald-200 dark:border-emerald-600">
+                                    <h5 className="text-xs font-semibold text-emerald-800 dark:text-emerald-200 uppercase tracking-wide">
+                                      {category}
+                                    </h5>
+                                  </div>
+                                  {categoryAudiences.map(audience => (
+                                    <div
+                                      key={audience.id}
+                                      onMouseDown={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        handleAudienceToggle(audience.id);
+                                      }}
+                                      className="p-4 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-b-0 transition-colors"
+                                    >
+                                      <div className="flex items-center justify-between">
+                                        <div className="flex-1">
+                                          <h4 className="font-medium text-gray-900 dark:text-white">{audience.name}</h4>
+                                          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{audience.description}</p>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                          <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{audience.count}</span>
+                                          {selectedAudiences.includes(audience.id) && (
+                                            <div className="w-5 h-5 bg-emerald-600 rounded-full flex items-center justify-center">
+                                              <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                              </svg>
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
                                     </div>
-                                  )}
+                                  ))}
                                 </div>
-                              </div>
-                            </div>
-                          ))
+                              );
+                            })}
+                          </>
                         ) : (
                           <div className="p-4 text-center text-gray-500 dark:text-gray-400">
                             No audiences found matching "{audienceSearch}"
@@ -434,16 +733,175 @@ export default function SendSurveyPage() {
                       </div>
                       
                       <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-800">
-                        <p className="text-green-800 dark:text-green-300 font-medium">
-                          Selected {selectedAudiences.length} audience(s) with total of{' '}
-                          <span className="text-xl font-bold">
-                            {mockTargetAudiences
-                              .filter(a => selectedAudiences.includes(a.id))
-                              .reduce((sum, a) => sum + a.count, 0)}
-                          </span>{' '}
-                          recipients
+                        <div className="flex items-center justify-between">
+                          <p className="text-green-800 dark:text-green-300 font-medium">
+                            Selected {selectedAudiences.length} audience(s) with{' '}
+                            <span className="text-xl font-bold text-green-600 dark:text-green-400">
+                              {currentEmails.length}
+                            </span>{' '}
+                            final recipients
+                            {excludedEmails.size > 0 && (
+                              <span className="text-sm text-amber-700 dark:text-amber-400 ml-2">
+                                ({excludedEmails.size} excluded)
+                              </span>
+                            )}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Email Management Section - Always Show When Audiences Selected */}
+                  {selectedAudiences.length > 0 && (
+                    <div className="space-y-6">
+                      {/* Email List Textarea - Similar to Manual Entry */}
+                      <div>
+                        <label htmlFor="selectedEmails" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                          Selected Email Addresses ({currentEmails.length} recipients)
+                        </label>
+                        <textarea 
+                          id="selectedEmails" 
+                          value={currentEmails.join(', ')} 
+                          readOnly
+                          rows={6} 
+                          className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 resize-none font-mono text-sm" 
+                          placeholder="No emails selected yet..."
+                        />
+                        <div className="mt-2 flex items-center justify-between">
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                            These are the final email addresses that will receive your survey.
+                            {excludedEmails.size > 0 && (
+                              <span className="text-amber-600 dark:text-amber-500 ml-1">
+                                ({excludedEmails.size} excluded from original selection)
+                              </span>
+                            )}
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              navigator.clipboard.writeText(currentEmails.join(', '));
+                              setStatus('Email addresses copied to clipboard!');
+                              setTimeout(() => setStatus(''), 3000);
+                            }}
+                            className="text-sm px-3 py-1.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-medium"
+                          >
+                            📋 Copy List
+                          </button>
+                        </div>
+                      </div>
+                      
+                      {/* Detailed Email Management */}
+                    <div className="border border-emerald-200 dark:border-emerald-700 rounded-xl p-6 bg-emerald-50/30 dark:bg-emerald-900/10">
+                      <div className="flex items-center justify-between mb-4">
+                        <h4 className="font-semibold text-emerald-900 dark:text-emerald-100 flex items-center gap-2">
+                          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.94a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                          </svg>
+                          Email Recipients Management
+                        </h4>
+                        <div className="flex items-center gap-3">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              navigator.clipboard.writeText(currentEmails.join('\n'));
+                              setStatus('Final email list copied to clipboard!');
+                              setTimeout(() => setStatus(''), 3000);
+                            }}
+                            className="text-sm px-3 py-1.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-medium"
+                          >
+                            📋 Copy Final List ({currentEmails.length})
+                          </button>
+                          {excludedEmails.size > 0 && (
+                            <button
+                              type="button"
+                              onClick={() => setExcludedEmails(new Set())}
+                              className="text-sm px-3 py-1.5 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors font-medium"
+                            >
+                              ↩️ Include All
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {/* Summary Stats */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 border border-blue-200 dark:border-blue-700">
+                          <div className="text-lg font-bold text-blue-600 dark:text-blue-400">{getAllEmails().length}</div>
+                          <div className="text-sm text-blue-700 dark:text-blue-300">Total Available</div>
+                        </div>
+                        <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-lg p-3 border border-emerald-200 dark:border-emerald-700">
+                          <div className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{currentEmails.length}</div>
+                          <div className="text-sm text-emerald-700 dark:text-emerald-300">Will Receive Survey</div>
+                        </div>
+                        <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-3 border border-amber-200 dark:border-amber-700">
+                          <div className="text-lg font-bold text-amber-600 dark:text-amber-400">{excludedEmails.size}</div>
+                          <div className="text-sm text-amber-700 dark:text-amber-300">Excluded</div>
+                        </div>
+                      </div>
+                      
+                      <div className="max-h-64 overflow-y-auto border border-emerald-200 dark:border-emerald-600 rounded-lg bg-white dark:bg-gray-800 p-4">
+                        <div className="grid grid-cols-1 gap-1">
+                          {getAllEmails().map((email, index) => {
+                            const isExcluded = excludedEmails.has(email);
+                            return (
+                              <div 
+                                key={index} 
+                                className={`flex items-center justify-between px-3 py-2 rounded-md text-sm font-mono transition-all duration-200 ${
+                                  isExcluded 
+                                    ? 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-700 opacity-60' 
+                                    : 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-700'
+                                }`}
+                              >
+                                <span className="break-all">{email}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => handleEmailToggle(email)}
+                                  className={`ml-3 px-2 py-1 rounded text-xs font-semibold transition-colors ${
+                                    isExcluded
+                                      ? 'bg-green-600 hover:bg-green-700 text-white'
+                                      : 'bg-red-600 hover:bg-red-700 text-white'
+                                  }`}
+                                >
+                                  {isExcluded ? '✓ Include' : '✗ Exclude'}
+                                </button>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                      
+                      <div className="mt-4 space-y-2 text-sm text-emerald-700 dark:text-emerald-300">
+                        <p className="flex items-center gap-2">
+                          <span>✉️</span>
+                          <span>
+                            <strong>{currentEmails.length} email addresses</strong> will receive your survey invitation.
+                            {excludedEmails.size > 0 && <span className="text-amber-600 dark:text-amber-400"> ({excludedEmails.size} excluded from original list)</span>}
+                          </span>
+                        </p>
+                        {emailInputMethod === 'audience' && selectedAudiences.length > 0 && (
+                          <p className="flex items-start gap-2">
+                            <span className="mt-0.5">📊</span>
+                            <span>
+                              <strong>Source audiences:</strong><br/>
+                              {selectedAudiences.map(id => {
+                                const audience = mockTargetAudiences.find(a => a.id === id);
+                                if (!audience) return '';
+                                const audienceEmails = audience.emails.filter(email => !excludedEmails.has(email));
+                                return `• ${audience.name}: ${audienceEmails.length}/${audience.count} recipients`;
+                              }).filter(Boolean).join('\n')}
+                            </span>
+                          </p>
+                        )}
+                        <p className="flex items-center gap-2 text-xs">
+                          <span>💡</span>
+                          <span>Click "✗ Exclude" to remove specific email addresses. Use "✓ Include" to add them back.</span>
+                        </p>
+                        <p className="flex items-center gap-2 text-xs">
+                          <span>📋</span>
+                          <span>"Copy Final List" exports only the emails that will actually receive the survey.</span>
                         </p>
                       </div>
+                    </div>
                     </div>
                   )}
                 </div>

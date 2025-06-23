@@ -23,6 +23,7 @@ export const TABLES = {
   RESPONSES: process.env.DYNAMODB_RESPONSES_TABLE || 'sayz-responses',
   ANSWERS: process.env.DYNAMODB_ANSWERS_TABLE || 'sayz-answers',
   REMINDERS: process.env.DYNAMODB_REMINDERS_TABLE || 'sayz-reminders',
+  API_CONFIGS: process.env.DYNAMODB_API_CONFIGS_TABLE || 'sayz-api-configs',
 }
 
 // User operations
@@ -292,5 +293,43 @@ export const answerOperations = {
     })
     
     return await Promise.all(promises)
+  },
+}
+
+// API Configuration operations
+export const apiConfigOperations = {
+  async getConfig() {
+    const command = new GetCommand({
+      TableName: TABLES.API_CONFIGS,
+      Key: { id: 'global' },
+    })
+    
+    const result = await dynamodb.send(command)
+    return result.Item || null
+  },
+
+  async updateConfig(config: any) {
+    const command = new PutCommand({
+      TableName: TABLES.API_CONFIGS,
+      Item: {
+        id: 'global',
+        ...config,
+        updatedAt: new Date().toISOString(),
+      },
+    })
+    
+    await dynamodb.send(command)
+    return config
+  },
+
+  async getConfigValue(key: string) {
+    const config = await this.getConfig()
+    return config?.[key] || null
+  },
+
+  async updateConfigValue(key: string, value: string) {
+    const config = await this.getConfig() || {}
+    config[key] = value
+    return await this.updateConfig(config)
   },
 }

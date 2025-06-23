@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { ArrowRight, BarChart3, Users, Calendar } from 'lucide-react'
 import Link from 'next/link'
+import { SayzLogo } from '@/components/SayzLogo'
 
 export default function Home() {
   const { data: session, status } = useSession()
@@ -94,8 +95,8 @@ export default function Home() {
         >
           {/* Hero Section */}
           <div className="mb-16">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl mb-8">
-              <span className="text-3xl font-bold text-white">S</span>
+            <div className="inline-flex items-center justify-center mb-8">
+              <SayzLogo size={80} />
             </div>
             
             <h1 className="text-5xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6">

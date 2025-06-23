@@ -1,0 +1,63 @@
+{
+  "id": "9NJbWq8y2E",
+  "topic": "professor survey",
+  "questions": [
+    {
+      "text": "What is your overall impression of this course?",
+      "type": "multiple-choice",
+      "options": [
+        "Excellent",
+        "Good",
+        "Fair",
+        "Poor"
+      ]
+    },
+    {
+      "text": "How effective was the instructor in conveying the course material?",
+      "type": "multiple-choice",
+      "options": [
+        "Very Effective",
+        "Effective",
+        "Somewhat Effective",
+        "Not Effective"
+      ]
+    },
+    {
+      "text": "How would you rate the workload for this course?",
+      "type": "multiple-choice",
+      "options": [
+        "Too Heavy",
+        "Appropriate",
+        "Too Light"
+      ]
+    },
+    {
+      "text": "What aspects of the course did you find most helpful?",
+      "type": "text"
+    },
+    {
+      "text": "What aspects of the course could be improved?",
+      "type": "text"
+    },
+    {
+      "text": "How engaged were you in class?",
+      "type": "multiple-choice",
+      "options": [
+        "Very Engaged",
+        "Engaged",
+        "Somewhat Engaged",
+        "Not Engaged"
+      ]
+    },
+    {
+      "text": "Would you recommend this course to other students?",
+      "type": "multiple-choice",
+      "options": [
+        "Yes",
+        "No",
+        "Maybe"
+      ]
+    }
+  ],
+  "createdAt": "2025-06-16T08:24:10.894Z"
+} 

@@ -2,7 +2,7 @@
 
 import { useSession, signOut } from 'next-auth/react';
 import { ThemeSwitcher } from '@/components/ThemeSwitcher';
-import { Bell, Search, User, LogOut, Shield } from 'lucide-react';
+import { Search, User, LogOut, Shield } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 
@@ -24,14 +24,7 @@ export function Header() {
                 </div>
                 <div className="flex items-center gap-3">
                     <ThemeSwitcher />
-                    <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className="relative p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors"
-                    >
-                        <Bell className="h-5 w-5" />
-                        <span className="absolute top-1 right-1 h-2 w-2 bg-gradient-to-r from-rose-500 to-pink-500 rounded-full animate-pulse" />
-                    </motion.button>
+
 
                     {session?.user?.role === 'ADMIN' && (
                         <Link href="/admin">

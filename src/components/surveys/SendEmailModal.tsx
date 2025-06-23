@@ -13,27 +13,232 @@ type TargetAudience = {
   name: string;
   description: string;
   count: number;
+  category: string;
+  emails: string[];
 };
 
 const mockTargetAudiences: TargetAudience[] = [
-  { id: 'mba-1st', name: 'MBA 1st Year', description: 'First year MBA students', count: 45 },
-  { id: 'mba-2nd', name: 'MBA 2nd Year', description: 'Second year MBA students', count: 42 },
-  { id: 'ece-class1', name: 'ECE Class 1', description: 'Electronics and Communication Engineering - Class 1', count: 38 },
-  { id: 'ece-class2', name: 'ECE Class 2', description: 'Electronics and Communication Engineering - Class 2', count: 35 },
-  { id: 'cs-freshmen', name: 'CS Freshmen', description: 'Computer Science first year students', count: 67 },
-  { id: 'cs-sophomores', name: 'CS Sophomores', description: 'Computer Science second year students', count: 59 },
-  { id: 'cs-juniors', name: 'CS Juniors', description: 'Computer Science third year students', count: 54 },
-  { id: 'cs-seniors', name: 'CS Seniors', description: 'Computer Science senior students', count: 52 },
-  { id: 'business-exec', name: 'Business Executives', description: 'Executive MBA program participants', count: 28 },
-  { id: 'me-1st', name: 'ME 1st Year', description: 'Mechanical Engineering first year students', count: 41 },
-  { id: 'me-2nd', name: 'ME 2nd Year', description: 'Mechanical Engineering second year students', count: 39 },
-  { id: 'alumni-2020', name: 'Alumni 2020', description: '2020 batch alumni network', count: 156 },
-  { id: 'alumni-2021', name: 'Alumni 2021', description: '2021 batch alumni network', count: 143 },
-  { id: 'alumni-2022', name: 'Alumni 2022', description: '2022 batch alumni network', count: 134 },
-  { id: 'faculty-cs', name: 'CS Faculty', description: 'Computer Science department faculty', count: 12 },
-  { id: 'faculty-business', name: 'Business Faculty', description: 'Business school faculty members', count: 15 },
-  { id: 'staff-admin', name: 'Administrative Staff', description: 'Administrative and support staff', count: 89 },
-  { id: 'phd-students', name: 'PhD Students', description: 'Doctoral program students across all departments', count: 78 },
+  // Engineering Students - Year-wise
+  { 
+    id: 'ece-1st', 
+    name: 'ECE 1st Year', 
+    description: 'Electronics and Communication Engineering - First Year', 
+    count: 45, 
+    category: 'Engineering',
+    emails: Array.from({length: 45}, (_, i) => `ece1st.${String(i+1).padStart(3, '0')}@university.edu`)
+  },
+  { 
+    id: 'ece-2nd', 
+    name: 'ECE 2nd Year', 
+    description: 'Electronics and Communication Engineering - Second Year', 
+    count: 42, 
+    category: 'Engineering',
+    emails: Array.from({length: 42}, (_, i) => `ece2nd.${String(i+1).padStart(3, '0')}@university.edu`)
+  },
+  { 
+    id: 'ece-3rd', 
+    name: 'ECE 3rd Year', 
+    description: 'Electronics and Communication Engineering - Third Year', 
+    count: 38, 
+    category: 'Engineering',
+    emails: Array.from({length: 38}, (_, i) => `ece3rd.${String(i+1).padStart(3, '0')}@university.edu`)
+  },
+  { 
+    id: 'ece-4th', 
+    name: 'ECE 4th Year', 
+    description: 'Electronics and Communication Engineering - Final Year', 
+    count: 35, 
+    category: 'Engineering',
+    emails: Array.from({length: 35}, (_, i) => `ece4th.${String(i+1).padStart(3, '0')}@university.edu`)
+  },
+  
+  // Computer Science Students
+  { 
+    id: 'cs-1st', 
+    name: 'CS 1st Year', 
+    description: 'Computer Science - First Year', 
+    count: 67, 
+    category: 'Engineering',
+    emails: Array.from({length: 67}, (_, i) => `cs1st.${String(i+1).padStart(3, '0')}@university.edu`)
+  },
+  { 
+    id: 'cs-2nd', 
+    name: 'CS 2nd Year', 
+    description: 'Computer Science - Second Year', 
+    count: 59, 
+    category: 'Engineering',
+    emails: Array.from({length: 59}, (_, i) => `cs2nd.${String(i+1).padStart(3, '0')}@university.edu`)
+  },
+  { 
+    id: 'cs-3rd', 
+    name: 'CS 3rd Year', 
+    description: 'Computer Science - Third Year', 
+    count: 54, 
+    category: 'Engineering',
+    emails: Array.from({length: 54}, (_, i) => `cs3rd.${String(i+1).padStart(3, '0')}@university.edu`)
+  },
+  { 
+    id: 'cs-4th', 
+    name: 'CS 4th Year', 
+    description: 'Computer Science - Final Year', 
+    count: 52, 
+    category: 'Engineering',
+    emails: Array.from({length: 52}, (_, i) => `cs4th.${String(i+1).padStart(3, '0')}@university.edu`)
+  },
+  
+  // Mechanical Engineering Students
+  { 
+    id: 'me-1st', 
+    name: 'ME 1st Year', 
+    description: 'Mechanical Engineering - First Year', 
+    count: 41, 
+    category: 'Engineering',
+    emails: Array.from({length: 41}, (_, i) => `me1st.${String(i+1).padStart(3, '0')}@university.edu`)
+  },
+  { 
+    id: 'me-2nd', 
+    name: 'ME 2nd Year', 
+    description: 'Mechanical Engineering - Second Year', 
+    count: 39, 
+    category: 'Engineering',
+    emails: Array.from({length: 39}, (_, i) => `me2nd.${String(i+1).padStart(3, '0')}@university.edu`)
+  },
+  { 
+    id: 'me-3rd', 
+    name: 'ME 3rd Year', 
+    description: 'Mechanical Engineering - Third Year', 
+    count: 37, 
+    category: 'Engineering',
+    emails: Array.from({length: 37}, (_, i) => `me3rd.${String(i+1).padStart(3, '0')}@university.edu`)
+  },
+  { 
+    id: 'me-4th', 
+    name: 'ME 4th Year', 
+    description: 'Mechanical Engineering - Final Year', 
+    count: 34, 
+    category: 'Engineering',
+    emails: Array.from({length: 34}, (_, i) => `me4th.${String(i+1).padStart(3, '0')}@university.edu`)
+  },
+  
+  // Business Students
+  { 
+    id: 'mba-1st', 
+    name: 'MBA 1st Year', 
+    description: 'Master of Business Administration - First Year', 
+    count: 45, 
+    category: 'Business',
+    emails: Array.from({length: 45}, (_, i) => `mba1st.${String(i+1).padStart(3, '0')}@business.university.edu`)
+  },
+  { 
+    id: 'mba-2nd', 
+    name: 'MBA 2nd Year', 
+    description: 'Master of Business Administration - Second Year', 
+    count: 42, 
+    category: 'Business',
+    emails: Array.from({length: 42}, (_, i) => `mba2nd.${String(i+1).padStart(3, '0')}@business.university.edu`)
+  },
+  { 
+    id: 'business-undergrad', 
+    name: 'Business Undergrad', 
+    description: 'Undergraduate Business Students (All Years)', 
+    count: 89, 
+    category: 'Business',
+    emails: Array.from({length: 89}, (_, i) => `busundergrad.${String(i+1).padStart(3, '0')}@business.university.edu`)
+  },
+  
+  // Alumni Groups
+  { 
+    id: 'alumni-2020', 
+    name: 'Alumni 2020', 
+    description: '2020 Graduation Batch - All Departments', 
+    count: 156, 
+    category: 'Alumni',
+    emails: Array.from({length: 156}, (_, i) => `alumni2020.${String(i+1).padStart(3, '0')}@alumni.university.edu`)
+  },
+  { 
+    id: 'alumni-2021', 
+    name: 'Alumni 2021', 
+    description: '2021 Graduation Batch - All Departments', 
+    count: 143, 
+    category: 'Alumni',
+    emails: Array.from({length: 143}, (_, i) => `alumni2021.${String(i+1).padStart(3, '0')}@alumni.university.edu`)
+  },
+  { 
+    id: 'alumni-2022', 
+    name: 'Alumni 2022', 
+    description: '2022 Graduation Batch - All Departments', 
+    count: 134, 
+    category: 'Alumni',
+    emails: Array.from({length: 134}, (_, i) => `alumni2022.${String(i+1).padStart(3, '0')}@alumni.university.edu`)
+  },
+  { 
+    id: 'alumni-2023', 
+    name: 'Alumni 2023', 
+    description: '2023 Graduation Batch - All Departments', 
+    count: 128, 
+    category: 'Alumni',
+    emails: Array.from({length: 128}, (_, i) => `alumni2023.${String(i+1).padStart(3, '0')}@alumni.university.edu`)
+  },
+  
+  // Faculty and Staff
+  { 
+    id: 'faculty-cs', 
+    name: 'CS Faculty', 
+    description: 'Computer Science Department Faculty', 
+    count: 12, 
+    category: 'Faculty',
+    emails: Array.from({length: 12}, (_, i) => `csfaculty.${String(i+1).padStart(2, '0')}@faculty.university.edu`)
+  },
+  { 
+    id: 'faculty-ece', 
+    name: 'ECE Faculty', 
+    description: 'Electronics and Communication Engineering Faculty', 
+    count: 10, 
+    category: 'Faculty',
+    emails: Array.from({length: 10}, (_, i) => `ecefaculty.${String(i+1).padStart(2, '0')}@faculty.university.edu`)
+  },
+  { 
+    id: 'faculty-business', 
+    name: 'Business Faculty', 
+    description: 'Business School Faculty Members', 
+    count: 15, 
+    category: 'Faculty',
+    emails: Array.from({length: 15}, (_, i) => `bizfaculty.${String(i+1).padStart(2, '0')}@business.university.edu`)
+  },
+  { 
+    id: 'staff-admin', 
+    name: 'Administrative Staff', 
+    description: 'University Administrative and Support Staff', 
+    count: 89, 
+    category: 'Staff',
+    emails: Array.from({length: 89}, (_, i) => `admin.${String(i+1).padStart(3, '0')}@admin.university.edu`)
+  },
+  
+  // Research Students
+  { 
+    id: 'phd-engineering', 
+    name: 'PhD Engineering', 
+    description: 'Doctoral Students - Engineering Departments', 
+    count: 45, 
+    category: 'Research',
+    emails: Array.from({length: 45}, (_, i) => `phdeng.${String(i+1).padStart(3, '0')}@research.university.edu`)
+  },
+  { 
+    id: 'phd-business', 
+    name: 'PhD Business', 
+    description: 'Doctoral Students - Business School', 
+    count: 18, 
+    category: 'Research',
+    emails: Array.from({length: 18}, (_, i) => `phdbiz.${String(i+1).padStart(2, '0')}@research.university.edu`)
+  },
+  { 
+    id: 'research-associates', 
+    name: 'Research Associates', 
+    description: 'Post-doctoral and Research Associates', 
+    count: 25, 
+    category: 'Research',
+    emails: Array.from({length: 25}, (_, i) => `research.${String(i+1).padStart(2, '0')}@research.university.edu`)
+  },
 ];
 
 export function SendEmailModal({ 
@@ -71,6 +276,7 @@ export function SendEmailModal({
   // Search functionality for audiences
   const [audienceSearch, setAudienceSearch] = useState('');
   const [showAudienceDropdown, setShowAudienceDropdown] = useState(false);
+  const [showEmailPreview, setShowEmailPreview] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (showSurveyDropdown) {
@@ -127,6 +333,20 @@ export function SendEmailModal({
     audience.description.toLowerCase().includes(audienceSearch.toLowerCase())
   );
 
+  // Get current email list for preview
+  const getCurrentEmails = () => {
+    if (emailInputMethod === 'manual') {
+      return studentEmails.split(',').map((email) => email.trim()).filter(Boolean);
+    } else {
+      const selectedAudienceData = mockTargetAudiences.filter(audience => 
+        selectedAudiences.includes(audience.id)
+      );
+      return selectedAudienceData.flatMap(audience => audience.emails);
+    }
+  };
+
+  const currentEmails = getCurrentEmails();
+
   const generateAIReminder = async (reminderType: 'opening' | 'closing' | 'midpoint') => {
     if (!selectedSurvey) return;
     
@@ -182,8 +402,8 @@ export function SendEmailModal({
       const selectedAudienceData = mockTargetAudiences.filter(audience => 
         selectedAudiences.includes(audience.id)
       );
-      const totalCount = selectedAudienceData.reduce((sum, audience) => sum + audience.count, 0);
-      emails = Array(totalCount).fill(0).map((_, i) => `student${i + 1}@example.com`);
+      // Use the actual email addresses from our detailed audience data
+      emails = selectedAudienceData.flatMap(audience => audience.emails);
     }
     
     try {
@@ -285,17 +505,29 @@ export function SendEmailModal({
                     </button>
                   </div>
                   
-                  {/* Search Input */}
+                  {/* Search Input with Dropdown Toggle */}
                   <div ref={searchRef} className="relative">
-                    <input
-                      type="text"
-                      placeholder="Search audiences (e.g., '1st', 'CS', 'MBA')..."
-                      value={audienceSearch}
-                      onChange={(e) => setAudienceSearch(e.target.value)}
-                      onFocus={() => setShowAudienceDropdown(true)}
-                      className="w-full px-4 py-3 pr-10 bg-gray-50 dark:bg-gray-900/50 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                    />
-                    <div className="absolute right-3 top-3.5">
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="Search audiences (e.g., 'ECE 1st year', 'CS', 'MBA')..."
+                        value={audienceSearch}
+                        onChange={(e) => setAudienceSearch(e.target.value)}
+                        onFocus={() => setShowAudienceDropdown(true)}
+                        className="flex-1 px-4 py-3 pr-10 bg-gray-50 dark:bg-gray-900/50 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowAudienceDropdown(!showAudienceDropdown)}
+                        className="px-4 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors flex items-center gap-2"
+                      >
+                        <svg className={`h-4 w-4 transition-transform ${showAudienceDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                        Browse
+                      </button>
+                    </div>
+                    <div className="absolute right-[120px] top-3.5 pointer-events-none">
                       <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                       </svg>
@@ -303,38 +535,57 @@ export function SendEmailModal({
                   </div>
                   
                   {/* Dropdown Results */}
-                  {showAudienceDropdown && audienceSearch && (
+                  {showAudienceDropdown && (
                     <div className="relative">
                       <div className="absolute top-0 left-0 right-0 z-10 max-h-64 overflow-y-auto bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl shadow-lg">
                         {filteredAudiences.length > 0 ? (
-                          filteredAudiences.map(audience => (
-                            <div
-                              key={audience.id}
-                              onClick={() => {
-                                handleAudienceToggle(audience.id);
-                                setAudienceSearch('');
-                                setShowAudienceDropdown(false);
-                              }}
-                              className="p-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-b-0 transition-colors"
-                            >
-                              <div className="flex items-center justify-between">
-                                <div className="flex-1">
-                                  <h4 className="font-medium text-gray-900 dark:text-white text-sm">{audience.name}</h4>
-                                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{audience.description}</p>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <span className="text-sm font-semibold text-blue-600 dark:text-blue-400">{audience.count}</span>
-                                  {selectedAudiences.includes(audience.id) && (
-                                    <div className="w-4 h-4 bg-blue-600 rounded-full flex items-center justify-center">
-                                      <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                      </svg>
+                          <>
+                            {/* Group by Category */}
+                            {['Engineering', 'Business', 'Alumni', 'Faculty', 'Staff', 'Research'].map(category => {
+                              const categoryAudiences = filteredAudiences.filter(aud => aud.category === category);
+                              if (categoryAudiences.length === 0) return null;
+                              
+                              return (
+                                <div key={category}>
+                                  <div className="px-3 py-2 bg-gray-100 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+                                    <h5 className="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+                                      {category}
+                                    </h5>
+                                  </div>
+                                  {categoryAudiences.map(audience => (
+                                    <div
+                                      key={audience.id}
+                                      onClick={() => {
+                                        handleAudienceToggle(audience.id);
+                                        if (audienceSearch) {
+                                          setAudienceSearch('');
+                                          setShowAudienceDropdown(false);
+                                        }
+                                      }}
+                                      className="p-3 hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-b-0 transition-colors"
+                                    >
+                                      <div className="flex items-center justify-between">
+                                        <div className="flex-1">
+                                          <h4 className="font-medium text-gray-900 dark:text-white text-sm">{audience.name}</h4>
+                                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{audience.description}</p>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                          <span className="text-sm font-semibold text-blue-600 dark:text-blue-400">{audience.count}</span>
+                                          {selectedAudiences.includes(audience.id) && (
+                                            <div className="w-4 h-4 bg-blue-600 rounded-full flex items-center justify-center">
+                                              <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                              </svg>
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
                                     </div>
-                                  )}
+                                  ))}
                                 </div>
-                              </div>
-                            </div>
-                          ))
+                              );
+                            })}
+                          </>
                         ) : (
                           <div className="p-4 text-center text-gray-500 dark:text-gray-400 text-sm">
                             No audiences found matching "{audienceSearch}"
@@ -372,15 +623,84 @@ export function SendEmailModal({
                       </div>
                       
                       <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                        <p className="text-sm text-green-800 dark:text-green-300">
-                          Selected {selectedAudiences.length} audience(s) with total of{' '}
-                          <span className="font-semibold">
-                            {mockTargetAudiences
-                              .filter(a => selectedAudiences.includes(a.id))
-                              .reduce((sum, a) => sum + a.count, 0)}
-                          </span>{' '}
-                          recipients
-                        </p>
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm text-green-800 dark:text-green-300">
+                            Selected {selectedAudiences.length} audience(s) with total of{' '}
+                            <span className="font-semibold">
+                              {mockTargetAudiences
+                                .filter(a => selectedAudiences.includes(a.id))
+                                .reduce((sum, a) => sum + a.count, 0)}
+                            </span>{' '}
+                            recipients
+                          </p>
+                          {currentEmails.length > 0 && (
+                            <button
+                              type="button"
+                              onClick={() => setShowEmailPreview(!showEmailPreview)}
+                              className="text-xs text-green-700 dark:text-green-400 hover:text-green-900 dark:hover:text-green-200 underline"
+                            >
+                              {showEmailPreview ? 'Hide Emails' : 'View Email Addresses'}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Email Preview Section */}
+                  {(currentEmails.length > 0 && showEmailPreview) && (
+                    <div className="border border-blue-200 dark:border-blue-700 rounded-xl p-4 bg-blue-50/30 dark:bg-blue-900/10">
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="font-medium text-blue-900 dark:text-blue-100 flex items-center gap-2">
+                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.94a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                          </svg>
+                          Email Recipients ({currentEmails.length})
+                        </h4>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              navigator.clipboard.writeText(currentEmails.join(', '));
+                              setStatus('Email addresses copied to clipboard!');
+                              setTimeout(() => setStatus(''), 2000);
+                            }}
+                            className="text-xs px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                          >
+                            Copy All
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setShowEmailPreview(false)}
+                            className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200"
+                          >
+                            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                      
+                      <div className="max-h-40 overflow-y-auto border border-blue-200 dark:border-blue-600 rounded-lg bg-white dark:bg-gray-800 p-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1 text-xs">
+                          {currentEmails.map((email, index) => (
+                            <div key={index} className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-gray-700 dark:text-gray-300 font-mono break-all">
+                              {email}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      <div className="mt-3 text-xs text-blue-700 dark:text-blue-300">
+                        <p>✉️ These are the exact email addresses that will receive the survey invitation.</p>
+                        {emailInputMethod === 'audience' && selectedAudiences.length > 0 && (
+                          <p className="mt-1">
+                            📊 Breakdown by audience: {selectedAudiences.map(id => {
+                              const audience = mockTargetAudiences.find(a => a.id === id);
+                              return audience ? `${audience.name} (${audience.count})` : '';
+                            }).filter(Boolean).join(', ')}
+                          </p>
+                        )}
                       </div>
                     </div>
                   )}

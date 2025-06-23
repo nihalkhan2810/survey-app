@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getApiKey } from '@/lib/api-config';
 
 export async function POST(req: NextRequest) {
   const { topic } = await req.json();
@@ -7,7 +8,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: 'Topic is required' }, { status: 400 });
   }
 
-  const geminiApiKey = process.env.GEMINI_API_KEY;
+  const geminiApiKey = await getApiKey('geminiApiKey');
 
   if (!geminiApiKey) {
     return NextResponse.json(

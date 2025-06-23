@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
 import path from 'path';
+import { getApiKey } from '@/lib/api-config';
 
 export async function POST(req: NextRequest) {
   try {
     const { surveyId, phoneNumbers } = await req.json();
 
-    const vapiApiKey = process.env.VAPI_API_KEY;
+    const vapiApiKey = await getApiKey('vapiApiKey');
     const appBaseUrl = process.env.NEXT_PUBLIC_APP_URL;
 
     if (!vapiApiKey) {

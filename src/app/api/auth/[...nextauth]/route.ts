@@ -50,17 +50,22 @@ export const authOptions: any = {
   session: {
     strategy: 'jwt' as const,
     maxAge: 30 * 24 * 60 * 60, // 30 days
+    updateAge: 24 * 60 * 60, // 24 hours
+  },
+  jwt: {
+    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   callbacks: {
     jwt: async ({ token, user }: any) => {
       if (user) {
         token.role = (user as any).role
+        token.id = user.id
       }
       return token
     },
     session: async ({ session, token }: any) => {
       if (token && session.user) {
-        (session.user as any).id = token.sub
+        (session.user as any).id = token.id || token.sub
         ;(session.user as any).role = token.role
       }
       return session
@@ -72,8 +77,8 @@ export const authOptions: any = {
     error: '/auth/signin',
   },
   // Production configuration
+  secret: process.env.NEXTAUTH_SECRET || 'fallback-secret-key-change-in-production',
   trustHost: true,
-  secret: process.env.NEXTAUTH_SECRET,
   // Add better error handling
   debug: process.env.NODE_ENV === 'development',
   logger: {

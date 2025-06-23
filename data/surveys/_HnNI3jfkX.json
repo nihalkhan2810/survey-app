@@ -1,0 +1,27 @@
+{
+  "id": "_HnNI3jfkX",
+  "topic": "Test Survey",
+  "questions": [
+    {
+      "text": "What is your age range?",
+      "type": "single-choice",
+      "options": [
+        "18-25",
+        "26-35",
+        "36-45",
+        "45+"
+      ]
+    },
+    {
+      "text": "What is your gender?",
+      "type": "single-choice",
+      "options": [
+        "Male",
+        "Female",
+        "Other"
+      ]
+    }
+  ],
+  "createdAt": "2025-06-22T17:34:59.505Z",
+  "updatedAt": "2025-06-22T17:34:59.505Z"
+}

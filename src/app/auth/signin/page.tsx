@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { ArrowRight, Mail, Lock, Eye, EyeOff } from 'lucide-react'
 import Link from 'next/link'
+import { SayzIcon } from '@/components/SayzLogo'
 
 export default function SignIn() {
   const [email, setEmail] = useState('')
@@ -29,8 +30,18 @@ export default function SignIn() {
 
       if (result?.error) {
         setError('Invalid email or password')
-      } else {
-        router.push('/dashboard')
+      } else if (result?.ok) {
+        // Wait a moment for the session to be set
+        await new Promise(resolve => setTimeout(resolve, 100))
+        
+        // Get updated session to check user role
+        const session = await getSession()
+        
+        if (session?.user?.role === 'ADMIN') {
+          router.push('/admin')
+        } else {
+          router.push('/surveys')
+        }
       }
     } catch (error) {
       setError('An error occurred. Please try again.')
@@ -49,8 +60,8 @@ export default function SignIn() {
       >
         <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl shadow-xl border border-gray-200/50 dark:border-gray-700/50 p-8">
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl mb-4">
-              <span className="text-2xl font-bold text-white">S</span>
+            <div className="inline-flex items-center justify-center mb-4">
+              <SayzIcon size={64} />
             </div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
               Welcome to Sayz

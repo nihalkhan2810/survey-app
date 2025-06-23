@@ -1,0 +1,33 @@
+[
+  {
+    "id": "D9JI_EiOmqc9DSaabRJie",
+    "surveyId": "_HnNI3jfkX",
+    "submittedAt": "2025-06-22T17:34:59.525Z",
+    "type": "voice-vapi-structured",
+    "answers": {
+      "0": "26-35",
+      "1": "Male"
+    },
+    "metadata": {
+      "callId": "test-call-1",
+      "hasStructuredAnswers": true
+    }
+  },
+  {
+    "id": "TkjfswfWTAHZczkGcUVy_",
+    "surveyId": "_HnNI3jfkX",
+    "submittedAt": "2025-06-22T17:34:59.525Z",
+    "type": "voice-vapi-transcript",
+    "transcript": {
+      "original": "I am 28 years old and I identify as male. This is a longer response that would normally be summarized by the AI system for memory efficiency.",
+      "summary": "User is 28 years old, male",
+      "length": 123,
+      "isSummarized": true
+    },
+    "metadata": {
+      "callId": "test-call-2",
+      "transcriptProcessed": true
+    },
+    "answers": {}
+  }
+]

@@ -6,10 +6,38 @@ type Question = {
   text: string;
 };
 type Answer = { [key: number]: string };
-type Response = { submittedAt: string; answers: Answer, type?: string, callSid?: string };
+type RespondentIdentity = {
+  isAnonymous: boolean;
+  name?: string;
+  email?: string;
+};
+type Response = { 
+  submittedAt: string; 
+  answers: Answer;
+  type?: string;
+  callSid?: string;
+  identity?: RespondentIdentity;
+};
 type ResultsData = {
   survey: { topic: string; questions: Question[] };
   responses: Response[];
+};
+
+const formatRespondentInfo = (response: Response, index: number) => {
+  if (response.identity?.isAnonymous === false) {
+    const parts = [];
+    if (response.identity.name) parts.push(response.identity.name);
+    if (response.identity.email) parts.push(`(${response.identity.email})`);
+    return parts.length > 0 ? parts.join(' ') : `Respondent ${index + 1}`;
+  }
+  return 'Anonymous';
+};
+
+const getResponseTypeLabel = (response: Response) => {
+  if (response.type === 'voice-ai' || response.type?.includes('voice')) {
+    return 'Voice';
+  }
+  return 'Web';
 };
 
 export function ResultsModal({ surveyId, onClose }: { surveyId: string; onClose: () => void }) {
@@ -48,12 +76,22 @@ export function ResultsModal({ surveyId, onClose }: { surveyId: string; onClose:
                   <div className="mt-3 max-h-60 space-y-2 overflow-y-auto pr-2">
                     {results.responses.length > 0 ? (
                       results.responses.map((r, rIndex) => (
-                        <div key={rIndex} className="rounded border bg-white p-2 text-sm dark:border-gray-700 dark:bg-gray-700/50">
+                        <div key={rIndex} className="rounded border bg-white p-3 text-sm dark:border-gray-700 dark:bg-gray-700/50">
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="flex items-center space-x-2">
+                              <span className="inline-block px-2 py-1 text-xs font-medium rounded-full bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200">
+                                {formatRespondentInfo(r, rIndex)}
+                              </span>
+                              <span className="inline-block px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">
+                                {getResponseTypeLabel(r)}
+                              </span>
+                            </div>
+                            <span className="text-xs text-gray-400">
+                              {new Date(r.submittedAt).toLocaleDateString()}
+                            </span>
+                          </div>
                           <p className="text-gray-800 dark:text-gray-200">
                             {r.answers[qIndex] || <span className="italic text-gray-500">No answer provided</span>}
-                          </p>
-                          <p className="text-xs text-gray-400 mt-1">
-                            {r.type === 'voice-ai' ? `(Voice AI @ ${r.callSid?.slice(-4)})` : '(Web)'}
                           </p>
                         </div>
                       ))

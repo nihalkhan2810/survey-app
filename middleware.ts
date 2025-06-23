@@ -8,13 +8,13 @@ export default withAuth(
 
     // Admin routes - only accessible by ADMIN users
     if (pathname.startsWith('/admin')) {
-      if (token?.role !== 'ADMIN') {
+      if (!token || token?.role !== 'ADMIN') {
         return NextResponse.redirect(new URL('/auth/signin?error=unauthorized', req.url))
       }
     }
 
     // Dashboard routes - accessible by authenticated users
-    if (pathname.startsWith('/surveys') || pathname.startsWith('/calendar')) {
+    if (pathname.startsWith('/dashboard') || pathname.startsWith('/surveys') || pathname.startsWith('/calendar')) {
       if (!token) {
         return NextResponse.redirect(new URL('/auth/signin', req.url))
       }
@@ -48,12 +48,18 @@ export default withAuth(
         }
 
         // Allow access to static files
-        if (pathname.startsWith('/_next') || pathname.startsWith('/favicon') || pathname.startsWith('/public')) {
+        if (pathname.startsWith('/_next') || 
+            pathname.startsWith('/favicon') || 
+            pathname.startsWith('/public') ||
+            pathname.includes('.')) {
           return true
         }
 
         // Require authentication for protected routes
-        if (pathname.startsWith('/admin') || pathname.startsWith('/surveys') || pathname.startsWith('/calendar')) {
+        if (pathname.startsWith('/admin') || 
+            pathname.startsWith('/dashboard') || 
+            pathname.startsWith('/surveys') || 
+            pathname.startsWith('/calendar')) {
           return !!token
         }
 
@@ -66,6 +72,14 @@ export default withAuth(
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|public).*)',
-  ]
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)  
+     * - favicon.ico (favicon file)
+     * - public files (public folder)
+     * - api/auth (NextAuth endpoints)
+     */
+    "/((?!_next/static|_next/image|favicon.ico|public|.*\\.png$|.*\\.jpg$|.*\\.jpeg$|.*\\.gif$|.*\\.svg$).*)",
+  ],
 }

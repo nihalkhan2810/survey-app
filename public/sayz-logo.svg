@@ -1,0 +1,45 @@
+<svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Gradient definitions for modern look -->
+    <linearGradient id="bubbleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3B82F6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1D4ED8;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="checkGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#10B981;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#059669;stop-opacity:1" />
+    </linearGradient>
+    <!-- Drop shadow filter -->
+    <filter id="dropshadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#000000" flood-opacity="0.1"/>
+    </filter>
+  </defs>
+  
+  <!-- Main container -->
+  <rect width="120" height="120" rx="24" fill="url(#bubbleGradient)" filter="url(#dropshadow)"/>
+  
+  <!-- Speech bubble -->
+  <g transform="translate(20, 18)">
+    <!-- Main bubble body with subtle gradient -->
+    <rect x="0" y="0" width="60" height="44" rx="14" fill="white" opacity="0.95"/>
+    
+    <!-- Speech bubble tail -->
+    <path d="M12 44 L20 56 L24 44 Z" fill="white" opacity="0.95"/>
+    
+    <!-- Checkmark with gradient -->
+    <path d="M14 20 L26 32 L46 12" 
+          stroke="url(#checkGradient)" 
+          stroke-width="4" 
+          stroke-linecap="round" 
+          stroke-linejoin="round" 
+          fill="none"/>
+  </g>
+  
+  <!-- Modern "Sayz" text -->
+  <text x="20" y="98" 
+        font-family="system-ui, -apple-system, sans-serif" 
+        font-size="28" 
+        font-weight="700" 
+        fill="white" 
+        letter-spacing="-0.5px">Sayz</text>
+</svg> 

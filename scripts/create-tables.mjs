@@ -36,6 +36,7 @@ const TABLES = {
   RESPONSES: 'sayz-responses',
   ANSWERS: 'sayz-answers',
   REMINDERS: 'sayz-reminders',
+  API_CONFIGS: 'sayz-api-configs',
 }
 
 async function createTable(tableName) {

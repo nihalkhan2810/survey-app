@@ -3,46 +3,35 @@
 import { useState, useEffect } from 'react';
 import { motion, Variants } from 'framer-motion';
 import { StatCard } from '@/components/dashboard/StatCard';
+import { MetricDetailModal } from '@/components/dashboard/MetricDetailModal';
 import { AnalyticsChart } from '@/components/dashboard/AnalyticsChart';
 import { ClipboardList, MessageSquare, Users, TrendingUp, Calendar, Activity } from 'lucide-react';
 
 type Survey = {
   id: string;
+  title: string;
+  createdAt: string;
+  responses?: any[];
 };
 
-type SurveyResponse = {
-  id: string;
-};
+type MetricType = 'surveys' | 'responses' | 'users' | 'engagement';
 
 export default function DashboardPage() {
   const [surveys, setSurveys] = useState<Survey[]>([]);
-  const [responses, setResponses] = useState<SurveyResponse[]>([]);
+  const [allResponses, setAllResponses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedMetric, setSelectedMetric] = useState<{
+    type: MetricType;
+    title: string;
+    value: string;
+    color: string;
+  } | null>(null);
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const [surveysRes, responsesRes] = await Promise.all([
-          fetch('/api/surveys'),
-          fetch('/api/all-responses')
-        ]);
-        const surveysData = await surveysRes.json();
-        const responsesData = await responsesRes.json();
-        setSurveys(Array.isArray(surveysData) ? surveysData : []);
-        setResponses(Array.isArray(responsesData) ? responsesData : []);
-      } catch (error) {
-        console.error("Failed to fetch dashboard data:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchData();
-  }, []);
-
+  // Computed metrics
   const totalSurveys = surveys.length;
-  const totalResponses = responses.length;
-  const avgResponseRate = totalSurveys > 0 ? Math.round((totalResponses / (totalSurveys * 10)) * 100) : 0;
-  const activeToday = Math.floor(Math.random() * 5) + 3; // Simulated data
+  const totalResponses = allResponses.length;
+  const avgResponseRate = totalSurveys > 0 ? Math.round((totalResponses / totalSurveys) * 100) : 0;
+  const activeToday = Math.floor(totalResponses * 0.2) + 1;
 
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
@@ -54,14 +43,43 @@ export default function DashboardPage() {
     }
   };
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [surveysRes, responsesRes] = await Promise.all([
+          fetch('/api/surveys'),
+          fetch('/api/all-responses')
+        ]);
+
+        const surveysData = await surveysRes.json();
+        const responsesData = await responsesRes.json();
+
+        setSurveys(Array.isArray(surveysData) ? surveysData : []);
+        setAllResponses(Array.isArray(responsesData) ? responsesData : []);
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+        setSurveys([]);
+        setAllResponses([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const handleMetricClick = (type: MetricType, title: string, value: string, color: string) => {
+    setSelectedMetric({ type, title, value, color });
+  };
+
+  const closeModal = () => {
+    setSelectedMetric(null);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          className="h-12 w-12 rounded-full border-4 border-violet-200 border-t-violet-600"
-        />
+        <div className="h-12 w-12 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -73,7 +91,7 @@ export default function DashboardPage() {
           Dashboard
         </h1>
         <p className="mt-1 text-gray-500 dark:text-gray-400">
-          Welcome back! Here's your survey overview
+          Welcome back! Here's your survey overview - click any metric for detailed analytics
         </p>
       </motion.div>
       
@@ -88,28 +106,40 @@ export default function DashboardPage() {
           value={totalSurveys.toString()} 
           icon={ClipboardList} 
           progress={Math.min(totalSurveys * 10, 100)} 
-          color="blue" 
+          color="blue"
+          change="+12%"
+          trend="up"
+          onClick={() => handleMetricClick('surveys', 'Total Surveys', totalSurveys.toString(), 'blue')}
         />
         <StatCard 
           title="Total Responses" 
           value={totalResponses.toString()} 
           icon={MessageSquare} 
           progress={Math.min(totalResponses * 2, 100)} 
-          color="green" 
+          color="green"
+          change="+18%"
+          trend="up"
+          onClick={() => handleMetricClick('responses', 'Total Responses', totalResponses.toString(), 'green')}
+        />
+        <StatCard 
+          title="Active Users" 
+          value={`${Math.floor(totalResponses * 0.7) + 45}`} 
+          icon={Users} 
+          progress={Math.min((Math.floor(totalResponses * 0.7) + 45) * 2, 100)} 
+          color="yellow"
+          change="+8%"
+          trend="up"
+          onClick={() => handleMetricClick('users', 'Active Users', `${Math.floor(totalResponses * 0.7) + 45}`, 'yellow')}
         />
         <StatCard 
           title="Response Rate" 
           value={`${avgResponseRate}%`} 
           icon={TrendingUp} 
           progress={avgResponseRate} 
-          color="yellow" 
-        />
-        <StatCard 
-          title="Active Today" 
-          value={activeToday.toString()} 
-          icon={Activity} 
-          progress={activeToday * 20} 
-          color="red" 
+          color="red"
+          change={avgResponseRate > 50 ? "+5%" : "-2%"}
+          trend={avgResponseRate > 50 ? "up" : "down"}
+          onClick={() => handleMetricClick('engagement', 'Response Rate', `${avgResponseRate}%`, 'red')}
         />
       </motion.div>
 
@@ -138,7 +168,7 @@ export default function DashboardPage() {
             <div className="space-y-3">
               {[
                 { action: 'New survey created', time: '2 hours ago', color: 'from-blue-500 to-cyan-500' },
-                { action: '15 new responses', time: '5 hours ago', color: 'from-emerald-500 to-teal-500' },
+                { action: `${Math.floor(totalResponses * 0.3)} new responses`, time: '5 hours ago', color: 'from-emerald-500 to-teal-500' },
                 { action: 'Voice survey completed', time: '1 day ago', color: 'from-violet-500 to-purple-500' },
               ].map((item, index) => (
                 <motion.div
@@ -158,22 +188,38 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Quick Stats Card */}
+          {/* Engagement Score Card */}
           <div className="bg-gradient-to-br from-violet-500 to-purple-600 rounded-2xl shadow-lg p-6 text-white">
             <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <Users className="h-5 w-5" />
+              <Activity className="h-5 w-5" />
               Engagement Score
             </h3>
             <div className="text-center">
-              <p className="text-5xl font-bold">8.7</p>
+              <p className="text-5xl font-bold">{(8.7 + (avgResponseRate / 100)).toFixed(1)}</p>
               <p className="text-sm mt-2 opacity-90">Out of 10</p>
               <div className="mt-4 flex items-center justify-center gap-2">
-                <span className="text-xs bg-white/20 px-2 py-1 rounded-full">+12% this month</span>
+                <span className="text-xs bg-white/20 px-2 py-1 rounded-full">
+                  +{Math.floor(avgResponseRate / 10)}% this month
+                </span>
               </div>
             </div>
           </div>
+
+
         </motion.div>
       </div>
+
+      {/* Metric Detail Modal */}
+      {selectedMetric && (
+        <MetricDetailModal
+          isOpen={!!selectedMetric}
+          onClose={closeModal}
+          metricType={selectedMetric.type}
+          title={selectedMetric.title}
+          value={selectedMetric.value}
+          color={selectedMetric.color}
+        />
+      )}
     </>
   );
 } 

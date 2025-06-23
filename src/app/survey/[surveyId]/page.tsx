@@ -23,6 +23,12 @@ type Answers = {
   [key: number]: string | string[] | number;
 };
 
+type RespondentIdentity = {
+  name?: string;
+  email?: string;
+  isAnonymous: boolean;
+};
+
 export default function SurveyPage() {
   const params = useParams();
   const surveyId = params.surveyId as string;
@@ -32,6 +38,11 @@ export default function SurveyPage() {
   const [answers, setAnswers] = useState<Answers>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [identity, setIdentity] = useState<RespondentIdentity>({
+    isAnonymous: true,
+    name: '',
+    email: ''
+  });
 
   useEffect(() => {
     if (surveyId) {
@@ -74,10 +85,20 @@ export default function SurveyPage() {
     setError(null);
 
     try {
+      const responsePayload = {
+        surveyId,
+        answers,
+        identity: identity.isAnonymous ? { isAnonymous: true } : {
+          isAnonymous: false,
+          name: identity.name?.trim() || undefined,
+          email: identity.email?.trim() || undefined
+        }
+      };
+
       const response = await fetch('/api/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ surveyId, answers }),
+        body: JSON.stringify(responsePayload),
       });
 
       if (!response.ok) {
@@ -168,6 +189,76 @@ export default function SurveyPage() {
         <h1 className="mb-4 text-3xl font-bold text-gray-800 dark:text-white">
           {survey.topic}
         </h1>
+        
+        {/* Identity Section */}
+        <div className="mb-8 rounded-lg border border-gray-200 bg-gray-50 p-6 dark:border-gray-600 dark:bg-gray-700/50">
+          <h2 className="mb-4 text-lg font-semibold text-gray-800 dark:text-white">
+            Response Identification (Optional)
+          </h2>
+          <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
+            Help your instructor better analyze responses by optionally identifying yourself, or remain anonymous.
+          </p>
+          
+          <div className="space-y-4">
+            <div className="flex items-center space-x-4">
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="responseType"
+                  checked={identity.isAnonymous}
+                  onChange={() => setIdentity({ isAnonymous: true, name: '', email: '' })}
+                  className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500 dark:border-gray-600"
+                />
+                <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                  Submit anonymously
+                </span>
+              </label>
+              
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="responseType"
+                  checked={!identity.isAnonymous}
+                  onChange={() => setIdentity(prev => ({ ...prev, isAnonymous: false }))}
+                  className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500 dark:border-gray-600"
+                />
+                <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                  Identify myself
+                </span>
+              </label>
+            </div>
+            
+            {!identity.isAnonymous && (
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Name (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={identity.name}
+                    onChange={(e) => setIdentity(prev => ({ ...prev, name: e.target.value }))}
+                    placeholder="Enter your name"
+                    className="mt-1 block w-full rounded-md border-gray-300 bg-white p-3 text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Email (Optional)
+                  </label>
+                  <input
+                    type="email"
+                    value={identity.email}
+                    onChange={(e) => setIdentity(prev => ({ ...prev, email: e.target.value }))}
+                    placeholder="Enter your email"
+                    className="mt-1 block w-full rounded-md border-gray-300 bg-white p-3 text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
         <form onSubmit={handleSubmit} className="space-y-8">
           {survey.questions.map((q, index) => (
             <div key={index}>

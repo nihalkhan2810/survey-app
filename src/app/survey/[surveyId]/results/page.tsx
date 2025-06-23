@@ -21,14 +21,39 @@ type Answer = {
   [key: number]: string;
 };
 
+type RespondentIdentity = {
+  isAnonymous: boolean;
+  name?: string;
+  email?: string;
+};
+
 type Response = {
   submittedAt: string;
   answers: Answer;
+  type?: string;
+  identity?: RespondentIdentity;
 };
 
 type ResultsData = {
   survey: Survey;
   responses: Response[];
+};
+
+const formatRespondentInfo = (response: Response, index: number) => {
+  if (response.identity?.isAnonymous === false) {
+    const parts = [];
+    if (response.identity.name) parts.push(response.identity.name);
+    if (response.identity.email) parts.push(`(${response.identity.email})`);
+    return parts.length > 0 ? parts.join(' ') : `Respondent ${index + 1}`;
+  }
+  return 'Anonymous';
+};
+
+const getResponseTypeLabel = (response: Response) => {
+  if (response.type === 'voice-ai' || response.type?.includes('voice')) {
+    return 'Voice';
+  }
+  return 'Web';
 };
 
 export default function ResultsPage() {
@@ -99,7 +124,20 @@ export default function ResultsPage() {
             <div className="mt-4 space-y-3">
               {results.responses.length > 0 ? (
                 results.responses.map((r, rIndex) => (
-                  <div key={rIndex} className="rounded-md border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-700">
+                  <div key={rIndex} className="rounded-md border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-700">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center space-x-2">
+                        <span className="inline-block px-2 py-1 text-xs font-medium rounded-full bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200">
+                          {formatRespondentInfo(r, rIndex)}
+                        </span>
+                        <span className="inline-block px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">
+                          {getResponseTypeLabel(r)}
+                        </span>
+                      </div>
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                        {new Date(r.submittedAt).toLocaleDateString()} at {new Date(r.submittedAt).toLocaleTimeString()}
+                      </span>
+                    </div>
                     <p className="text-gray-700 dark:text-gray-300">
                       {r.answers[qIndex] || <span className="italic text-gray-400">No answer provided</span>}
                     </p>

@@ -1,5 +1,5 @@
 import { simpleDb } from './simple-db'
-import { userOperations, surveyOperations, responseOperations } from './dynamodb'
+import { userOperations, surveyOperations, responseOperations, apiConfigOperations } from './dynamodb'
 
 // Check if we should use DynamoDB based on environment configuration
 // Support both AWS_ prefix and DYNAMODB_ prefix for flexibility
@@ -180,6 +180,59 @@ export const database = {
       return []
     } catch (error) {
       console.error('Error getting responses by survey:', error)
+      throw error
+    }
+  },
+
+  // API Configuration operations
+  async getApiConfig() {
+    try {
+      if (USE_DYNAMODB) {
+        return await apiConfigOperations.getConfig()
+      }
+      // For local development, return empty config
+      return null
+    } catch (error) {
+      console.error('Error getting API config:', error)
+      throw error
+    }
+  },
+
+  async updateApiConfig(config: any) {
+    try {
+      if (USE_DYNAMODB) {
+        return await apiConfigOperations.updateConfig(config)
+      }
+      // For local development, just return the config
+      return config
+    } catch (error) {
+      console.error('Error updating API config:', error)
+      throw error
+    }
+  },
+
+  async getApiConfigValue(key: string) {
+    try {
+      if (USE_DYNAMODB) {
+        return await apiConfigOperations.getConfigValue(key)
+      }
+      // For local development, return null
+      return null
+    } catch (error) {
+      console.error('Error getting API config value:', error)
+      throw error
+    }
+  },
+
+  async updateApiConfigValue(key: string, value: string) {
+    try {
+      if (USE_DYNAMODB) {
+        return await apiConfigOperations.updateConfigValue(key, value)
+      }
+      // For local development, just return the value
+      return value
+    } catch (error) {
+      console.error('Error updating API config value:', error)
       throw error
     }
   },

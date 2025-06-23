@@ -2,7 +2,7 @@
 
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { Header } from '@/components/layout/Header'
 import { motion } from 'framer-motion'
@@ -14,9 +14,13 @@ export default function DashboardLayout({
 }) {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const [hasCheckedAuth, setHasCheckedAuth] = useState(false)
 
   useEffect(() => {
     if (status === 'loading') return
+
+    // Set that we've checked auth to prevent multiple redirects
+    setHasCheckedAuth(true)
 
     if (!session) {
       router.push('/auth/signin')
@@ -24,14 +28,19 @@ export default function DashboardLayout({
     }
   }, [session, status, router])
 
-  if (status === 'loading') {
+  // Show loading spinner while checking authentication
+  if (status === 'loading' || !hasCheckedAuth) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
-        <div className="h-12 w-12 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin"></div>
+        <div className="text-center">
+          <div className="h-12 w-12 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">Loading dashboard...</p>
+        </div>
       </div>
     )
   }
 
+  // Don't render anything if no session (redirect will happen)
   if (!session) {
     return null
   }

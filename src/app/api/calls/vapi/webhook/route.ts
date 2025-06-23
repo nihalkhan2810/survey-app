@@ -47,6 +47,7 @@ async function saveSurveyResponse(surveyId: string, callId: string, transcript: 
 
     const response = {
       submittedAt: new Date().toISOString(),
+      identity: { isAnonymous: true }, // Voice responses are anonymous by default
       type: 'voice-vapi',
       callId: callId,
       transcript: transcript,

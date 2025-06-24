@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
 SURVEY TOPIC: "${topic}"
 
 QUESTIONS TO ASK:
-${questions.map((q: any, index: number) => `${index + 1}. ${q.text}`).join('\n')}
+${questions.map((q: any, index: number) => `${index + 1}. ${q.text} (ID: ${q.id || `question_${index + 1}`})`).join('\n')}
 
 INSTRUCTIONS:
 - Start with a warm greeting and introduce yourself
@@ -27,12 +27,29 @@ INSTRUCTIONS:
 - Keep responses concise and natural for voice conversation
 - If the user says something off-topic, gently guide them back
 - Once you have clear answers for all questions, thank them and end the call
-- At the end, say "Thank you for completing our survey! Have a great day!" and end the call
 
-IMPORTANT: Be conversational and natural. Don't mention technical terms or JSON formats to the user.`;
+CRITICAL: After collecting all responses, you MUST do these in EXACT order:
+1. Say: "Thank you for completing our survey! Have a great day!"
+2. Output this EXACT structured summary (replace with actual answers): SURVEY_COMPLETE {"answers": {"question_1": "their actual response word for word"}}
+3. Say: "Goodbye!" and stop talking - the call will end automatically
 
-    // Check if we have HTTPS webhook URL for production
-    const webhookUrl = process.env.VAPI_WEBHOOK_URL;
+EXAMPLE of step 2:
+If user said "I think Bob is really great and helpful", you must output:
+SURVEY_COMPLETE {"answers": {"question_1": "I think Bob is really great and helpful"}}
+
+STRICT RULES:
+- Ask ONLY the ${questions.length} question(s) listed above
+- DO NOT ask additional questions beyond what's listed
+- DO NOT ask for confirmation or repeat answers back to the user
+- DO NOT ask "just to confirm" or similar phrases
+- Accept the first clear answer and move on immediately
+- After getting an answer to each question, move to the next or end the call
+- Be conversational but stay focused on the survey questions only
+- The SURVEY_COMPLETE format is for system processing only - don't mention it to the user`;
+
+    // Get webhook URL - prefer environment variable, fallback to constructing from app URL
+    const webhookUrl = process.env.VAPI_WEBHOOK_URL || 
+                      `${process.env.NEXT_PUBLIC_APP_URL}/api/calls/vapi/webhook`;
     const isProduction = webhookUrl && webhookUrl.startsWith('https://');
 
     // Create VAPI assistant
@@ -54,7 +71,7 @@ IMPORTANT: Be conversational and natural. Don't mention technical terms or JSON 
       },
       firstMessage: `Hello! Thank you for participating in our survey about ${topic}. This will only take a few minutes. Let's get started!`,
       endCallMessage: "Thank you for completing our survey! Have a great day!",
-      // Only add webhook URL if it's HTTPS (production)
+      // Add webhook URL for response handling
       ...(isProduction && {
         serverUrl: webhookUrl,
         serverUrlSecret: process.env.VAPI_WEBHOOK_SECRET || 'default-secret'

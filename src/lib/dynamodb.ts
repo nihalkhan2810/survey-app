@@ -243,16 +243,19 @@ export const responseOperations = {
   },
 
   async create(responseData: any) {
+    // Remove undefined values from the response data
+    const cleanResponseData = JSON.parse(JSON.stringify({
+      ...responseData,
+      submittedAt: new Date().toISOString(),
+    }))
+    
     const command = new PutCommand({
       TableName: TABLES.RESPONSES,
-      Item: {
-        ...responseData,
-        submittedAt: new Date().toISOString(),
-      },
+      Item: cleanResponseData,
     })
     
     await dynamodb.send(command)
-    return responseData
+    return cleanResponseData
   },
 
   async getAll() {

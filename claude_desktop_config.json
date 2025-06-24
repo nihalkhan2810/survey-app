@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "vapi-mcp": {
+      "command": "npx",
+      "args": [
+        "mcp-remote",
+        "https://mcp.vapi.ai/mcp",
+        "--header",
+        "Authorization: Bearer ${VAPI_TOKEN}"
+      ],
+      "env": {
+        "VAPI_TOKEN": "8a3483ad-7034-42c2-8e58-f43c11b992e4"
+      }
+    }
+  }
+}

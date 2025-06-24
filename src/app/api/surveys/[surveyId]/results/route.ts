@@ -3,10 +3,10 @@ import { database } from '@/lib/database';
 
 export async function GET(
   req: NextRequest,
-  context: { params: { surveyId: string } }
+  context: { params: Promise<{ surveyId: string }> }
 ) {
   try {
-    const { surveyId } = context.params;
+    const { surveyId } = await context.params;
 
     // Fetch the survey data
     const surveyData = await database.findSurveyById(surveyId);

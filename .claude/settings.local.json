@@ -15,7 +15,8 @@
       "Bash(chmod:*)",
       "Bash(node test-vapi.js)",
       "Bash(node:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(npx tsc:*)"
     ],
     "deny": []
   }

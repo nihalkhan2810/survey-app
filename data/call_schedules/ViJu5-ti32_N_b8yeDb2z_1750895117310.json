@@ -1,0 +1,14 @@
+{
+  "surveyId": "ViJu5-ti32",
+  "batchId": "N_b8yeDb2z",
+  "totalParticipants": 4,
+  "surveyDurationMinutes": 10,
+  "responseThresholdPercent": 70,
+  "callTriggerPercent": 70,
+  "createdAt": "2025-06-25T23:45:17.308Z",
+  "scheduledCallTime": "2025-06-25T23:52:17.308Z",
+  "status": "triggered",
+  "lastCheckedAt": "2025-06-25T23:52:19.547Z",
+  "responseCount": 2,
+  "responseRate": 50
+}

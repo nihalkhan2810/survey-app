@@ -1,0 +1,10 @@
+{
+  "enabled": true,
+  "phoneNumber": "+1 (437) 556-9983",
+  "surveyId": "ViJu5-ti32",
+  "surveyTopic": "test",
+  "callScheduledAt": "2025-06-25T23:58:00.000Z",
+  "testMode": true,
+  "createdAt": "2025-06-25T23:42:31.353Z",
+  "status": "scheduled"
+}

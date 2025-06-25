@@ -1,0 +1,13 @@
+{
+  "surveyId": "LGZtnMBYyh",
+  "totalParticipants": 9,
+  "surveyDurationMinutes": 10,
+  "responseThresholdPercent": 70,
+  "callTriggerPercent": 70,
+  "createdAt": "2025-06-25T23:03:50.197Z",
+  "scheduledCallTime": "2025-06-25T23:10:50.197Z",
+  "status": "completed",
+  "lastCheckedAt": "2025-06-25T23:39:55.942Z",
+  "responseCount": 6,
+  "responseRate": 66
+}

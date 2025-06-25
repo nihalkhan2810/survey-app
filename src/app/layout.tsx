@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { SessionProvider } from "@/components/SessionProvider";
+import "@/lib/scheduler-startup"; // Auto-start call scheduler
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

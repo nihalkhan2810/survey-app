@@ -1,0 +1,14 @@
+{
+  "surveyId": "AZ1lyCCMa2",
+  "batchId": "ve1Y39W89E",
+  "totalParticipants": 5,
+  "surveyDurationMinutes": 10,
+  "responseThresholdPercent": 70,
+  "callTriggerPercent": 70,
+  "createdAt": "2025-06-25T23:29:40.411Z",
+  "scheduledCallTime": "2025-06-25T23:36:40.411Z",
+  "status": "triggered",
+  "lastCheckedAt": "2025-06-25T23:39:55.942Z",
+  "responseCount": 3,
+  "responseRate": 60
+}

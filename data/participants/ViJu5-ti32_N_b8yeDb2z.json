@@ -1,0 +1,41 @@
+{
+  "surveyId": "ViJu5-ti32",
+  "batchId": "N_b8yeDb2z",
+  "createdAt": "2025-06-25T23:43:21.723Z",
+  "participants": [
+    {
+      "id": "RQJv9Q1_GhjT",
+      "email": "mohammednihal281001@gmail.com",
+      "phoneNumber": "+11212121212",
+      "surveyId": "ViJu5-ti32",
+      "sentAt": "2025-06-25T23:43:21.723Z",
+      "status": "sent"
+    },
+    {
+      "id": "-LydUFwbdSkw",
+      "email": "thelegendgamerfinal@gmail.com",
+      "phoneNumber": "+11212121212",
+      "surveyId": "ViJu5-ti32",
+      "sentAt": "2025-06-25T23:43:21.723Z",
+      "status": "responded",
+      "respondedAt": "2025-06-25T23:45:17.183Z"
+    },
+    {
+      "id": "ubp_1EAQhA46",
+      "email": "thelegendgamerfinal@gmail.com",
+      "phoneNumber": "+11212121212",
+      "surveyId": "ViJu5-ti32",
+      "sentAt": "2025-06-25T23:43:21.723Z",
+      "status": "responded",
+      "respondedAt": "2025-06-25T23:45:36.972Z"
+    },
+    {
+      "id": "9hcHWJ32jXIh",
+      "email": "thelegendgamerfinal@gmail.com",
+      "phoneNumber": "+11212121212",
+      "surveyId": "ViJu5-ti32",
+      "sentAt": "2025-06-25T23:43:21.723Z",
+      "status": "sent"
+    }
+  ]
+}

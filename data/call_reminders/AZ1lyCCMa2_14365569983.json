@@ -1,0 +1,12 @@
+{
+  "enabled": true,
+  "phoneNumber": "+1 (436) 556-9983",
+  "surveyId": "AZ1lyCCMa2",
+  "surveyTopic": "test ",
+  "callScheduledAt": "2025-06-25T23:40:00.000Z",
+  "testMode": true,
+  "createdAt": "2025-06-25T23:26:53.247Z",
+  "status": "call_failed",
+  "lastUpdated": "2025-06-25T23:40:02.681Z",
+  "error": "HTTP 400: {\"message\":\"Survey data is required in request body\"}"
+}

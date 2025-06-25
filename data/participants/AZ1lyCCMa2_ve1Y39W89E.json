@@ -1,0 +1,52 @@
+{
+  "surveyId": "AZ1lyCCMa2",
+  "batchId": "ve1Y39W89E",
+  "createdAt": "2025-06-25T23:27:43.978Z",
+  "participants": [
+    {
+      "id": "mj2igiw4LeoI",
+      "email": "mohammednihal281001@gmail.com",
+      "phoneNumber": "+14375569983",
+      "surveyId": "AZ1lyCCMa2",
+      "sentAt": "2025-06-25T23:27:43.978Z",
+      "status": "called",
+      "callTriggered": true,
+      "callId": "b207a6ea-7eee-47b4-b723-a2aa261e72db"
+    },
+    {
+      "id": "qj0B6cVWqM6S",
+      "email": "thelegendgamerfinal@gmail.com",
+      "phoneNumber": "+13123123123",
+      "surveyId": "AZ1lyCCMa2",
+      "sentAt": "2025-06-25T23:27:43.978Z",
+      "status": "responded",
+      "respondedAt": "2025-06-25T23:29:40.304Z"
+    },
+    {
+      "id": "NWwk7f5w0aw4",
+      "email": "thelegendgamerfinal@gmail.com",
+      "phoneNumber": "+13123123123",
+      "surveyId": "AZ1lyCCMa2",
+      "sentAt": "2025-06-25T23:27:43.978Z",
+      "status": "responded",
+      "respondedAt": "2025-06-25T23:29:12.079Z"
+    },
+    {
+      "id": "dGOdEeCgkeg-",
+      "email": "thelegendgamerfinal@gmail.com",
+      "phoneNumber": "+13123123123",
+      "surveyId": "AZ1lyCCMa2",
+      "sentAt": "2025-06-25T23:27:43.978Z",
+      "status": "sent"
+    },
+    {
+      "id": "dTeixMVmpOAM",
+      "email": "thelegendgamerfinal@gmail.com",
+      "phoneNumber": "+12312312312",
+      "surveyId": "AZ1lyCCMa2",
+      "sentAt": "2025-06-25T23:27:43.978Z",
+      "status": "responded",
+      "respondedAt": "2025-06-25T23:28:54.029Z"
+    }
+  ]
+}

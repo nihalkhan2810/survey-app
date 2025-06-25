@@ -1,0 +1,10 @@
+{
+  "enabled": true,
+  "phoneNumber": "+1 (437) 756-9983",
+  "surveyId": "LGZtnMBYyh",
+  "surveyTopic": "test",
+  "callScheduledAt": "2025-06-26T19:32:00.000Z",
+  "testMode": true,
+  "createdAt": "2025-06-25T19:31:24.542Z",
+  "status": "scheduled"
+}

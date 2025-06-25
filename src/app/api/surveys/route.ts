@@ -2,10 +2,22 @@ import { NextRequest, NextResponse } from 'next/server';
 import { nanoid } from 'nanoid';
 import { database } from '@/lib/database';
 import { generateDummyResponses } from '@/lib/dummy-responses';
+import { scheduleCallReminder, type CallReminderConfig } from '@/lib/call_reminder_scheduler';
 
 export async function POST(req: NextRequest) {
   try {
-    const { topic, questions, start_date, end_date, reminder_dates, reminder_config, auto_send_reminders } = await req.json();
+    const { 
+      topic, 
+      questions, 
+      start_date, 
+      end_date, 
+      reminder_dates, 
+      reminder_config, 
+      auto_send_reminders,
+      call_reminder_enabled,
+      call_reminder_phone,
+      call_reminder_test_mode
+    } = await req.json();
 
     if (!topic || !questions || !Array.isArray(questions) || questions.length === 0) {
       return NextResponse.json({ message: 'Invalid survey data' }, { status: 400 });
@@ -30,12 +42,35 @@ export async function POST(req: NextRequest) {
       reminder_dates: reminder_dates || [],
       reminder_config: reminder_config || [],
       auto_send_reminders: auto_send_reminders || false,
+      call_reminder_enabled: call_reminder_enabled || false,
+      call_reminder_phone: call_reminder_phone || '',
+      call_reminder_test_mode: call_reminder_test_mode || false,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
 
     // Save to database (DynamoDB or in-memory based on configuration)
     await database.createSurvey(surveyData);
+
+    // Schedule call reminder if enabled
+    if (call_reminder_enabled && call_reminder_phone) {
+      try {
+        const callConfig: CallReminderConfig = {
+          enabled: true,
+          phoneNumber: call_reminder_phone,
+          surveyId: surveyId,
+          surveyTopic: topic,
+          callScheduledAt: end_date,
+          testMode: call_reminder_test_mode
+        };
+        
+        await scheduleCallReminder(callConfig);
+        console.log(`Call reminder scheduled for survey ${surveyId} to ${call_reminder_phone}`);
+      } catch (callError) {
+        console.error('Failed to schedule call reminder:', callError);
+        // Don't fail the survey creation if call scheduling fails
+      }
+    }
 
     return NextResponse.json({ surveyId }, { status: 201 });
   } catch (error) {

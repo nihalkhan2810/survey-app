@@ -1,0 +1,8 @@
+{
+  "surveyId": "obPdtHyxJy",
+  "phoneNumber": "+13123123123",
+  "createdAt": "2025-06-25T18:31:43.177Z",
+  "status": "call_failed",
+  "lastUpdated": "2025-06-25T18:33:54.994Z",
+  "error": "HTTP 404: {\"message\":\"Survey not found\"}"
+}

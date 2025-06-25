@@ -1,0 +1,12 @@
+{
+  "enabled": true,
+  "phoneNumber": "+1 (437) 556-9983",
+  "surveyId": "_qXNuU3t1A",
+  "surveyTopic": "test",
+  "callScheduledAt": "2025-06-25T18:25:00.000Z",
+  "testMode": true,
+  "createdAt": "2025-06-25T18:18:14.481Z",
+  "status": "call_failed",
+  "lastUpdated": "2025-06-25T18:25:02.511Z",
+  "error": "HTTP 404: {\"message\":\"Survey not found\"}"
+}

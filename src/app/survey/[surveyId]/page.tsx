@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 
 type Question = {
   text: string;
@@ -31,7 +31,9 @@ type RespondentIdentity = {
 
 export default function SurveyPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const surveyId = params.surveyId as string;
+  const participantId = searchParams.get('participantId');
   const [survey, setSurvey] = useState<Survey | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -92,7 +94,8 @@ export default function SurveyPage() {
           isAnonymous: false,
           name: identity.name?.trim() || undefined,
           email: identity.email?.trim() || undefined
-        }
+        },
+        participantId: participantId || undefined
       };
 
       const response = await fetch('/api/submit', {

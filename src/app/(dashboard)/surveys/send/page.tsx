@@ -259,11 +259,18 @@ export default function SendSurveyPage() {
   const [emailSubject, setEmailSubject] = useState('');
   const [emailBody, setEmailBody] = useState('');
   const [studentEmails, setStudentEmails] = useState('');
+  const [phoneNumbers, setPhoneNumbers] = useState('');
   const [selectedAudiences, setSelectedAudiences] = useState<string[]>([]);
   const [emailInputMethod, setEmailInputMethod] = useState<'manual' | 'audience'>('audience');
   const [status, setStatus] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [showSalesforceImport, setShowSalesforceImport] = useState(false);
+  
+  // Paired recipient inputs for call reminders
+  const [recipients, setRecipients] = useState<{ email: string; phone: string; id: string }[]>([
+    { email: '', phone: '', id: '1' },
+    { email: '', phone: '', id: '2' }
+  ]);
   
   // Email exclusion state - NEW
   const [excludedEmails, setExcludedEmails] = useState<Set<string>>(new Set());
@@ -286,6 +293,12 @@ export default function SendSurveyPage() {
   const [showAudienceDropdown, setShowAudienceDropdown] = useState(false);
   const [showEmailPreview, setShowEmailPreview] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
+  
+  // Call reminder states
+  const [callReminderEnabled, setCallReminderEnabled] = useState(false);
+  const [sentSurveyId, setSentSurveyId] = useState<string | null>(null);
+  const [triggeringCalls, setTriggeringCalls] = useState(false);
+  const [forceCallReminderMode, setForceCallReminderMode] = useState(false);
 
   useEffect(() => {
     const fetchSurveys = async () => {
@@ -316,6 +329,9 @@ export default function SendSurveyPage() {
     if (selectedSurvey) {
       setEmailSubject(`Survey: ${selectedSurvey.topic}`);
       setEmailBody(`Please take a moment to complete this important survey regarding ${selectedSurvey.topic}.`);
+      
+      // Check if call reminder is enabled for this survey
+      setCallReminderEnabled((selectedSurvey as any).call_reminder_enabled || false);
     }
   }, [selectedSurvey]);
 
@@ -338,7 +354,13 @@ export default function SendSurveyPage() {
   // Calculate current emails for reminder component
   const getCurrentEmails = (): string[] => {
     if (emailInputMethod === 'manual') {
-      return studentEmails.split(',').map((email) => email.trim()).filter(Boolean);
+      if (callReminderEnabled || forceCallReminderMode) {
+        // Use paired recipients when call reminders are enabled
+        return recipients.map(r => r.email.trim()).filter(Boolean);
+      } else {
+        // Use traditional comma-separated emails when no call reminders
+        return studentEmails.split(',').map((email) => email.trim()).filter(Boolean);
+      }
     } else {
       const selectedAudienceData = mockTargetAudiences.filter(audience => 
         selectedAudiences.includes(audience.id)
@@ -405,6 +427,33 @@ export default function SendSurveyPage() {
     audience.description.toLowerCase().includes(audienceSearch.toLowerCase())
   );
 
+  // Functions to manage paired recipients
+  const addRecipient = () => {
+    const newId = (recipients.length + 1).toString();
+    setRecipients(prev => [...prev, { email: '', phone: '', id: newId }]);
+  };
+
+  const removeRecipient = (id: string) => {
+    if (recipients.length > 1) {
+      setRecipients(prev => prev.filter(r => r.id !== id));
+    }
+  };
+
+  const updateRecipient = (id: string, field: 'email' | 'phone', value: string) => {
+    setRecipients(prev => prev.map(r => 
+      r.id === id ? { ...r, [field]: value } : r
+    ));
+  };
+
+  const formatPhoneNumber = (value: string) => {
+    const phoneNumber = value.replace(/\D/g, '');
+    if (phoneNumber.length >= 10) {
+      // Format as +1XXXXXXXXXX (no spaces or parentheses)
+      return `+1${phoneNumber.slice(-10)}`;
+    }
+    return phoneNumber;
+  };
+
   const generateAIReminder = async (reminderType: 'opening' | 'closing' | 'midpoint') => {
     if (!selectedSurvey) return;
     
@@ -441,6 +490,28 @@ export default function SendSurveyPage() {
     }
   };
 
+  const handleTriggerCallReminders = async () => {
+    if (!sentSurveyId) return;
+    
+    setTriggeringCalls(true);
+    try {
+      const response = await fetch('/api/trigger-call-reminders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ surveyId: sentSurveyId }),
+      });
+      
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Failed to trigger call reminders.');
+      
+      setStatus('Call reminders triggered! Check console logs for VAPI call status.');
+    } catch (error: any) {
+      setStatus(`Error triggering calls: ${error.message}`);
+    } finally {
+      setTriggeringCalls(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -449,21 +520,65 @@ export default function SendSurveyPage() {
       return;
     }
     
-    setIsSending(true);
-    setStatus('Sending...');
-
     const emails = getCurrentEmails();
     
+    // Validate recipients if call reminder is enabled and using manual entry
+    let phoneNumbersList: string[] = [];
+    if ((callReminderEnabled || forceCallReminderMode) && emailInputMethod === 'manual') {
+      // Validate paired recipients
+      const validRecipients = recipients.filter(r => r.email.trim() && r.phone.trim());
+      
+      if (validRecipients.length === 0) {
+        setStatus('At least one email-phone pair is required when call reminders are enabled.');
+        return;
+      }
+      
+      // Check for incomplete pairs
+      const incompleteRecipients = recipients.filter(r => 
+        (r.email.trim() && !r.phone.trim()) || (!r.email.trim() && r.phone.trim())
+      );
+      
+      if (incompleteRecipients.length > 0) {
+        setStatus('All recipients must have both email and phone number filled in.');
+        return;
+      }
+      
+      phoneNumbersList = validRecipients.map(r => r.phone.trim());
+    }
+    
+    setIsSending(true);
+    setStatus('Sending...');
+    
     try {
+      const requestBody: any = { 
+        surveyLink, 
+        emailSubject, 
+        emailBody, 
+        emails,
+        surveyId: selectedSurvey.id
+      };
+      
+      // Include phone numbers and call reminder info if enabled
+      if ((callReminderEnabled || forceCallReminderMode) && emailInputMethod === 'manual') {
+        requestBody.phoneNumbers = phoneNumbersList;
+        requestBody.callReminderEnabled = true;
+      }
+      
       const response = await fetch('/api/send-survey', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ surveyLink, emailSubject, emailBody, emails }),
+        body: JSON.stringify(requestBody),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || 'Failed to send emails.');
-      setStatus('Emails sent successfully!');
-      setTimeout(() => router.push('/surveys'), 2000);
+      
+      if ((callReminderEnabled || forceCallReminderMode) && emailInputMethod === 'manual') {
+        setStatus('Emails sent successfully! Call reminders are now active for non-responders.');
+        setSentSurveyId(selectedSurvey.id);
+      } else {
+        setStatus('Emails sent successfully!');
+        setTimeout(() => router.push('/surveys'), 2000);
+      }
     } catch (error: any) {
       setStatus(`Error: ${error.message}`);
     } finally {
@@ -906,17 +1021,132 @@ export default function SendSurveyPage() {
                   )}
                 </div>
               ) : (
-                <div>
-                  <label htmlFor="studentEmails" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Student Emails (comma-separated)</label>
-                  <textarea 
-                    id="studentEmails" 
-                    value={studentEmails} 
-                    onChange={(e) => setStudentEmails(e.target.value)} 
-                    required={emailInputMethod === 'manual'} 
-                    rows={6} 
-                    className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 resize-none" 
-                    placeholder="student1@example.com, student2@example.com, ..."
-                  />
+                <div className="space-y-6">
+                  {/* Force Call Reminder Mode Toggle for Testing */}
+                  <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-700">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="text-sm font-medium text-yellow-800 dark:text-yellow-300">
+                          🧪 Enable Call Reminder Testing Mode
+                        </h4>
+                        <p className="text-xs text-yellow-700 dark:text-yellow-400">
+                          Toggle this to test the paired email-phone input feature
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setForceCallReminderMode(!forceCallReminderMode)}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                          forceCallReminderMode ? 'bg-yellow-600' : 'bg-gray-200 dark:bg-gray-700'
+                        }`}
+                      >
+                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          forceCallReminderMode ? 'translate-x-6' : 'translate-x-1'
+                        }`} />
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {(callReminderEnabled || forceCallReminderMode) ? (
+                    /* Paired Email-Phone Input for Call Reminders */
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="text-lg font-medium text-gray-900 dark:text-white">
+                            📧📞 Email & Phone Pairs
+                          </h4>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            Each recipient needs both email and phone number for call reminders
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={addRecipient}
+                          className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors text-sm font-medium flex items-center gap-2"
+                        >
+                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                          </svg>
+                          Add Recipient
+                        </button>
+                      </div>
+                      
+                      {recipients.map((recipient, index) => (
+                        <div key={recipient.id} className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-700">
+                          <div className="flex items-center justify-between mb-3">
+                            <h5 className="font-medium text-gray-900 dark:text-white">
+                              Recipient {index + 1}
+                            </h5>
+                            {recipients.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => removeRecipient(recipient.id)}
+                                className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
+                              >
+                                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                              </button>
+                            )}
+                          </div>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                📧 Email Address
+                              </label>
+                              <input
+                                type="email"
+                                value={recipient.email}
+                                onChange={(e) => updateRecipient(recipient.id, 'email', e.target.value)}
+                                placeholder="your.email@example.com"
+                                className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all"
+                              />
+                            </div>
+                            
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                📞 Phone Number
+                              </label>
+                              <input
+                                type="tel"
+                                value={recipient.phone}
+                                onChange={(e) => updateRecipient(recipient.id, 'phone', formatPhoneNumber(e.target.value))}
+                                placeholder="+12345564423"
+                                className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                      
+                      <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-700">
+                        <h4 className="text-sm font-medium text-blue-800 dark:text-blue-300 mb-2">
+                          🧪 Testing Setup
+                        </h4>
+                        <p className="text-xs text-blue-700 dark:text-blue-400">
+                          <strong>For testing:</strong> Add your email twice with different phone numbers (one real, one fake).
+                          After sending, respond to one email to simulate a responder - the other will trigger a call.
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    /* Traditional comma-separated input when no call reminders */
+                    <div>
+                      <label htmlFor="studentEmails" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                        Email Addresses (comma-separated)
+                      </label>
+                      <textarea 
+                        id="studentEmails" 
+                        value={studentEmails} 
+                        onChange={(e) => setStudentEmails(e.target.value)} 
+                        required={emailInputMethod === 'manual' && !callReminderEnabled} 
+                        rows={4} 
+                        className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 resize-none" 
+                        placeholder="email1@example.com, email2@example.com, ..."
+                      />
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -1126,11 +1356,33 @@ export default function SendSurveyPage() {
 
             {/* Submit Section */}
             <div className="flex justify-between items-center pt-6 border-t border-gray-200 dark:border-gray-700">
-              {status && (
-                <p className={`text-sm ${status.includes('Error') ? 'text-red-600' : 'text-green-600'}`}>
-                  {status}
-                </p>
-              )}
+              <div className="flex-1">
+                {status && (
+                  <p className={`text-sm ${status.includes('Error') ? 'text-red-600' : 'text-green-600'}`}>
+                    {status}
+                  </p>
+                )}
+                
+                {/* Call Reminder Test Button */}
+                {sentSurveyId && (callReminderEnabled || forceCallReminderMode) && (
+                  <div className="mt-4 p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-700">
+                    <h4 className="text-sm font-medium text-orange-800 dark:text-orange-300 mb-2">
+                      🧪 Test Call Reminders
+                    </h4>
+                    <p className="text-xs text-orange-700 dark:text-orange-400 mb-3">
+                      Manually trigger call reminders for testing. This will call all phone numbers immediately (simulating non-responders).
+                    </p>
+                    <button
+                      type="button"
+                      onClick={handleTriggerCallReminders}
+                      disabled={triggeringCalls}
+                      className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+                    >
+                      {triggeringCalls ? 'Triggering Calls...' : 'Trigger Test Calls Now'}
+                    </button>
+                  </div>
+                )}
+              </div>
               <div className="flex gap-4 ml-auto">
                 <button 
                   type="button"
@@ -1141,7 +1393,7 @@ export default function SendSurveyPage() {
                 </button>
                 <button 
                   type="submit" 
-                  disabled={isSending || !selectedSurvey || (emailInputMethod === 'audience' && selectedAudiences.length === 0) || (emailInputMethod === 'manual' && !studentEmails.trim())} 
+                  disabled={isSending || !selectedSurvey || (emailInputMethod === 'audience' && selectedAudiences.length === 0) || (emailInputMethod === 'manual' && getCurrentEmails().length === 0)} 
                   className="px-8 py-3 bg-gradient-to-r from-emerald-600 to-cyan-600 text-white rounded-xl font-medium shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center gap-2"
                 >
                   {isSending ? (

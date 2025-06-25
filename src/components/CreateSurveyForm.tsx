@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Sparkles, FileText, Copy, Send, Plus, Trash2, ArrowLeft, Calendar, Clock, MessageSquare, Bot, Edit3 } from 'lucide-react';
 import { getSurveyUrl, calculateReminderDates, generateAIReminderMessage, validateReminderMessage, type ReminderConfig } from '@/lib/utils';
+import { CallReminderToggle, type CallReminderConfig } from '@/components/CallReminderToggle';
 
 type Question = {
   text: string;
@@ -48,6 +49,13 @@ export function CreateSurveyForm() {
   // AI Assistant states
   const [aiSuggestions, setAiSuggestions] = useState<Question[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  
+  // Call Reminder states
+  const [callReminderConfig, setCallReminderConfig] = useState<CallReminderConfig>({
+    enabled: false,
+    phoneNumber: '',
+    testMode: true
+  });
 
   // Professional reminder calculation effect
   useEffect(() => {
@@ -242,7 +250,10 @@ export function CreateSurveyForm() {
           start_date: startDate,
           end_date: endDate,
           reminder_dates: calculatedReminders.flatMap(r => r.dates),
-          reminder_config: reminderData
+          reminder_config: reminderData,
+          call_reminder_enabled: callReminderConfig.enabled,
+          call_reminder_phone: callReminderConfig.phoneNumber,
+          call_reminder_test_mode: callReminderConfig.testMode
         }),
       });
 
@@ -522,6 +533,16 @@ export function CreateSurveyForm() {
                 )}
               </div>
             </div>
+          )}
+
+          {/* Call Reminder Toggle */}
+          {calculatedReminders.length > 0 && (
+            <CallReminderToggle 
+              surveyTopic={topic}
+              surveyId={createdSurvey?.id}
+              onConfigChange={setCallReminderConfig}
+              initialConfig={callReminderConfig}
+            />
           )}
         </div>
 

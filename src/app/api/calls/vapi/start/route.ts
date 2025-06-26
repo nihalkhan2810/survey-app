@@ -31,110 +31,56 @@ export async function POST(req: NextRequest) {
     
     const survey = surveyData;
 
-    // Create system message for the AI assistant
-    const systemMessage = `You are a professional and friendly survey assistant named Alex. Your goal is to conduct a voice survey about "${survey.topic}" in a natural, conversational manner.
 
-Survey Questions to ask:
-${survey.questions.map((q: any, i: number) => `${i + 1}. ${q.text} (ID: ${q.id || `question_${i + 1}`})${q.options ? ` (Options: ${q.options.join(', ')})` : ''}`).join('\n')}
-
-Instructions:
-- Start by introducing yourself and explaining the survey purpose
-- Ask questions one at a time and wait for complete answers
-- Keep responses concise and natural for voice conversation (1-2 sentences max)
-- Be patient and allow users to elaborate on their answers
-- If users go off-topic, gently guide them back to the survey
-- Once you have clear answers for all questions, output the structured summary then thank them and end the call
-- Always be polite, professional, and speak clearly at a moderate pace
-- Sound friendly and engaged throughout the conversation
-
-CRITICAL: After collecting all responses, you MUST do these in EXACT order:
-1. Say: "Thank you for participating in our survey. Your responses are valuable to us. Have a great day!"
-2. Output this EXACT structured summary (replace with actual answers): SURVEY_COMPLETE {"answers": {"question_1": "their actual response word for word"}}
-3. Say: "Goodbye!" and stop talking - the call will end automatically
-
-EXAMPLE of step 2:
-If user said "I think Bob is really great and helpful", you must output:
-SURVEY_COMPLETE {"answers": {"question_1": "I think Bob is really great and helpful"}}
-
-STRICT RULES:
-- Ask ONLY the ${survey.questions.length} question(s) listed above
-- DO NOT ask additional questions beyond what's listed  
-- DO NOT ask for confirmation or repeat answers back to the user
-- DO NOT ask "just to confirm" or similar phrases
-- Accept the first clear answer and move on immediately
-- After getting an answer to each question, move to the next or end the call
-- Be conversational but stay focused on the survey questions only
-- The SURVEY_COMPLETE format is for system processing only - don't mention it to the user
-
-Begin by greeting the participant and asking if they have a few minutes for a brief survey about ${survey.topic}.`;
-
-    // Configure AI model - support both OpenAI and custom LLM (Gemini)
-    const useGemini = process.env.GEMINI_API_KEY && !process.env.OPENAI_API_KEY;
+    // Get existing assistant ID and phone number ID from environment  
+    const assistantId = process.env.VAPI_ASSISTANT_ID;
+    const phoneNumberId = process.env.VAPI_PHONE_NUMBER_ID;
     
-    const modelConfig = useGemini ? {
-      provider: "custom-llm",
-      url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${process.env.GEMINI_API_KEY}`,
-      model: "gemini-1.5-flash-latest",
-      temperature: 0.7,
-      maxTokens: 150
-    } : {
-      provider: "openai",
-      model: "gpt-4o-mini",
-      temperature: 0.7,
-      maxTokens: 150
-    };
-
-    // Create assistant dynamically (don't use pre-configured assistant)
-    const assistantConfig = {
-      name: `Survey Assistant - ${survey.topic}`,
-      model: modelConfig,
-      systemMessage: systemMessage,
-      voice: {
-        provider: "11labs",
-        voiceId: "paula", // Professional female voice
-        model: "eleven_turbo_v2",
-        stability: 0.5,
-        similarityBoost: 0.8,
-        style: 0.2,
-        useSpeakerBoost: true
-      },
-      firstMessage: `Hello! This is Alex calling to conduct a brief survey about ${survey.topic}. This should only take a few minutes of your time. Are you available to answer a few questions?`,
-      recordingEnabled: true,
-      endCallMessage: "Thank you for participating in our survey. Your responses are valuable to us. Have a great day!",
-      // Additional configuration options
-      silenceTimeoutSeconds: 30,
-      maxDurationSeconds: 600, // 10 minutes max
-      backgroundSound: "office",
-      backchannelingEnabled: true,
-      backgroundDenoisingEnabled: true,
-      modelOutputInMessagesEnabled: true,
-      transportConfigurations: [
-        {
-          provider: "twilio",
-          timeout: 60,
-          record: true
-        }
-      ]
-    };
+    console.log('DEBUG: VAPI_ASSISTANT_ID from env:', assistantId);
+    console.log('DEBUG: VAPI_PHONE_NUMBER_ID from env:', phoneNumberId);
+    
+    if (!assistantId) {
+      return NextResponse.json({ 
+        message: 'VAPI_ASSISTANT_ID is not configured. Please add it to your .env.local file.' 
+      }, { status: 500 });
+    }
+    
+    if (!phoneNumberId) {
+      return NextResponse.json({ 
+        message: 'VAPI_PHONE_NUMBER_ID is not configured. Please add it to your .env.local file.' 
+      }, { status: 500 });
+    }
 
     // Create calls for each phone number using the phone call API
     const callPromises = phoneNumbers.map(async (phoneNumber: string) => {
       const callPayload = {
-        assistant: assistantConfig,
+        type: "outboundPhoneCall",
+        phoneNumberId: phoneNumberId,
+        assistantId: assistantId,
         customer: {
-          number: phoneNumber,
-          numberE164CheckEnabled: false // Allow various phone number formats
+          number: phoneNumber
         },
         metadata: {
           surveyId: surveyId,
           surveyTopic: survey.topic,
           timestamp: new Date().toISOString()
+        },
+        assistantOverrides: {
+          variableValues: {
+            surveyTopic: survey.topic,
+            surveyQuestions: survey.questions.map((q: any, i: number) => 
+              `${i + 1}. ${q.text} (ID: ${q.id || `question_${i + 1}`})${q.options ? ` (Options: ${q.options.join(', ')})` : ''}`
+            ).join('\n'),
+            questionCount: survey.questions.length.toString(),
+            firstMessage: `Hello! This is Bob calling to conduct a brief survey about ${survey.topic}. This should only take a few minutes of your time. Are you available to answer a few questions?`
+          }
         }
       };
 
       console.log(`Initiating VAPI call to ${phoneNumber} for survey ${surveyId}`);
+      console.log('DEBUG: Call payload:', JSON.stringify(callPayload, null, 2));
 
-      const response = await fetch('https://api.vapi.ai/call/phone', {
+      const response = await fetch('https://api.vapi.ai/call', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${vapiApiKey}`,

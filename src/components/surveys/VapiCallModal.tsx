@@ -29,16 +29,18 @@ export default function VapiCallModal({ isOpen, onClose, surveyData }: VapiCallM
     }
 
     setIsLoading(true);
-    setCallStatus('creating-assistant');
+    setCallStatus('calling');
     setErrorMessage('');
 
     try {
-      // Step 1: Create VAPI assistant for this survey
-      const assistantResponse = await fetch('/api/surveys/vapi-assistant', {
+      // Use existing assistant to make calls directly
+      setCallStatus('calling');
+      const callResponse = await fetch('/api/calls/vapi/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           surveyId: surveyData.id,
+          phoneNumbers: [phoneNumber],
           surveyData: {
             topic: surveyData.topic,
             questions: surveyData.questions
@@ -46,31 +48,13 @@ export default function VapiCallModal({ isOpen, onClose, surveyData }: VapiCallM
         })
       });
 
-      if (!assistantResponse.ok) {
-        const errorData = await assistantResponse.json();
-        throw new Error(errorData.details || 'Failed to create survey assistant');
-      }
-
-      const { assistantId } = await assistantResponse.json();
-      setAssistantId(assistantId);
-      setCallStatus('calling');
-
-      // Step 2: Make the call using VAPI
-      const callResponse = await fetch('/api/surveys/vapi-assistant', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          assistantId,
-          phoneNumber: phoneNumber.trim(),
-          surveyId: surveyData.id
-        })
-      });
-
       if (!callResponse.ok) {
         const errorData = await callResponse.json();
-        throw new Error(errorData.details || 'Failed to initiate call');
+        throw new Error(errorData.message || 'Failed to initiate call');
       }
 
+      const callResult = await callResponse.json();
+      console.log('Call initiated:', callResult);
       setCallStatus('success');
       
     } catch (error: any) {

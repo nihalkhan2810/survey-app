@@ -730,36 +730,7 @@ export default function SendSurveyPage() {
                   </div>
                   
                   
-                  {/* IMMEDIATE EMAIL DISPLAY - Show emails the moment an audience is selected */}
-                  {selectedAudiences.length > 0 && (
-                    <div className="p-6 bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-300 dark:border-blue-600 rounded-xl animate-pulse">
-                      <h3 className="text-lg font-bold text-blue-900 dark:text-blue-100 mb-4">
-                        📧 SELECTED EMAILS ({currentEmails.length} total recipients)
-                      </h3>
-                      
-                      <div className="bg-white dark:bg-gray-800 rounded-lg p-4 max-h-60 overflow-y-auto border-2 border-blue-200 dark:border-blue-700">
-                        <div className="text-sm font-mono space-y-1">
-                          {currentEmails.map((email, idx) => (
-                            <div key={idx} className="text-blue-700 dark:text-blue-300 p-1 hover:bg-blue-100 dark:hover:bg-blue-800 rounded">
-                              {idx + 1}. {email}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                      
-                      <div className="mt-4 p-3 bg-green-100 dark:bg-green-900/30 rounded-lg border border-green-300 dark:border-green-600">
-                        <div className="text-sm text-green-800 dark:text-green-300 font-medium">
-                          ✅ These {currentEmails.length} email addresses will receive your survey when you click "Send Survey"
-                        </div>
-                        <div className="text-xs text-green-700 dark:text-green-400 mt-1">
-                          Selected from: {selectedAudiences.map(id => {
-                            const audience = mockTargetAudiences.find(a => a.id === id);
-                            return audience ? audience.name : '';
-                          }).filter(Boolean).join(', ')}
-                        </div>
-                      </div>
-                    </div>
-                  )}
+
                   
                   {/* Dropdown Results */}
                   {showAudienceDropdown && (
@@ -869,42 +840,6 @@ export default function SendSurveyPage() {
                   {/* Email Management Section - Always Show When Audiences Selected */}
                   {selectedAudiences.length > 0 && (
                     <div className="space-y-6">
-                      {/* Email List Textarea - Similar to Manual Entry */}
-                      <div>
-                        <label htmlFor="selectedEmails" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                          Selected Email Addresses ({currentEmails.length} recipients)
-                        </label>
-                        <textarea 
-                          id="selectedEmails" 
-                          value={currentEmails.join(', ')} 
-                          readOnly
-                          rows={6} 
-                          className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 resize-none font-mono text-sm" 
-                          placeholder="No emails selected yet..."
-                        />
-                        <div className="mt-2 flex items-center justify-between">
-                          <p className="text-sm text-gray-500 dark:text-gray-400">
-                            These are the final email addresses that will receive your survey.
-                            {excludedEmails.size > 0 && (
-                              <span className="text-amber-600 dark:text-amber-500 ml-1">
-                                ({excludedEmails.size} excluded from original selection)
-                              </span>
-                            )}
-                          </p>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              navigator.clipboard.writeText(currentEmails.join(', '));
-                              setStatus('Email addresses copied to clipboard!');
-                              setTimeout(() => setStatus(''), 3000);
-                            }}
-                            className="text-sm px-3 py-1.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-medium"
-                          >
-                            📋 Copy List
-                          </button>
-                        </div>
-                      </div>
-                      
                       {/* Detailed Email Management */}
                     <div className="border border-emerald-200 dark:border-emerald-700 rounded-xl p-6 bg-emerald-50/30 dark:bg-emerald-900/10">
                       <div className="flex items-center justify-between mb-4">

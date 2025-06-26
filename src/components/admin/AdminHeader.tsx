@@ -2,67 +2,76 @@
 
 import { useSession, signOut } from 'next-auth/react'
 import { motion } from 'framer-motion'
-import { Bell, LogOut, User, Search } from 'lucide-react'
+import { Bell, LogOut, User } from 'lucide-react'
 import { ThemeSwitcher } from '@/components/ThemeSwitcher'
+import { SayzLogo } from '@/components/SayzLogo'
+import Link from 'next/link'
 
 export function AdminHeader() {
   const { data: session } = useSession()
 
   return (
-    <header className="sticky top-0 z-40 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-800/50">
-      <div className="flex items-center justify-between h-16 px-8">
-        <div className="flex items-center flex-1 gap-4">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search users, surveys, responses..."
-              className="w-full pl-10 pr-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl border-0 focus:ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 transition-all duration-200"
-            />
-          </div>
-        </div>
+    <header className="sticky top-0 z-30 bg-white/60 dark:bg-gray-900/60 backdrop-blur-2xl border-b border-white/20 dark:border-gray-800/20 shadow-sm shadow-black/5">
+      <div className="flex items-center justify-between h-16 px-6 lg:px-8">
+        {/* Left spacer */}
+        <div className="flex-1"></div>
         
-        <div className="flex items-center gap-3">
+        {/* Centered Logo */}
+        <div className="flex items-center justify-center">
+          <Link href="/admin">
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="flex items-center gap-2 px-4 py-2 rounded-2xl hover:bg-white/40 dark:hover:bg-gray-800/40 transition-all duration-200 backdrop-blur-sm"
+            >
+              <SayzLogo size={28} />
+              <span className="text-lg font-bold bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 bg-clip-text text-transparent">
+                Admin
+              </span>
+            </motion.div>
+          </Link>
+        </div>
+
+        {/* Right section with user controls */}
+        <div className="flex items-center gap-2 flex-1 justify-end">
           <ThemeSwitcher />
-          
+
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="relative p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors"
+            className="p-2 text-gray-600 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-gray-800/50 rounded-xl transition-all duration-200 backdrop-blur-sm"
+            title="Notifications"
           >
-            <Bell className="h-5 w-5" />
-            <span className="absolute top-1 right-1 h-2 w-2 bg-gradient-to-r from-rose-500 to-pink-500 rounded-full animate-pulse" />
+            <Bell className="h-4 w-4" />
           </motion.button>
 
-          <div className="flex items-center gap-3">
-            <div className="text-right">
-              <p className="text-sm font-medium text-gray-900 dark:text-white">
+          <div className="flex items-center gap-2 ml-1">
+            <div className="text-right hidden lg:block">
+              <p className="text-sm font-medium text-gray-900 dark:text-white truncate max-w-32">
                 {session?.user?.name}
               </p>
-              <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+              <p className="text-xs text-gray-500 dark:text-gray-400">
                 Administrator
               </p>
             </div>
             
-            <div className="flex items-center gap-2">
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="p-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl shadow-lg"
-              >
-                <User className="h-5 w-5" />
-              </motion.div>
-              
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => signOut({ callbackUrl: '/auth/signin' })}
-                className="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors"
-                title="Sign Out"
-              >
-                <LogOut className="h-5 w-5" />
-              </motion.button>
-            </div>
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="p-2 bg-gradient-to-br from-purple-500/80 to-indigo-600/80 text-white rounded-xl shadow-lg backdrop-blur-sm"
+            >
+              <User className="h-4 w-4" />
+            </motion.div>
+            
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => signOut({ callbackUrl: '/auth/signin' })}
+              className="p-2 text-gray-600 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-gray-800/50 rounded-xl transition-all duration-200 backdrop-blur-sm"
+              title="Sign Out"
+            >
+              <LogOut className="h-4 w-4" />
+            </motion.button>
           </div>
         </div>
       </div>

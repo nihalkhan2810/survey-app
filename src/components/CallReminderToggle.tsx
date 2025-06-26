@@ -28,6 +28,7 @@ export function CallReminderToggle({
   const [isSimulating, setIsSimulating] = useState(false);
   const [simulationStatus, setSimulationStatus] = useState<string>('');
   const [simulationResult, setSimulationResult] = useState<'success' | 'error' | null>(null);
+  const [finalCallTriggered, setFinalCallTriggered] = useState(false);
 
   // Update parent component when config changes
   useEffect(() => {
@@ -73,11 +74,14 @@ export function CallReminderToggle({
       setSimulationStatus(result.message || 'Call reminder simulation started successfully');
       setSimulationResult('success');
       
+      // Mark final call as triggered to hide implementation note
+      setFinalCallTriggered(true);
+      
       // Show additional timeline information
       if (result.timeline) {
         setSimulationStatus(prev => `${prev}\n\nSimulation Timeline:\n${result.timeline}`);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Simulation error:', error);
       setSimulationStatus(`Simulation failed: ${error.message}`);
       setSimulationResult('error');
@@ -203,13 +207,15 @@ export function CallReminderToggle({
           </div>
 
           {/* Implementation Note */}
-          <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              <strong>Implementation Note:</strong> This feature schedules voice calls using VAPI only for participants who haven't responded 
-              by the final email reminder. In production, this would integrate with a proper job scheduler 
-              (like AWS EventBridge, node-cron, or Redis Queue) for reliable scheduling.
-            </p>
-          </div>
+          {!finalCallTriggered && (
+            <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                <strong>Implementation Note:</strong> This feature schedules voice calls using VAPI only for participants who haven't responded 
+                by the final email reminder. In production, this would integrate with a proper job scheduler 
+                (like AWS EventBridge, node-cron, or Redis Queue) for reliable scheduling.
+              </p>
+            </div>
+          )}
         </div>
       )}
     </div>

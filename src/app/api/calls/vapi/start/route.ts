@@ -72,7 +72,8 @@ export async function POST(req: NextRequest) {
               `${i + 1}. ${q.text} (ID: ${q.id || `question_${i + 1}`})${q.options ? ` (Options: ${q.options.join(', ')})` : ''}`
             ).join('\n'),
             questionCount: survey.questions.length.toString(),
-            firstMessage: `Hello! This is Bob calling to conduct a brief survey about ${survey.topic}. This should only take a few minutes of your time. Are you available to answer a few questions?`
+            firstMessage: `Hello! This is Bob calling to conduct a brief survey about ${survey.topic}. This should only take a few minutes of your time. Are you available to answer a few questions?`,
+            endCallInstructions: `After the user responds to the final question, acknowledge their response briefly, then say "Thank you for your response. That's the end of the survey. Have a great day!" The call will end naturally.`
           }
         }
       };

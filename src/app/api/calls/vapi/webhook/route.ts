@@ -63,84 +63,193 @@ function parseSurveyCompletion(transcript: string) {
   }
 }
 
-// Extract answers from transcript using AI fallback
-async function extractAnswersFromTranscript(transcript: string, surveyQuestions?: any[]): Promise<Record<string, string> | null> {
+// Extract answers from transcript using Gemini API
+async function extractAnswersWithGemini(transcript: string, surveyId: string): Promise<Record<string, string> | null> {
+  try {
+    if (!transcript || transcript.trim().length === 0) {
+      return null;
+    }
+
+    // Get survey data to know what questions were asked
+    const survey = await database.findSurveyById(surveyId);
+    if (!survey || !survey.questions || survey.questions.length === 0) {
+      console.log('No survey questions found for transcript processing');
+      return null;
+    }
+
+    const geminiApiKey = process.env.GEMINI_API_KEY;
+    if (!geminiApiKey) {
+      console.log('GEMINI_API_KEY not configured, falling back to basic extraction');
+      return await extractAnswersFromTranscriptBasic(transcript);
+    }
+
+    // Prepare questions for Gemini
+    const questionsList = survey.questions.map((q: any, i: number) => 
+      `Question ${i + 1}: ${q.text}`
+    ).join('\n');
+
+    const geminiPrompt = `You are analyzing a voice survey transcript to extract the participant's answers to specific questions.
+
+SURVEY QUESTIONS:
+${questionsList}
+
+TRANSCRIPT:
+${transcript}
+
+Your task: Extract the participant's answers from the transcript and return them in this EXACT JSON format:
+{"answers": {"0": "answer to question 1", "1": "answer to question 2"}}
+
+RULES:
+- Use numeric keys starting from "0" (question 1 = "0", question 2 = "1", etc.)
+- Extract the user's actual spoken responses, not the assistant's questions
+- If no clear answer exists for a question, use "No response given"
+- Be concise but capture the essence of their response
+- Return ONLY the JSON object, no other text
+
+EXAMPLE:
+If user said "I think Bob is really helpful and knowledgeable" for question 1:
+{"answers": {"0": "I think Bob is really helpful and knowledgeable"}}`;
+
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{ text: geminiPrompt }]
+        }]
+      })
+    });
+
+    if (!response.ok) {
+      console.error('Gemini API error:', response.status, await response.text());
+      return await extractAnswersFromTranscriptBasic(transcript);
+    }
+
+    const data = await response.json();
+    const geminiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    
+    if (!geminiResponse) {
+      console.log('No response from Gemini, falling back to basic extraction');
+      return await extractAnswersFromTranscriptBasic(transcript);
+    }
+
+    // Try to parse the JSON response
+    try {
+      console.log('Raw Gemini response:', geminiResponse);
+      
+      // More flexible JSON extraction
+      let jsonStr = geminiResponse.trim();
+      
+      // Remove any markdown code blocks
+      jsonStr = jsonStr.replace(/```json\s*/g, '').replace(/```\s*/g, '');
+      
+      // Find JSON object - look for balanced braces
+      const openIndex = jsonStr.indexOf('{');
+      if (openIndex === -1) {
+        console.log('No JSON object found in Gemini response, falling back');
+        return await extractAnswersFromTranscriptBasic(transcript);
+      }
+      
+      let braceCount = 0;
+      let endIndex = -1;
+      
+      for (let i = openIndex; i < jsonStr.length; i++) {
+        if (jsonStr[i] === '{') braceCount++;
+        if (jsonStr[i] === '}') braceCount--;
+        if (braceCount === 0) {
+          endIndex = i;
+          break;
+        }
+      }
+      
+      if (endIndex === -1) {
+        console.log('Incomplete JSON in Gemini response, falling back');
+        return await extractAnswersFromTranscriptBasic(transcript);
+      }
+      
+      const extractedJson = jsonStr.substring(openIndex, endIndex + 1);
+      console.log('Extracted JSON:', extractedJson);
+      
+      const parsed = JSON.parse(extractedJson);
+      console.log('Gemini extracted answers:', parsed.answers);
+      return parsed.answers || null;
+      
+    } catch (parseError) {
+      console.error('Error parsing Gemini response:', parseError);
+      console.log('Falling back to basic extraction');
+      return await extractAnswersFromTranscriptBasic(transcript);
+    }
+
+  } catch (error) {
+    console.error('Error with Gemini extraction:', error);
+    return await extractAnswersFromTranscriptBasic(transcript);
+  }
+}
+
+// Basic fallback extraction method
+async function extractAnswersFromTranscriptBasic(transcript: string): Promise<Record<string, string> | null> {
   if (!transcript || transcript.trim().length === 0) {
     return null;
   }
 
-  // First try structured parsing
-  const structuredAnswers = parseSurveyCompletion(transcript);
-  if (structuredAnswers) {
-    return structuredAnswers;
-  }
-
-  // Fallback: extract from conversation flow
+  console.log('Using basic transcript extraction fallback');
   const answers: Record<string, string> = {};
-  
-  // Look for specific patterns in the conversation
   const lines = transcript.split('\n').filter(line => line.trim());
-  
-  // Extract user responses that follow assistant questions
   let questionCount = 0;
   
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     
-    // If this is a user response
     if (line.startsWith('User:')) {
       const userResponse = line.replace('User:', '').trim();
       
-      // Skip empty or very short responses like "Okay", "Yes", "No" but be more permissive
-      const skipWords = ['okay', 'yes', 'no', 'sure', 'hi', 'hello', 'great'];
-      const isSkippable = userResponse.length <= 5 || 
-                         skipWords.includes(userResponse.toLowerCase().trim());
+      // Skip very short responses but be more permissive
+      if (userResponse.length <= 2) {
+        continue;
+      }
       
-      if (!isSkippable) {
-        // Look back to find if there was a question before this response
-        let foundQuestion = false;
-        for (let j = i - 1; j >= 0; j--) {
-          const prevLine = lines[j];
-          if (prevLine.startsWith('Assistant:')) {
-            // Check if this assistant message contains question words
-            const questionWords = ['what', 'how', 'why', 'when', 'where', 'opinion', 'think', 'feel'];
-            const hasQuestionWord = questionWords.some(word => 
-              prevLine.toLowerCase().includes(word)
-            );
-            
-            if (hasQuestionWord || prevLine.includes('?')) {
-              foundQuestion = true;
-              break;
-            }
+      // Skip greeting responses only
+      const greetingWords = ['hi', 'hello', 'hey'];
+      const isGreeting = greetingWords.includes(userResponse.toLowerCase().trim());
+      
+      if (isGreeting) {
+        continue;
+      }
+      
+      // Look for a question before this response
+      let foundQuestion = false;
+      for (let j = i - 1; j >= 0; j--) {
+        const prevLine = lines[j];
+        if (prevLine.startsWith('Assistant:')) {
+          const questionWords = ['what', 'how', 'why', 'when', 'where', 'opinion', 'think', 'feel', 'would', 'do you'];
+          const hasQuestionWord = questionWords.some(word => 
+            prevLine.toLowerCase().includes(word)
+          );
+          
+          if (hasQuestionWord || prevLine.includes('?')) {
+            foundQuestion = true;
+            break;
           }
         }
-        
-        if (foundQuestion || questionCount === 0) {
-          // This looks like a substantive answer
-          questionCount++;
-          answers[`question_${questionCount}`] = userResponse;
-        }
+      }
+      
+      if (foundQuestion) {
+        answers[questionCount.toString()] = userResponse;
+        questionCount++;
+        console.log(`Basic extraction found answer ${questionCount}: ${userResponse}`);
       }
     }
   }
-
-  // If we still have no answers, try to extract from the AI's summary
-  if (Object.keys(answers).length === 0) {
-    // Look for patterns like "Question 1, he's good" in the AI's final message
-    const summaryPattern = /question\s*(\d+)[,\s]+([^.]+)/gi;
-    let match;
-    while ((match = summaryPattern.exec(transcript)) !== null) {
-      const questionNum = match[1];
-      const answer = match[2].trim();
-      answers[`question_${questionNum}`] = answer;
-    }
-  }
-
-  console.log('Debug - Processing transcript lines:', lines.length);
-  console.log('Debug - Found answers:', answers);
-  console.log('Debug - Final answer count:', Object.keys(answers).length);
   
-  return Object.keys(answers).length > 0 ? answers : null;
+  console.log('Basic extraction results:', answers);
+  
+  // If no substantial answers found, mark as incomplete survey
+  if (Object.keys(answers).length === 0) {
+    console.log('No substantial answers found in transcript');
+    return { "0": "No response given - survey may have been incomplete" };
+  }
+  
+  return answers;
 }
 
 // Validate answers and convert to dashboard-compatible format
@@ -338,6 +447,21 @@ async function handleTranscript(message: any, webhookData: any) {
 async function handleFunctionCall(message: any) {
   console.log('Function call received:', message.functionCall);
   
+  // Temporarily disabled endCall function to test natural ending
+  /*
+  if (message.functionCall?.name === 'endCall') {
+    console.log('EndCall function called, ending call');
+    
+    // Return instruction to end the call
+    return NextResponse.json({
+      result: {
+        message: "Survey completed successfully"
+      },
+      endCall: true
+    });
+  }
+  */
+  
   if (message.functionCall?.name === 'end_survey_call') {
     console.log('Survey completion function called, ending call');
     
@@ -397,17 +521,13 @@ async function processCallEnd(callData: any, message: any) {
   console.log(`Transcript content:`, transcript.substring(0, 500) + (transcript.length > 500 ? '...' : ''));
 
   try {
-    // First try to extract structured answers
-    let answers = parseSurveyCompletion(transcript);
+    // Use Gemini API to extract answers from transcript
+    console.log('Processing transcript with Gemini API...');
+    const answers = await extractAnswersWithGemini(transcript, surveyId);
     
-    // If no structured answers, try basic extraction
-    if (!answers) {
-      answers = await extractAnswersFromTranscript(transcript);
-    }
-    
-    // Save the response regardless of whether we have structured answers
+    // Save the response
     await saveSurveyResponse(surveyId, answers, { call: callData }, transcript);
-    console.log('Voice survey response processed and saved');
+    console.log('Voice survey response processed and saved with Gemini extraction');
     
   } catch (error) {
     console.error('Error processing call end:', error);

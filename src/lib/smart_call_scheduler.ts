@@ -133,7 +133,7 @@ export const processDueCallSchedules = async (): Promise<void> => {
       if (respondedCount >= responseThresholdCount) {
         console.log(`✅ ${respondedCount} responses ≥ ${responseThresholdCount} threshold (${schedule.responseThresholdPercent}% of ${schedule.totalParticipants}) - triggering calls for non-responders`);
         
-        // Trigger calls for non-responders
+        // Trigger calls for non-responders using the same VAPI logic as VapiCallModal (Bob)
         const result = await triggerCallsForNonResponders(schedule.surveyId);
         
         schedule.status = result.success > 0 ? 'completed' : 'triggered';

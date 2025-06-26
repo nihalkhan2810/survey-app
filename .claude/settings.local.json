@@ -16,7 +16,8 @@
       "Bash(node test-vapi.js)",
       "Bash(node:*)",
       "Bash(ls:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(grep:*)"
     ],
     "deny": []
   }

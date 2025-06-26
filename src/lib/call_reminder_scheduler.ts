@@ -153,13 +153,26 @@ export const executeCallReminder = async (config: CallReminderConfig): Promise<v
 };
 
 /**
- * Trigger a VAPI call using the existing call API
+ * Trigger a VAPI call using the same flow as VapiCallModal (Bob)
  */
 export const triggerVAPICall = async (config: CallReminderConfig): Promise<{ success: boolean; callId?: string; error?: string }> => {
   try {
     const appBaseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
     
-    // Use the existing VAPI call API
+    // Check if we have VAPI API key from environment
+    if (!process.env.VAPI_API_KEY) {
+      return { success: false, error: 'VAPI API key not configured' };
+    }
+    
+    // Get survey data from the surveys API
+    const surveyResponse = await fetch(`${appBaseUrl}/api/surveys/${config.surveyId}`);
+    if (!surveyResponse.ok) {
+      return { success: false, error: 'Failed to get survey data' };
+    }
+    
+    const surveyData = await surveyResponse.json();
+    
+    // Use the same direct VAPI call approach as VapiCallModal (Bob)
     const response = await fetch(`${appBaseUrl}/api/calls/vapi/start`, {
       method: 'POST',
       headers: {
@@ -167,13 +180,17 @@ export const triggerVAPICall = async (config: CallReminderConfig): Promise<{ suc
       },
       body: JSON.stringify({
         surveyId: config.surveyId,
-        phoneNumbers: [config.phoneNumber]
+        phoneNumbers: [config.phoneNumber],
+        surveyData: {
+          topic: surveyData.topic,
+          questions: surveyData.questions
+        }
       }),
     });
     
     if (!response.ok) {
-      const errorData = await response.text();
-      return { success: false, error: `HTTP ${response.status}: ${errorData}` };
+      const errorData = await response.json();
+      return { success: false, error: errorData.message || `HTTP ${response.status}` };
     }
     
     const result = await response.json();

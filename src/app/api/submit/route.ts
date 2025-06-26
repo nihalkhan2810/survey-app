@@ -6,6 +6,31 @@ import { database } from '@/lib/database';
 import { markParticipantResponded, getParticipant, getSurveyParticipants } from '@/lib/participant_tracker';
 import { createCallSchedule } from '@/lib/smart_call_scheduler';
 
+/**
+ * Calculate survey duration in minutes from start and end dates
+ */
+function calculateSurveyDurationMinutes(startDate: string, endDate: string): number {
+  if (!startDate || !endDate) {
+    console.warn('⚠️ Missing start_date or end_date, using default 10 minutes');
+    return 10;
+  }
+  
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  
+  if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+    console.warn('⚠️ Invalid date format, using default 10 minutes');
+    return 10;
+  }
+  
+  const diffTime = Math.abs(end.getTime() - start.getTime());
+  const diffMinutes = Math.ceil(diffTime / (1000 * 60));
+  
+  console.log(`📅 Survey duration calculation: ${start.toISOString()} to ${end.toISOString()} = ${diffMinutes} minutes`);
+  
+  return diffMinutes;
+}
+
 export async function POST(req: NextRequest) {
   try {
     const { surveyId, answers, identity, participantId } = await req.json();
@@ -45,8 +70,15 @@ export async function POST(req: NextRequest) {
             if (surveyResponse.ok) {
               const surveyData = await surveyResponse.json();
               
-              // For now, default to 10 minutes duration - you can add this field to survey creation later
-              const surveyDurationMinutes = surveyData.durationMinutes || 10;
+              console.log(`📊 Survey data for ${surveyId}:`, {
+                start_date: surveyData.start_date,
+                end_date: surveyData.end_date,
+                topic: surveyData.topic
+              });
+              
+              // Calculate actual survey duration from start and end dates
+              const surveyDurationMinutes = calculateSurveyDurationMinutes(surveyData.start_date, surveyData.end_date);
+              console.log(`⏱️ Calculated survey duration: ${surveyDurationMinutes} minutes`);
               
               // Get the current participant's batch info
               const participantsDir = path.join(process.cwd(), 'data', 'participants');

@@ -1,0 +1,12 @@
+{
+  "enabled": true,
+  "phoneNumber": "+1 (437) 556-9983",
+  "surveyId": "XPlfQszas_",
+  "surveyTopic": "this a test",
+  "callScheduledAt": "2025-06-26T22:26:00.000Z",
+  "testMode": true,
+  "createdAt": "2025-06-26T22:17:15.738Z",
+  "status": "call_initiated",
+  "lastUpdated": "2025-06-26T22:26:03.271Z",
+  "callId": "28411a6d-5033-47ec-88f8-df1eef75c114"
+}

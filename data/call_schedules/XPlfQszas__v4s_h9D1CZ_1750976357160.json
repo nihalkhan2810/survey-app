@@ -1,0 +1,14 @@
+{
+  "surveyId": "XPlfQszas_",
+  "batchId": "v4s_h9D1CZ",
+  "totalParticipants": 2,
+  "surveyDurationMinutes": 10,
+  "responseThresholdPercent": 70,
+  "callTriggerPercent": 70,
+  "createdAt": "2025-06-26T22:19:17.159Z",
+  "scheduledCallTime": "2025-06-26T22:26:17.159Z",
+  "status": "completed",
+  "lastCheckedAt": "2025-06-26T22:26:24.881Z",
+  "responseCount": 1,
+  "responseRate": 50
+}

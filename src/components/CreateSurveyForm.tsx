@@ -547,6 +547,7 @@ export function CreateSurveyForm() {
               surveyId={createdSurvey?.id}
               onConfigChange={setCallReminderConfig}
               initialConfig={callReminderConfig}
+              showPhoneInput={false}
             />
           )}
         </div>

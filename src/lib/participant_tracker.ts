@@ -170,9 +170,9 @@ export const getNonResponders = async (surveyId: string, testingMode: boolean = 
       }
     }
     
-    // Filter for non-responders only
+    // Filter for non-responders only, excluding those who already had calls triggered
     const nonResponders = Array.from(participantMap.values()).filter(p => 
-      p.status === 'sent' || p.status === 'no_response'
+      (p.status === 'sent' || p.status === 'no_response') && !p.callTriggered
     );
     
     const modeText = testingMode ? "Testing mode: latest batch only" : "All batches";
@@ -197,7 +197,7 @@ export const getNonRespondersForBatch = async (surveyId: string, batchId: string
     const batch: ParticipantBatch = JSON.parse(data);
     
     const nonResponders = batch.participants.filter(p => 
-      p.status === 'sent' || p.status === 'no_response'
+      (p.status === 'sent' || p.status === 'no_response') && !p.callTriggered
     );
     
     console.log(`Found ${nonResponders.length} non-responders in batch ${batchId} for survey ${surveyId}`);

@@ -14,13 +14,15 @@ interface CallReminderToggleProps {
   surveyId?: string;
   onConfigChange: (config: CallReminderConfig) => void;
   initialConfig?: CallReminderConfig;
+  showPhoneInput?: boolean; // Optional prop to control phone input visibility
 }
 
 export function CallReminderToggle({ 
   surveyTopic, 
   surveyId, 
   onConfigChange, 
-  initialConfig 
+  initialConfig,
+  showPhoneInput = true
 }: CallReminderToggleProps) {
   const [enabled, setEnabled] = useState(initialConfig?.enabled || false);
   const [phoneNumber, setPhoneNumber] = useState(initialConfig?.phoneNumber || '');
@@ -154,22 +156,24 @@ export function CallReminderToggle({
 
       {enabled && (
         <div className="space-y-4">
-          {/* Phone Number Input */}
-          <div className="p-4 bg-white dark:bg-gray-800 rounded-lg border border-orange-200 dark:border-orange-600">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Your Phone Number (For Testing)
-            </label>
-            <input
-              type="tel"
-              value={phoneNumber}
-              onChange={handlePhoneNumberChange}
-              placeholder="+1 (555) 123-4567"
-              className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
-            />
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              Phone numbers will be mapped to email recipients on the send survey page. Format: +1 (XXX) XXX-XXXX
-            </p>
-          </div>
+          {/* Phone Number Input - only show if showPhoneInput is true */}
+          {showPhoneInput && (
+            <div className="p-4 bg-white dark:bg-gray-800 rounded-lg border border-orange-200 dark:border-orange-600">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Your Phone Number (For Testing)
+              </label>
+              <input
+                type="tel"
+                value={phoneNumber}
+                onChange={handlePhoneNumberChange}
+                placeholder="+1 (555) 123-4567"
+                className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
+              />
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Phone numbers will be mapped to email recipients on the send survey page. Format: +1 (XXX) XXX-XXXX
+              </p>
+            </div>
+          )}
 
           {/* Configuration Note */}
           <div className="flex items-start gap-3 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-700">
@@ -193,9 +197,11 @@ export function CallReminderToggle({
             </h4>
             <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
               <p>• Survey Topic: <span className="font-medium text-gray-900 dark:text-white">"{surveyTopic}"</span></p>
-              <p>• Your Phone: <span className="font-medium text-gray-900 dark:text-white">{phoneNumber || 'Not set'}</span></p>
-              <p>• Trigger Condition: <span className="font-medium text-gray-900 dark:text-white">Immediate when non-responder detected</span></p>
-              <p>• Configuration: <span className="font-medium text-gray-900 dark:text-white">Will be completed on send survey page</span></p>
+              {showPhoneInput && (
+                <p>• Your Phone: <span className="font-medium text-gray-900 dark:text-white">{phoneNumber || 'Not set'}</span></p>
+              )}
+              <p>• Trigger Condition: <span className="font-medium text-gray-900 dark:text-white">70% of survey duration after first response</span></p>
+              <p>• Configuration: <span className="font-medium text-gray-900 dark:text-white">{showPhoneInput ? 'Will be completed on send survey page' : 'Phone numbers will be collected on send survey page'}</span></p>
             </div>
           </div>
 

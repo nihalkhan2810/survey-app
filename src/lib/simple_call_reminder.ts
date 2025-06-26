@@ -71,7 +71,7 @@ export const triggerCallsForNonResponders = async (surveyId: string): Promise<{ 
 };
 
 /**
- * Make a VAPI call to a specific phone number using the same flow as manual calls
+ * Make a VAPI call to a specific phone number using the same flow as the VapiCallModal (Bob)
  */
 const makeVAPICall = async (surveyId: string, phoneNumber: string): Promise<{ success: boolean; callId?: string; error?: string }> => {
   try {
@@ -90,47 +90,34 @@ const makeVAPICall = async (surveyId: string, phoneNumber: string): Promise<{ su
     
     const surveyData = await surveyResponse.json();
     
-    // Step 1: Create VAPI assistant (same as manual call button)
-    const assistantResponse = await fetch(`${appBaseUrl}/api/surveys/vapi-assistant`, {
+    // Use the same direct VAPI call approach as VapiCallModal (Bob)
+    const callResponse = await fetch(`${appBaseUrl}/api/calls/vapi/start`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         surveyId: surveyId,
-        surveyData: surveyData
-      }),
-    });
-    
-    if (!assistantResponse.ok) {
-      const errorData = await assistantResponse.text();
-      return { success: false, error: `Failed to create assistant: ${errorData}` };
-    }
-    
-    const assistantResult = await assistantResponse.json();
-    const assistantId = assistantResult.assistantId;
-    
-    // Step 2: Make call using the assistant (same as manual call button)
-    const callResponse = await fetch(`${appBaseUrl}/api/surveys/vapi-assistant`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        assistantId: assistantId,
-        phoneNumber: phoneNumber,
-        surveyId: surveyId
+        phoneNumbers: [phoneNumber],
+        surveyData: {
+          topic: surveyData.topic,
+          questions: surveyData.questions
+        }
       }),
     });
     
     if (!callResponse.ok) {
-      const errorData = await callResponse.text();
-      return { success: false, error: `Failed to make call: ${errorData}` };
+      const errorData = await callResponse.json();
+      return { success: false, error: errorData.message || `HTTP ${callResponse.status}` };
     }
     
     const callResult = await callResponse.json();
     
-    return { success: true, callId: callResult.callId };
+    if (callResult.successful > 0 && callResult.calls && callResult.calls.length > 0) {
+      return { success: true, callId: callResult.calls[0].callId };
+    } else {
+      return { success: false, error: callResult.errors?.[0]?.error || 'Unknown error' };
+    }
   } catch (error) {
     return { success: false, error: error.message };
   }

@@ -297,6 +297,11 @@ export default function SendSurveyPage() {
   // Call reminder states
   const [callReminderEnabled, setCallReminderEnabled] = useState(false);
   const [sentSurveyId, setSentSurveyId] = useState<string | null>(null);
+  
+  // Survey date editing states
+  const [editingDates, setEditingDates] = useState(false);
+  const [editedStartDate, setEditedStartDate] = useState('');
+  const [editedEndDate, setEditedEndDate] = useState('');
   const [triggeringCalls, setTriggeringCalls] = useState(false);
   const [forceCallReminderMode, setForceCallReminderMode] = useState(false);
 
@@ -332,6 +337,11 @@ export default function SendSurveyPage() {
       
       // Check if call reminder is enabled for this survey
       setCallReminderEnabled((selectedSurvey as any).call_reminder_enabled || false);
+      
+      // Populate edited dates with current survey dates
+      const survey = selectedSurvey as any;
+      setEditedStartDate(survey.start_date || '');
+      setEditedEndDate(survey.end_date || '');
     }
   }, [selectedSurvey]);
 
@@ -512,6 +522,37 @@ export default function SendSurveyPage() {
     }
   };
 
+  const handleSaveSurveyDates = async () => {
+    if (!selectedSurvey || !editedStartDate || !editedEndDate) return;
+    
+    try {
+      const response = await fetch(`/api/surveys/${selectedSurvey.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          start_date: editedStartDate,
+          end_date: editedEndDate
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to update survey dates');
+      }
+      
+      // Update the selected survey state
+      setSelectedSurvey({
+        ...selectedSurvey,
+        start_date: editedStartDate,
+        end_date: editedEndDate
+      } as any);
+      
+      setEditingDates(false);
+      setStatus('Survey dates updated successfully!');
+    } catch (error: any) {
+      setStatus(`Error updating dates: ${error.message}`);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -650,6 +691,105 @@ export default function SendSurveyPage() {
                 ))}
               </select>
             </div>
+
+            {/* Survey Dates Section */}
+            {selectedSurvey && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    Survey Timeline
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={() => setEditingDates(!editingDates)}
+                    className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    {editingDates ? 'Cancel' : 'Edit Dates'}
+                  </button>
+                </div>
+                
+                {editingDates ? (
+                  <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-6 border border-blue-200 dark:border-blue-700">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Start Date
+                        </label>
+                        <input
+                          type="datetime-local"
+                          value={editedStartDate}
+                          onChange={(e) => setEditedStartDate(e.target.value)}
+                          className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          End Date
+                        </label>
+                        <input
+                          type="datetime-local"
+                          value={editedEndDate}
+                          onChange={(e) => setEditedEndDate(e.target.value)}
+                          className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex gap-3">
+                      <button
+                        type="button"
+                        onClick={handleSaveSurveyDates}
+                        className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                      >
+                        Save Changes
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingDates(false);
+                          const survey = selectedSurvey as any;
+                          setEditedStartDate(survey.start_date || '');
+                          setEditedEndDate(survey.end_date || '');
+                        }}
+                        className="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+                    <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                      <div>
+                        <span className="font-medium">Start:</span> {
+                          (selectedSurvey as any).start_date ? 
+                          new Date((selectedSurvey as any).start_date).toLocaleString() : 
+                          'Not set'
+                        }
+                      </div>
+                      <div>
+                        <span className="font-medium">End:</span> {
+                          (selectedSurvey as any).end_date ? 
+                          new Date((selectedSurvey as any).end_date).toLocaleString() : 
+                          'Not set'
+                        }
+                      </div>
+                      {(selectedSurvey as any).start_date && (selectedSurvey as any).end_date && (
+                        <div>
+                          <span className="font-medium">Duration:</span> {
+                            Math.ceil(
+                              (new Date((selectedSurvey as any).end_date).getTime() - 
+                               new Date((selectedSurvey as any).start_date).getTime()) / 
+                              (1000 * 60)
+                            )
+                          } minutes
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Recipients Section */}
             <div className="space-y-6">

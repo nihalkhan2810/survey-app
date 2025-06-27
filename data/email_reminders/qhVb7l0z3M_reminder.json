@@ -1,0 +1,13 @@
+{
+  "surveyId": "qhVb7l0z3M",
+  "emails": [
+    "mohammednihal281001@gmail.com"
+  ],
+  "surveyTopic": "nothin",
+  "surveyLink": "http://localhost:3000/survey/qhVb7l0z3M",
+  "reminderTime": "2025-06-27T00:10:00.000Z",
+  "status": "sent",
+  "createdAt": "2025-06-27T00:07:27.530Z",
+  "testMode": true,
+  "sentAt": "2025-06-27T00:10:01.079Z"
+}

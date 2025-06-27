@@ -302,6 +302,10 @@ export default function SendSurveyPage() {
   const [editingDates, setEditingDates] = useState(false);
   const [editedStartDate, setEditedStartDate] = useState('');
   const [editedEndDate, setEditedEndDate] = useState('');
+  
+  // Email reminder states
+  const [autoSendReminders, setAutoSendReminders] = useState(false);
+  const [testReminderMode, setTestReminderMode] = useState(false);
   const [triggeringCalls, setTriggeringCalls] = useState(false);
   const [forceCallReminderMode, setForceCallReminderMode] = useState(false);
 
@@ -605,6 +609,12 @@ export default function SendSurveyPage() {
         requestBody.callReminderEnabled = true;
       }
       
+      // Include email reminder options
+      if (autoSendReminders) {
+        requestBody.autoSendReminders = true;
+        requestBody.testReminderMode = testReminderMode;
+      }
+      
       const response = await fetch('/api/send-survey', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -613,12 +623,21 @@ export default function SendSurveyPage() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || 'Failed to send emails.');
       
+      let statusMessage = 'Emails sent successfully!';
+      
+      if (data.emailReminderScheduled) {
+        statusMessage += ` Email reminder scheduled ${testReminderMode ? '(test mode: 2 min)' : '(6 hours before expiry)'}.`;
+      }
+      
       if ((callReminderEnabled || forceCallReminderMode) && emailInputMethod === 'manual') {
-        setStatus('Emails sent successfully! Call reminders are now active for non-responders.');
+        statusMessage += ' Call reminders are now active for non-responders.';
         setSentSurveyId(selectedSurvey.id);
-      } else {
-        setStatus('Emails sent successfully!');
-        setTimeout(() => router.push('/surveys'), 2000);
+      }
+      
+      setStatus(statusMessage);
+      
+      if (!((callReminderEnabled || forceCallReminderMode) && emailInputMethod === 'manual')) {
+        setTimeout(() => router.push('/surveys'), 3000);
       }
     } catch (error: any) {
       setStatus(`Error: ${error.message}`);
@@ -1458,6 +1477,99 @@ export default function SendSurveyPage() {
                   </div>
                 )}
               </div>
+
+            {/* Email Reminder Settings */}
+            {selectedSurvey && (
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                  <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                  Email Reminder Settings
+                </h3>
+                
+                <div className="bg-purple-50 dark:bg-purple-900/20 rounded-xl p-6 border border-purple-200 dark:border-purple-700">
+                  {/* Auto Send Reminders Toggle */}
+                  <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-lg border border-purple-200 dark:border-purple-600 mb-4">
+                    <div className="flex items-center gap-3">
+                      <Clock className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                      <div>
+                        <p className="font-medium text-gray-900 dark:text-white">
+                          Send Automatic Email Reminders
+                        </p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          Automatically send reminder 6 hours before survey expires (for surveys > 1 day)
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setAutoSendReminders(!autoSendReminders)}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        autoSendReminders ? 'bg-purple-600' : 'bg-gray-200 dark:bg-gray-700'
+                      }`}
+                    >
+                      <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        autoSendReminders ? 'translate-x-6' : 'translate-x-1'
+                      }`} />
+                    </button>
+                  </div>
+
+                  {autoSendReminders && (
+                    <div className="space-y-4">
+                      {/* Test Mode Toggle */}
+                      <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-lg border border-blue-200 dark:border-blue-600">
+                        <div className="flex items-center gap-3">
+                          <div className="h-5 w-5 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
+                            <div className="h-2 w-2 bg-blue-600 dark:bg-blue-400 rounded-full animate-pulse"></div>
+                          </div>
+                          <div>
+                            <p className="font-medium text-gray-900 dark:text-white">
+                              Test Mode (2 minutes before expiry)
+                            </p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                              For testing: send reminder 2 minutes before expiry instead of 6 hours
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setTestReminderMode(!testReminderMode)}
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                            testReminderMode ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'
+                          }`}
+                        >
+                          <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            testReminderMode ? 'translate-x-6' : 'translate-x-1'
+                          }`} />
+                        </button>
+                      </div>
+
+                      {/* Preview */}
+                      <div className="p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                          Reminder Preview
+                        </h4>
+                        <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                          {selectedSurvey && (
+                            <>
+                              <p>• Survey: <span className="font-medium text-gray-900 dark:text-white">{(selectedSurvey as any).topic}</span></p>
+                              <p>• Condition: <span className="font-medium text-gray-900 dark:text-white">
+                                {testReminderMode ? '2 minutes before expiry (TEST)' : '6 hours before expiry (surveys > 1 day)'}
+                              </span></p>
+                              {(selectedSurvey as any).end_date && (
+                                <p>• Survey ends: <span className="font-medium text-gray-900 dark:text-white">
+                                  {new Date((selectedSurvey as any).end_date).toLocaleString()}
+                                </span></p>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
               <div className="flex gap-4 ml-auto">
                 <button 
                   type="button"

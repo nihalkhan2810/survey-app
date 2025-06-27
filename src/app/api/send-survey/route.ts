@@ -1,9 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 import { createParticipants } from '@/lib/participant_tracker';
+import { scheduleEmailReminders } from '@/lib/email_reminder_scheduler';
 
 export async function POST(req: NextRequest) {
-  const { surveyLink, emailSubject, emailBody, emails, phoneNumbers, callReminderEnabled, surveyId } = await req.json();
+  const { 
+    surveyLink, 
+    emailSubject, 
+    emailBody, 
+    emails, 
+    phoneNumbers, 
+    callReminderEnabled, 
+    surveyId,
+    autoSendReminders,
+    testReminderMode
+  } = await req.json();
 
   if (!surveyLink || !emailSubject || !emailBody || !emails || !emails.length) {
     return NextResponse.json({ message: 'Missing required fields' }, { status: 400 });
@@ -57,9 +68,39 @@ export async function POST(req: NextRequest) {
       console.log(`Calls will be triggered immediately after the first participant responds`);
     }
     
+    // Schedule email reminders if enabled
+    let emailReminderScheduled = false;
+    if (autoSendReminders && surveyId) {
+      try {
+        // Get survey data to get end date
+        const surveyResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/surveys/${surveyId}`);
+        if (surveyResponse.ok) {
+          const surveyData = await surveyResponse.json();
+          
+          if (surveyData.end_date) {
+            // Extract survey topic from subject or use surveyData
+            const surveyTopic = surveyData.topic || emailSubject.replace('Survey: ', '');
+            
+            emailReminderScheduled = await scheduleEmailReminders(
+              surveyId,
+              emails,
+              surveyTopic,
+              surveyLink,
+              surveyData.end_date,
+              testReminderMode || false
+            );
+          }
+        }
+      } catch (reminderError) {
+        console.error('Failed to schedule email reminder:', reminderError);
+        // Don't fail the entire send operation if reminder scheduling fails
+      }
+    }
+    
     return NextResponse.json({ 
       message: 'Emails sent successfully',
       surveyId,
+      emailReminderScheduled,
       participantBatch: participantBatch ? {
         batchId: participantBatch.batchId,
         participantCount: participantBatch.participants.length,

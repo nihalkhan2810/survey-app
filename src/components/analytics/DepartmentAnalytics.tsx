@@ -50,71 +50,73 @@ export function DepartmentAnalytics({ onDepartmentClick }: DepartmentAnalyticsPr
             transition={{ delay: index * 0.1 }}
             whileHover={{ scale: 1.01 }}
             onClick={() => onDepartmentClick?.(department)}
-            className="group relative overflow-hidden bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4 border border-gray-100 dark:border-gray-700/30 hover:border-blue-200 dark:hover:border-blue-800/50 transition-all cursor-pointer"
+            className="group relative bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4 border border-gray-100 dark:border-gray-700/30 hover:border-blue-200 dark:hover:border-blue-800/50 transition-all cursor-pointer"
           >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                {/* Rank */}
-                <div className={`flex-shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br ${getDepartmentGradient(index)} flex items-center justify-center shadow-lg`}>
-                  <span className="text-white font-bold">#{index + 1}</span>
+            <div className="space-y-3">
+              {/* Header Row */}
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                  {/* Rank */}
+                  <div className={`flex-shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br ${getDepartmentGradient(index)} flex items-center justify-center shadow-lg`}>
+                    <span className="text-white font-bold">#{index + 1}</span>
+                  </div>
+
+                  {/* Department Info */}
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-semibold text-gray-900 dark:text-white mb-1 truncate">
+                      {department.name}
+                    </h4>
+                    <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
+                      <div className="flex items-center gap-1">
+                        <Users className="h-3 w-3 flex-shrink-0" />
+                        <span>{department.professorCount} professors</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <BookOpen className="h-3 w-3 flex-shrink-0" />
+                        <span>{department.totalResponses} reviews</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
-                {/* Department Info */}
-                <div className="flex-1 min-w-0">
-                  <h4 className="font-semibold text-gray-900 dark:text-white mb-1">
-                    {department.name}
-                  </h4>
-                  <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                {/* Rating and Arrow */}
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <div className={`px-2 py-1 rounded-lg font-medium text-sm ${getRatingColor(department.averageRating)}`}>
                     <div className="flex items-center gap-1">
-                      <Users className="h-3 w-3" />
-                      <span>{department.professorCount} professors</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <BookOpen className="h-3 w-3" />
-                      <span>{department.totalResponses} reviews</span>
+                      <Star className="h-3 w-3 fill-current" />
+                      <span>{department.averageRating.toFixed(1)}</span>
                     </div>
                   </div>
-                  
-                  {/* Top Course */}
-                  <div className="mt-2">
-                    <span className="px-2 py-1 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded-full">
-                      Top: {department.topCourse}
-                    </span>
-                  </div>
+                  <ChevronRight className="h-4 w-4 text-gray-400 group-hover:translate-x-1 transition-transform" />
                 </div>
               </div>
 
-              <div className="flex items-center gap-4">
+              {/* Second Row - Course and Sentiment */}
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <span className="px-2 py-1 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded-full">
+                    Top: {department.topCourse}
+                  </span>
+                </div>
+                
                 {/* Sentiment Indicators */}
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 text-xs">
                   <div className="flex items-center gap-1">
-                    <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
-                    <span className="text-xs text-gray-500">{department.sentiment.positive}%</span>
+                    <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                    <span className="text-gray-500">{department.sentiment.positive}%</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <div className="w-3 h-3 bg-amber-500 rounded-full"></div>
-                    <span className="text-xs text-gray-500">{department.sentiment.neutral}%</span>
+                    <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
+                    <span className="text-gray-500">{department.sentiment.neutral}%</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <div className="w-3 h-3 bg-rose-500 rounded-full"></div>
-                    <span className="text-xs text-gray-500">{department.sentiment.negative}%</span>
-                  </div>
-                </div>
-
-                {/* Rating */}
-                <div className={`px-3 py-2 rounded-lg font-medium ${getRatingColor(department.averageRating)}`}>
-                  <div className="flex items-center gap-1">
-                    <Star className="h-4 w-4 fill-current" />
-                    <span>{department.averageRating.toFixed(1)}</span>
+                    <div className="w-2 h-2 bg-rose-500 rounded-full"></div>
+                    <span className="text-gray-500">{department.sentiment.negative}%</span>
                   </div>
                 </div>
-
-                <ChevronRight className="h-5 w-5 text-gray-400 group-hover:translate-x-1 transition-transform" />
               </div>
-            </div>
 
-            {/* Progress Bar */}
-            <div className="mt-4">
+              {/* Progress Bar */}
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                 <motion.div
                   initial={{ width: 0 }}

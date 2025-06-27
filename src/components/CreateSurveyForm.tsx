@@ -284,8 +284,9 @@ export function CreateSurveyForm() {
   };
 
   const handleCopyLink = () => {
-    if (surveyLink) {
-      navigator.clipboard.writeText(surveyLink);
+    if (createdSurvey?.id) {
+      const link = getSurveyUrl(createdSurvey.id);
+      navigator.clipboard.writeText(link);
       setStatus('Survey link copied to clipboard!');
       setTimeout(() => setStatus('Survey created successfully!'), 2000);
     }

@@ -16,6 +16,11 @@ interface Response {
   answers: Record<string, string>;
   type: 'text' | 'voice-extracted' | 'anonymous';
   email?: string;
+  respondentEmail?: string; // Email used for tracking (from URL)
+  identity?: {
+    isAnonymous: boolean;
+    email?: string; // Email when user chooses to identify
+  };
   callSid?: string;
   metadata?: {
     extractedFrom?: string;
@@ -43,6 +48,20 @@ export default function ResponsesPage() {
   const [selectedResponse, setSelectedResponse] = useState<Response | null>(null);
   const [showAnalytics, setShowAnalytics] = useState(false);
 
+  // Helper function to get the display email for a response
+  const getDisplayEmail = (response: Response): string | null => {
+    // If user chose to identify themselves, show the email from identity
+    if (response.identity && !response.identity.isAnonymous && response.identity.email) {
+      return response.identity.email;
+    }
+    // Otherwise, check for legacy email field
+    if (response.email) {
+      return response.email;
+    }
+    // Return null for anonymous responses
+    return null;
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -51,13 +70,30 @@ export default function ResponsesPage() {
           fetch('/api/surveys-with-dummy')
         ]);
         
+        if (!responsesRes.ok) {
+          throw new Error(`Failed to fetch responses: ${responsesRes.status} ${responsesRes.statusText}`);
+        }
+        
+        if (!surveysRes.ok) {
+          throw new Error(`Failed to fetch surveys: ${surveysRes.status} ${surveysRes.statusText}`);
+        }
+        
         const responsesData = await responsesRes.json();
         const surveysData = await surveysRes.json();
         
-        setResponses(responsesData);
-        setSurveys(surveysData);
+        // Ensure we have valid arrays
+        const validResponses = Array.isArray(responsesData) ? responsesData : [];
+        const validSurveys = Array.isArray(surveysData) ? surveysData : [];
+        
+        setResponses(validResponses);
+        setSurveys(validSurveys);
+        
+        console.log(`Loaded ${validResponses.length} responses and ${validSurveys.length} surveys`);
       } catch (error) {
         console.error('Error fetching data:', error);
+        // Set empty arrays as fallback to prevent crashes
+        setResponses([]);
+        setSurveys([]);
       } finally {
         setLoading(false);
       }
@@ -67,12 +103,15 @@ export default function ResponsesPage() {
   }, []);
 
   const filteredResponses = responses.filter((response) => {
+    const displayEmail = getDisplayEmail(response);
     const matchesSearch = searchTerm === '' || 
       response.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (response.email && response.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      Object.values(response.answers).some(answer => 
-        answer.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+      (displayEmail && displayEmail.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      Object.values(response.answers || {}).some(answer => {
+        // Safely convert answer to string before searching
+        const answerStr = typeof answer === 'string' ? answer : String(answer || '');
+        return answerStr.toLowerCase().includes(searchTerm.toLowerCase());
+      });
     
     const matchesType = selectedType === 'all' || response.type === selectedType;
     const matchesSurvey = selectedSurvey === 'all' || response.surveyId === selectedSurvey;
@@ -110,27 +149,92 @@ export default function ResponsesPage() {
   });
 
   const exportToCSV = () => {
-    const headers = ['ID', 'Survey ID', 'Type', 'Email', 'Submitted At', 'Answers'];
-    const csvData = sortedResponses.map(response => [
-      response.id,
-      response.surveyId,
-      response.type,
-      response.email || 'Anonymous',
-      response.submittedAt,
-      JSON.stringify(response.answers)
-    ]);
+    if (sortedResponses.length === 0) {
+      alert('No responses to export. Please ensure you have responses to export.');
+      return;
+    }
+
+    // Enhanced headers with more useful information
+    const headers = [
+      'Response ID',
+      'Survey ID', 
+      'Survey Title',
+      'Response Type',
+      'Respondent Email',
+      'Submitted Date',
+      'Submitted Time',
+      'Response Data',
+      'Call SID',
+      'Metadata'
+    ];
     
+    const csvData = sortedResponses.map(response => {
+      const survey = surveys.find(s => s.id === response.surveyId);
+      const submittedDate = new Date(response.submittedAt);
+      const displayEmail = getDisplayEmail(response);
+      
+      // Format answers for better readability
+      const formattedAnswers = Object.entries(response.answers || {})
+        .map(([questionIndex, answer]) => {
+          const questionText = survey?.questions?.[parseInt(questionIndex)]?.text || `Question ${parseInt(questionIndex) + 1}`;
+          const answerText = typeof answer === 'string' ? answer : String(answer || '');
+          return `${questionText}: ${answerText}`;
+        })
+        .join(' | ');
+
+      return [
+        response.id || '',
+        response.surveyId || '',
+        survey?.title || survey?.topic || 'Unknown Survey',
+        response.type || 'unknown',
+        displayEmail || 'Anonymous',
+        submittedDate.toLocaleDateString(),
+        submittedDate.toLocaleTimeString(),
+        formattedAnswers || 'No answers',
+        response.callSid || '',
+        response.metadata ? JSON.stringify(response.metadata) : ''
+      ];
+    });
+    
+    // Create CSV content with proper escaping for special characters
     const csvContent = [headers, ...csvData]
-      .map(row => row.map(field => `"${field}"`).join(','))
+      .map(row => row.map(field => {
+        // Escape quotes and wrap in quotes
+        const escaped = String(field || '').replace(/"/g, '""');
+        return `"${escaped}"`;
+      }).join(','))
       .join('\n');
     
-    const blob = new Blob([csvContent], { type: 'text/csv' });
+    // Create and download file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `survey-responses-${new Date().toISOString().split('T')[0]}.csv`;
+    
+    // More descriptive filename with filter info
+    let filename = `survey-responses-${new Date().toISOString().split('T')[0]}`;
+    if (selectedSurvey !== 'all') {
+      const survey = surveys.find(s => s.id === selectedSurvey);
+      filename += `-${(survey?.title || survey?.topic || 'survey').replace(/[^a-z0-9]/gi, '_')}`;
+    }
+    if (selectedType !== 'all') {
+      filename += `-${selectedType}`;
+    }
+    if (searchTerm) {
+      filename += `-filtered`;
+    }
+    filename += '.csv';
+    
+    a.download = filename;
+    document.body.appendChild(a);
     a.click();
+    document.body.removeChild(a);
     window.URL.revokeObjectURL(url);
+    
+    // Show success message
+    const exportedCount = sortedResponses.length;
+    const totalCount = responses.length;
+    alert(`Successfully exported ${exportedCount} responses${exportedCount !== totalCount ? ` (filtered from ${totalCount} total responses)` : ''}.`);
   };
 
   if (loading) {
@@ -220,7 +324,10 @@ export default function ResponsesPage() {
 
       {/* Responses Table */}
       <ResponsesTable
-        responses={sortedResponses}
+        responses={sortedResponses.map(response => ({
+          ...response,
+          email: getDisplayEmail(response) // Map the display email to the email field for the table
+        }))}
         surveys={surveys}
         onViewResponse={setSelectedResponse}
       />

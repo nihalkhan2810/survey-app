@@ -11,6 +11,11 @@ interface Response {
   answers: Record<string, string>;
   type: 'text' | 'voice-extracted' | 'anonymous';
   email?: string;
+  respondentEmail?: string; // Email used for tracking (from URL)
+  identity?: {
+    isAnonymous: boolean;
+    email?: string; // Email when user chooses to identify
+  };
   callSid?: string;
   metadata?: {
     extractedFrom?: string;

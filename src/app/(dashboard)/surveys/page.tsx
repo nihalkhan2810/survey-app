@@ -60,14 +60,14 @@ export default function SurveysPage() {
   };
 
   // Function to determine survey status based on dates
-  const getSurveyStatus = (survey: Survey): SurveyStatus => {
+  const getSurveyStatus = (survey: Survey, timeToCheck: Date = currentTime): SurveyStatus => {
     if (!survey.start_date || !survey.end_date) {
       return 'active'; // Default for surveys without dates
     }
     
     const startDate = new Date(survey.start_date);
     const endDate = new Date(survey.end_date);
-    const now = currentTime;
+    const now = timeToCheck;
     
     if (now < startDate) {
       return 'yet-to-start';
@@ -78,14 +78,56 @@ export default function SurveysPage() {
     }
   };
 
-  // Update current time every minute for live status updates
+  // Schedule precise transitions for survey status changes
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 60000); // Update every minute
+    const scheduleNextTransition = () => {
+      const now = new Date();
+      let nextTransitionTime: Date | null = null;
+      
+      // Find the earliest upcoming transition (start or end date)
+      surveys.forEach(survey => {
+        if (survey.start_date && survey.end_date) {
+          const startDate = new Date(survey.start_date);
+          const endDate = new Date(survey.end_date);
+          
+          // Check start date if it's in the future
+          if (startDate > now) {
+            if (!nextTransitionTime || startDate < nextTransitionTime) {
+              nextTransitionTime = startDate;
+            }
+          }
+          
+          // Check end date if it's in the future
+          if (endDate > now) {
+            if (!nextTransitionTime || endDate < nextTransitionTime) {
+              nextTransitionTime = endDate;
+            }
+          }
+        }
+      });
+      
+      // Schedule update for the next transition
+      if (nextTransitionTime) {
+        const timeUntilTransition = nextTransitionTime.getTime() - now.getTime();
+        
+        // Add small buffer (1 second) to ensure transition happens
+        const timeout = setTimeout(() => {
+          setCurrentTime(new Date());
+          scheduleNextTransition(); // Schedule the next one
+        }, timeUntilTransition + 1000);
+        
+        return timeout;
+      }
+      
+      return null;
+    };
     
-    return () => clearInterval(timer);
-  }, []);
+    const timeout = scheduleNextTransition();
+    
+    return () => {
+      if (timeout) clearTimeout(timeout);
+    };
+  }, [surveys, currentTime]);
 
   useEffect(() => {
     setLoading(true);
@@ -146,7 +188,7 @@ export default function SurveysPage() {
     const survey = surveys.find(s => s.id === id);
     if (!survey) return;
     
-    const status = getSurveyStatus(survey);
+    const status = getSurveyStatus(survey, currentTime);
     
     // Prevent deletion of active surveys
     if (status === 'active') {
@@ -177,8 +219,8 @@ export default function SurveysPage() {
   };
 
   // Status display component with animations
-  const StatusIndicator = ({ survey }: { survey: Survey }) => {
-    const status = getSurveyStatus(survey);
+  const StatusIndicator = ({ survey, currentTime }: { survey: Survey; currentTime: Date }) => {
+    const status = getSurveyStatus(survey, currentTime);
     
     const statusConfig = {
       'yet-to-start': {
@@ -341,7 +383,7 @@ export default function SurveysPage() {
                       </span>
                     </div>
                     <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-2">{survey.topic}</h2>
-                    <StatusIndicator survey={survey} />
+                    <StatusIndicator survey={survey} currentTime={currentTime} />
                   </div>
                   <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 p-4">
                     <div className="flex items-center justify-center gap-2">
@@ -436,7 +478,7 @@ export default function SurveysPage() {
                         <div>
                           <h2 className="text-xl font-bold text-gray-900 dark:text-white">{survey.topic}</h2>
                           <div className="flex items-center gap-4 mt-2">
-                            <StatusIndicator survey={survey} />
+                            <StatusIndicator survey={survey} currentTime={currentTime} />
                             <span className="text-sm text-gray-500 dark:text-gray-400">
                               Created {new Date(survey.created_at).toLocaleDateString()}
                             </span>

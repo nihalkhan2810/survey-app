@@ -25,32 +25,31 @@ export function ResponsesFilters({
   sortOrder,
   setSortOrder
 }: ResponsesFiltersProps) {
-  const responseTypes = [
-    { value: 'all', label: 'All Types' },
-    { value: 'text', label: 'Text Responses' },
-    { value: 'voice-extracted', label: 'Voice Responses' },
-    { value: 'anonymous', label: 'Anonymous' }
+  const responseModes = [
+    { value: 'all', label: 'All Modes' },
+    { value: 'email', label: 'Email' },
+    { value: 'voice-extracted', label: 'Voice' }
   ];
 
   const sortOptions = [
     { value: 'date', label: 'Date' },
     { value: 'survey', label: 'Survey' },
-    { value: 'type', label: 'Type' },
+    { value: 'type', label: 'Mode' },
     { value: 'response_count', label: 'Response Volume' }
   ];
 
   return (
     <div className="flex flex-col sm:flex-row gap-3">
-      {/* Type Filter */}
+      {/* Mode Filter */}
       <div className="relative">
         <select
           value={selectedType}
           onChange={(e) => setSelectedType(e.target.value)}
           className="appearance-none bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 pr-10 text-sm focus:ring-2 focus:ring-violet-500 focus:border-transparent min-w-[140px]"
         >
-          {responseTypes.map(type => (
-            <option key={type.value} value={type.value}>
-              {type.label}
+          {responseModes.map(mode => (
+            <option key={mode.value} value={mode.value}>
+              {mode.label}
             </option>
           ))}
         </select>

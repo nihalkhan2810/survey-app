@@ -113,7 +113,11 @@ export default function ResponsesPage() {
         return answerStr.toLowerCase().includes(searchTerm.toLowerCase());
       });
     
-    const matchesType = selectedType === 'all' || response.type === selectedType;
+    // Update type filtering to match new mode concept
+    const matchesType = selectedType === 'all' || 
+      (selectedType === 'email' && response.type !== 'voice-extracted') ||
+      (selectedType === 'voice-extracted' && response.type === 'voice-extracted');
+    
     const matchesSurvey = selectedSurvey === 'all' || response.surveyId === selectedSurvey;
     
     return matchesSearch && matchesType && matchesSurvey;
@@ -159,7 +163,7 @@ export default function ResponsesPage() {
       'Response ID',
       'Survey ID', 
       'Survey Title',
-      'Response Type',
+      'Response Mode',
       'Respondent Email',
       'Submitted Date',
       'Submitted Time',
@@ -186,7 +190,7 @@ export default function ResponsesPage() {
         response.id || '',
         response.surveyId || '',
         survey?.title || survey?.topic || 'Unknown Survey',
-        response.type || 'unknown',
+        response.type === 'voice-extracted' ? 'Voice' : 'Email',
         displayEmail || 'Anonymous',
         submittedDate.toLocaleDateString(),
         submittedDate.toLocaleTimeString(),

@@ -37,29 +37,23 @@ interface ResponsesTableProps {
 }
 
 export function ResponsesTable({ responses, surveys, onViewResponse }: ResponsesTableProps) {
-  const getTypeIcon = (type: string) => {
+  const getModeIcon = (type: string) => {
     switch (type) {
       case 'voice-extracted':
         return <Phone className="h-4 w-4 text-emerald-600" />;
-      case 'text':
-        return <MessageSquare className="h-4 w-4 text-blue-600" />;
-      case 'anonymous':
-        return <User className="h-4 w-4 text-gray-600" />;
       default:
-        return <MessageSquare className="h-4 w-4 text-gray-600" />;
+        // All non-voice responses are considered Email mode
+        return <Mail className="h-4 w-4 text-blue-600" />;
     }
   };
 
-  const getTypeLabel = (type: string) => {
+  const getModeLabel = (type: string) => {
     switch (type) {
       case 'voice-extracted':
         return 'Voice';
-      case 'text':
-        return 'Text';
-      case 'anonymous':
-        return 'Anonymous';
       default:
-        return 'Unknown';
+        // All non-voice responses are considered Email mode
+        return 'Email';
     }
   };
 
@@ -158,7 +152,7 @@ export function ResponsesTable({ responses, surveys, onViewResponse }: Responses
           <thead className="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700">
             <tr>
               <th className="text-left py-4 px-6 text-sm font-semibold text-gray-900 dark:text-white">
-                Type & ID
+                Mode
               </th>
               <th className="text-left py-4 px-6 text-sm font-semibold text-gray-900 dark:text-white">
                 Survey
@@ -189,11 +183,11 @@ export function ResponsesTable({ responses, surveys, onViewResponse }: Responses
                 <td className="py-4 px-6">
                   <div className="flex items-center gap-3">
                     <div className="flex-shrink-0">
-                      {getTypeIcon(response.type)}
+                      {getModeIcon(response.type)}
                     </div>
                     <div>
                       <div className="text-sm font-medium text-gray-900 dark:text-white">
-                        {getTypeLabel(response.type)}
+                        {getModeLabel(response.type)}
                       </div>
                       <div className="text-xs text-gray-500 dark:text-gray-400 font-mono">
                         {response.id.slice(0, 8)}...

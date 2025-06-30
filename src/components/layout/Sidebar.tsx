@@ -3,8 +3,9 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence, useMotionValue, useSpring } from 'framer-motion';
-import { Home, ClipboardList, Calendar, LayoutGrid, ChartBar, MessageCircle, Menu, X } from 'lucide-react';
+import { Home, ClipboardList, Calendar, LayoutGrid, ChartBar, MessageCircle, Menu, X, PanelLeftClose } from 'lucide-react';
 import { useState, useRef } from 'react';
+import { SayzLogo, SayzIcon } from '@/components/SayzLogo';
 
 const navItems = [
     { name: 'Dashboard', href: '/dashboard', icon: Home, gradient: 'from-violet-500 to-purple-600' },
@@ -42,25 +43,67 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
             }}
             className="fixed left-0 top-0 z-50 h-screen bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl border-r border-gray-200/30 dark:border-gray-800/30 flex flex-col shadow-2xl"
         >
-            {/* Toggle Button */}
-            <div className="p-4 border-b border-gray-200/30 dark:border-gray-800/30">
-                <motion.button
-                    onClick={onToggle}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="w-8 h-8 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 rounded-lg transition-colors"
-                >
-                    <motion.div
-                        animate={{ rotate: isCollapsed ? 0 : 180 }}
-                        transition={{ duration: 0.2 }}
-                    >
-                        {isCollapsed ? <Menu className="h-4 w-4" /> : <X className="h-4 w-4" />}
-                    </motion.div>
-                </motion.button>
+            {/* Header Section */}
+            <div className="border-b border-gray-200/30 dark:border-gray-800/30">
+                {isCollapsed ? (
+                    <div className="flex flex-col items-center space-y-3 p-3">
+                        <AnimatePresence mode="wait">
+                            <motion.div
+                                key="collapsed"
+                                initial={{ opacity: 0, scale: 0.8 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.8 }}
+                                transition={{ duration: 0.2 }}
+                                className="flex items-center justify-center"
+                            >
+                                <SayzIcon size={20} />
+                            </motion.div>
+                        </AnimatePresence>
+                        
+                        {/* Expand button for collapsed state */}
+                        <motion.button
+                            onClick={onToggle}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="w-7 h-7 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 rounded-md transition-all duration-200"
+                            title="Expand sidebar"
+                        >
+                            <Menu className="h-4 w-4" />
+                        </motion.button>
+                    </div>
+                ) : (
+                    <div className="flex items-center justify-between p-4">
+                        <AnimatePresence mode="wait">
+                            <motion.div
+                                key="expanded"
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -10 }}
+                                transition={{ duration: 0.2 }}
+                                className="flex items-center gap-3"
+                            >
+                                <SayzLogo size={32} />
+                                <span className="text-lg font-semibold text-gray-800 dark:text-white">
+                                    Sayz
+                                </span>
+                            </motion.div>
+                        </AnimatePresence>
+                        
+                        <motion.button
+                            onClick={onToggle}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="w-7 h-7 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 rounded-md transition-all duration-200"
+                            title="Collapse sidebar"
+                        >
+                            <PanelLeftClose className="h-4 w-4" />
+                        </motion.button>
+                    </div>
+                )}
             </div>
 
             {/* Navigation */}
-            <nav className="flex flex-col p-3 space-y-1 flex-1 overflow-hidden relative">
+            <nav className="flex flex-col p-4 space-y-2 flex-1 overflow-hidden relative">
                 {/* Hover Trail Effect */}
                 <AnimatePresence>
                     {hoveredIndex !== null && (
@@ -144,10 +187,10 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
                         >
                             <Link href={item.href}>
                                 <motion.div
-                                    className={`relative flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 group
+                                    className={`relative flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} px-3 py-3 text-sm font-medium rounded-lg transition-all duration-200 group overflow-hidden
                                         ${isActive
-                                            ? 'text-white shadow-lg'
-                                            : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100/50 dark:hover:bg-gray-800/50'
+                                            ? 'text-white shadow-md'
+                                            : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100/60 dark:hover:bg-gray-800/60'
                                         }`}
                                     whileHover={{ scale: 1.02, transition: { duration: 0.1 } }}
                                     whileTap={{ scale: 0.98 }}
@@ -175,26 +218,22 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
                                         setHoveredIndex(null);
                                     }}
                                 >
+                                    {/* Active background - only when active */}
                                     {isActive && (
                                         <motion.div
                                             layoutId="sidebar-active-link"
-                                            className={`absolute inset-0 bg-gradient-to-r ${item.gradient} rounded-xl`}
+                                            className={`absolute inset-0 bg-gradient-to-r ${item.gradient} rounded-lg`}
                                             initial={false}
-                                            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                                            transition={{ type: 'spring', stiffness: 300, damping: 25 }}
                                         />
                                     )}
                                     
-                                    <motion.div 
-                                        className={`relative z-10 flex items-center justify-center ${isCollapsed ? 'w-6 h-6' : 'w-8 h-8'} rounded-lg transition-all duration-200 ${isActive ? 'bg-white/20' : 'bg-gray-100/50 dark:bg-gray-800/50 group-hover:bg-gray-200/50 dark:group-hover:bg-gray-700/50'}`}
-                                        animate={{ 
-                                            width: isCollapsed ? 24 : 32,
-                                            height: isCollapsed ? 24 : 32
-                                        }}
-                                        transition={{ duration: 0.2 }}
-                                    >
-                                        <item.icon className={`h-4 w-4 ${isActive ? 'text-white' : 'text-gray-600 dark:text-gray-400'}`} />
-                                    </motion.div>
+                                    {/* Icon */}
+                                    <div className="relative z-10 flex items-center justify-center flex-shrink-0">
+                                        <item.icon className={`h-5 w-5 ${isActive ? 'text-white' : 'text-gray-600 dark:text-gray-400'}`} />
+                                    </div>
                                     
+                                    {/* Label */}
                                     <AnimatePresence>
                                         {!isCollapsed && (
                                             <motion.span
@@ -202,7 +241,7 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
                                                 animate={{ opacity: 1, width: 'auto' }}
                                                 exit={{ opacity: 0, width: 0 }}
                                                 transition={{ duration: 0.2, delay: isCollapsed ? 0 : 0.1 }}
-                                                className="relative z-10 whitespace-nowrap overflow-hidden"
+                                                className="relative z-10 whitespace-nowrap overflow-hidden flex-1"
                                             >
                                                 {item.name}
                                             </motion.span>
@@ -215,7 +254,7 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
                 })}
             </nav>
 
-            {/* Pro Tip - Only show when expanded */}
+            {/* Footer - Only show when expanded */}
             <AnimatePresence>
                 {!isCollapsed && (
                     <motion.div
@@ -223,11 +262,11 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
                         animate={{ opacity: 1, height: 'auto' }}
                         exit={{ opacity: 0, height: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="p-3 border-t border-gray-200/30 dark:border-gray-800/30"
+                        className="p-4 border-t border-gray-200/30 dark:border-gray-800/30 mt-auto"
                     >
-                        <div className="p-3 bg-gradient-to-br from-violet-500/10 to-purple-500/10 dark:from-violet-500/20 dark:to-purple-500/20 rounded-xl">
-                            <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Pro tip</p>
-                            <p className="text-xs text-gray-800 dark:text-gray-200 mt-1">Press Ctrl+K for quick actions</p>
+                        <div className="p-3 bg-gradient-to-br from-emerald-500/5 to-blue-500/5 dark:from-emerald-500/10 dark:to-blue-500/10 rounded-lg border border-emerald-200/20 dark:border-emerald-800/20">
+                            <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Quick tip</p>
+                            <p className="text-xs text-gray-700 dark:text-gray-300">Use Ctrl+K for shortcuts</p>
                         </div>
                     </motion.div>
                 )}

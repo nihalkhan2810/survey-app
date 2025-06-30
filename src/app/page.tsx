@@ -33,9 +33,9 @@ export default function Home() {
     if (session) {
       try {
         if (session.user?.role === 'ADMIN') {
-          router.push('/admin')
+          router.push('/dashboard')
         } else {
-          router.push('/surveys')
+          router.push('/dashboard')
         }
       } catch (error) {
         console.error('Navigation error:', error)

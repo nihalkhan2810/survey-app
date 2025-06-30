@@ -5,35 +5,15 @@ import { ThemeSwitcher } from '@/components/ThemeSwitcher';
 import { User, LogOut, Shield } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { SayzLogo } from '@/components/SayzLogo';
 
 export function Header() {
     const { data: session } = useSession();
 
     return (
         <header className="sticky top-0 z-30 bg-white/60 dark:bg-gray-900/60 backdrop-blur-2xl border-b border-white/20 dark:border-gray-800/20 shadow-sm shadow-black/5">
-            <div className="flex items-center justify-between h-16 px-6 lg:px-8">
-                {/* Left spacer */}
-                <div className="flex-1"></div>
-                
-                {/* Centered Logo */}
-                <div className="flex items-center justify-center">
-                    <Link href="/dashboard">
-                        <motion.div
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            className="flex items-center gap-2 px-4 py-2 rounded-2xl hover:bg-white/40 dark:hover:bg-gray-800/40 transition-all duration-200 backdrop-blur-sm"
-                        >
-                            <SayzLogo size={28} />
-                            <span className="text-lg font-bold bg-gradient-to-r from-emerald-600 via-blue-600 to-purple-600 bg-clip-text text-transparent">
-                                Sayz
-                            </span>
-                        </motion.div>
-                    </Link>
-                </div>
-
+            <div className="flex items-center justify-end h-16 px-6 lg:px-8">
                 {/* Right section with user controls */}
-                <div className="flex items-center gap-2 flex-1 justify-end">
+                <div className="flex items-center gap-2">
                     <ThemeSwitcher />
 
                     {session?.user?.role === 'ADMIN' && (

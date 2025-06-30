@@ -38,9 +38,9 @@ export default function SignIn() {
         const session = await getSession()
         
         if (session?.user?.role === 'ADMIN') {
-          router.push('/admin')
+          router.push('/dashboard')
         } else {
-          router.push('/surveys')
+          router.push('/dashboard')
         }
       }
     } catch (error) {

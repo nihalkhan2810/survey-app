@@ -153,7 +153,7 @@ export const database = {
       if (USE_DYNAMODB) {
         return await responseOperations.create(responseData)
       }
-      return responseData
+      return await simpleDb.createResponse(responseData)
     } catch (error) {
       console.error('Error creating response:', error)
       throw error
@@ -180,6 +180,32 @@ export const database = {
       return []
     } catch (error) {
       console.error('Error getting responses by survey:', error)
+      throw error
+    }
+  },
+
+  async findResponseByEmailAndSurvey(email: string, surveyId: string) {
+    try {
+      if (USE_DYNAMODB) {
+        return await responseOperations.findByEmailAndSurvey(email, surveyId)
+      }
+      return await simpleDb.findResponseByEmailAndSurvey(email, surveyId)
+    } catch (error) {
+      console.error('Error finding response by email and survey:', error)
+      throw error
+    }
+  },
+
+  async findResponseByEmailSurveyAndBatch(email: string, surveyId: string, batchId?: string) {
+    try {
+      if (USE_DYNAMODB) {
+        // For DynamoDB, just check by email and survey (ignore batch for now)
+        // This means same email can't respond multiple times to same survey in DynamoDB mode
+        return await responseOperations.findByEmailAndSurvey(email, surveyId)
+      }
+      return await simpleDb.findResponseByEmailSurveyAndBatch(email, surveyId, batchId)
+    } catch (error) {
+      console.error('Error finding response by email, survey and batch:', error)
       throw error
     }
   },

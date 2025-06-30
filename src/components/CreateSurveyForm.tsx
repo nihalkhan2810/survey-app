@@ -200,6 +200,13 @@ export function CreateSurveyForm() {
       setStatus('Please add at least one question.');
       return;
     }
+    
+    // Check if user only has the default empty question (they might have missed clicking "Accept all")
+    if (questions.length === 1 && !questions[0].text.trim() && showSuggestions && aiSuggestions.length > 0) {
+      setStatus('It looks like you have AI-generated questions available. Please click "Accept All Questions" or manually add questions before saving.');
+      return;
+    }
+    
     if (questions.some(q => !q.text.trim())) {
       setStatus('Please fill in all question text.');
       return;

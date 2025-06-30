@@ -9,9 +9,15 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function getSurveyUrl(surveyId: string): string {
+export function getSurveyUrl(surveyId: string, email?: string): string {
   const baseUrl = appUrl;
-  return `${baseUrl}/survey/${surveyId}`;
+  const surveyUrl = `${baseUrl}/survey/${surveyId}`;
+  
+  if (email) {
+    return `${surveyUrl}?email=${encodeURIComponent(email)}`;
+  }
+  
+  return surveyUrl;
 }
 
 export function getSubmitUrl(surveyId: string): string {

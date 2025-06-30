@@ -40,14 +40,24 @@ export async function POST(req: NextRequest) {
     participantBatch = await createParticipants(surveyId, emailPhonePairs);
   }
 
+  // Generate a unique batch identifier for this email send
+  const batchId = Date.now().toString();
+
   const emailPromises = emails.map((email: string, index: number) => {
     let personalizedLink = surveyLink;
+    
+    // Create a simple token to hide email (base64 encode email:batch)
+    const token = Buffer.from(`${email}:${batchId}`).toString('base64');
+    
+    // Always include token parameter for tracking
+    const hasParams = personalizedLink.includes('?');
+    personalizedLink = `${personalizedLink}${hasParams ? '&' : '?'}t=${token}`;
     
     // Add participant ID to survey link if tracking is enabled
     if (participantBatch) {
       const participant = participantBatch.participants[index];
       if (participant) {
-        personalizedLink = `${surveyLink}?participantId=${participant.id}`;
+        personalizedLink = `${personalizedLink}&participantId=${participant.id}`;
       }
     }
     

@@ -65,6 +65,40 @@ export const simpleDb = {
 
   async getAllResponses() {
     return Array.from(responses.values()).map(responseArray => responseArray).flat()
+  },
+
+  async findResponseByEmailAndSurvey(email: string, surveyId: string) {
+    const surveyResponses = responses.get(surveyId) || []
+    return surveyResponses.find((response: any) => 
+      response.respondentEmail && 
+      response.respondentEmail.toLowerCase().trim() === email.toLowerCase().trim()
+    ) || null
+  },
+
+  async findResponseByEmailSurveyAndBatch(email: string, surveyId: string, batchId?: string) {
+    const surveyResponses = responses.get(surveyId) || []
+    return surveyResponses.find((response: any) => 
+      response.respondentEmail && 
+      response.respondentEmail.toLowerCase().trim() === email.toLowerCase().trim() &&
+      response.batchId === batchId
+    ) || null
+  },
+
+  async createResponse(responseData: any) {
+    const responseId = nanoid()
+    const response = {
+      id: responseId,
+      ...responseData,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }
+
+    if (!responses.has(responseData.surveyId)) {
+      responses.set(responseData.surveyId, [])
+    }
+    
+    responses.get(responseData.surveyId).push(response)
+    return response
   }
 }
 

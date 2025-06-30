@@ -47,10 +47,15 @@ export default function SurveysPage() {
 
   // Load view mode from localStorage on component mount
   useEffect(() => {
-    const savedViewMode = localStorage.getItem('surveys-view-mode') as 'grid' | 'list';
-    if (savedViewMode && (savedViewMode === 'grid' || savedViewMode === 'list')) {
-      setViewMode(savedViewMode);
-    }
+    // Small delay to ensure localStorage is available
+    const timer = setTimeout(() => {
+      const savedViewMode = localStorage.getItem('surveys-view-mode') as 'grid' | 'list';
+      if (savedViewMode && (savedViewMode === 'grid' || savedViewMode === 'list')) {
+        setViewMode(savedViewMode);
+      }
+    }, 0);
+    
+    return () => clearTimeout(timer);
   }, []);
 
   // Save view mode to localStorage when it changes

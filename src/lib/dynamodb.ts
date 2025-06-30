@@ -266,6 +266,20 @@ export const responseOperations = {
     const result = await dynamodb.send(command)
     return result.Items || []
   },
+
+  async findByEmailAndSurvey(email: string, surveyId: string) {
+    const command = new ScanCommand({
+      TableName: TABLES.RESPONSES,
+      FilterExpression: 'surveyId = :surveyId AND respondentEmail = :email',
+      ExpressionAttributeValues: {
+        ':surveyId': surveyId,
+        ':email': email.toLowerCase().trim(),
+      },
+    })
+    
+    const result = await dynamodb.send(command)
+    return result.Items?.[0] || null
+  },
 }
 
 // Answer operations

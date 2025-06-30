@@ -468,6 +468,22 @@ export default function SendSurveyPage() {
     return phoneNumber;
   };
 
+  const validatePhoneNumber = (phone: string): boolean => {
+    // Remove all non-digits
+    const digits = phone.replace(/\D/g, '');
+    
+    // Check if it's a valid US mobile number (10 or 11 digits)
+    if (digits.length === 10) {
+      // 10 digits: should be a valid US number
+      return /^[2-9]\d{9}$/.test(digits);
+    } else if (digits.length === 11) {
+      // 11 digits: should start with 1 (US country code)
+      return /^1[2-9]\d{9}$/.test(digits);
+    }
+    
+    return false;
+  };
+
   const generateAIReminder = async (reminderType: 'opening' | 'closing' | 'midpoint') => {
     if (!selectedSurvey) return;
     
@@ -585,6 +601,14 @@ export default function SendSurveyPage() {
       
       if (incompleteRecipients.length > 0) {
         setStatus('All recipients must have both email and phone number filled in.');
+        return;
+      }
+      
+      // Validate mobile phone numbers
+      const invalidPhones = validRecipients.filter(r => !validatePhoneNumber(r.phone));
+      if (invalidPhones.length > 0) {
+        const invalidNumbers = invalidPhones.map(r => r.phone).join(', ');
+        setStatus(`Invalid mobile numbers detected: ${invalidNumbers}. Please ensure all phone numbers are valid US mobile numbers (10-11 digits).`);
         return;
       }
       

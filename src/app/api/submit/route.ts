@@ -33,7 +33,7 @@ function calculateSurveyDurationMinutes(startDate: string, endDate: string): num
 
 export async function POST(req: NextRequest) {
   try {
-    const { surveyId, answers, identity, participantId } = await req.json();
+    const { surveyId, answers, identity, actualEmail, batchId, participantId } = await req.json();
 
     if (!surveyId || !answers) {
       return NextResponse.json({ message: 'Missing surveyId or answers' }, { status: 400 });
@@ -45,6 +45,8 @@ export async function POST(req: NextRequest) {
       surveyId,
       answers,
       identity: identity || { isAnonymous: true }, // Default to anonymous if not provided
+      respondentEmail: actualEmail?.toLowerCase()?.trim() || null, // Store actual email for duplicate checking (from URL or input)
+      batchId: batchId || null, // Store batch ID for tracking multiple sends
       submittedAt: new Date().toISOString(),
       type: 'web' // Mark as web submission vs voice
     };

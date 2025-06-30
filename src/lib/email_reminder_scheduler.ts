@@ -143,15 +143,38 @@ Thank you for your time!
 This is an automated reminder. The survey will no longer be available after the expiration time.
     `.trim();
     
-    // Send emails
-    const emailPromises = config.emails.map(email => 
-      transporter.sendMail({
+    // Send emails with personalized links
+    const emailPromises = config.emails.map(email => {
+      // Create a token for the email (using timestamp as batch for reminders)
+      const reminderBatch = Date.now().toString();
+      const token = Buffer.from(`${email}:${reminderBatch}`).toString('base64');
+      
+      // Create personalized survey link with token parameter
+      const hasParams = config.surveyLink.includes('?');
+      const personalizedLink = `${config.surveyLink}${hasParams ? '&' : '?'}t=${token}`;
+      
+      const personalizedMessage = `
+🔔 Friendly Reminder!
+
+Your survey "${config.surveyTopic}" will expire in 6 hours.
+
+Don't miss your chance to participate! Your feedback is valuable and will help us gather important insights.
+
+📝 Take the survey now: ${personalizedLink}
+
+Thank you for your time!
+
+---
+This is an automated reminder. The survey will no longer be available after the expiration time.
+      `.trim();
+      
+      return transporter.sendMail({
         from: process.env.EMAIL_USER,
         to: email,
         subject,
-        text: message,
-      })
-    );
+        text: personalizedMessage,
+      });
+    });
     
     await Promise.all(emailPromises);
     

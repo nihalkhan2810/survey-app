@@ -14,8 +14,12 @@ type Survey = {
   id: string;
   topic: string;
   created_at: string;
+  start_date?: string;
+  end_date?: string;
   questions?: Array<{ text: string }>;
 };
+
+type SurveyStatus = 'yet-to-start' | 'active' | 'expired';
 
 type ModalType = 'results' | 'call' | 'vapi-call' | null;
 
@@ -39,7 +43,49 @@ export default function SurveysPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [loadingFullSurvey, setLoadingFullSurvey] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [currentTime, setCurrentTime] = useState(new Date());
 
+  // Load view mode from localStorage on component mount
+  useEffect(() => {
+    const savedViewMode = localStorage.getItem('surveys-view-mode') as 'grid' | 'list';
+    if (savedViewMode && (savedViewMode === 'grid' || savedViewMode === 'list')) {
+      setViewMode(savedViewMode);
+    }
+  }, []);
+
+  // Save view mode to localStorage when it changes
+  const handleViewModeChange = (newViewMode: 'grid' | 'list') => {
+    setViewMode(newViewMode);
+    localStorage.setItem('surveys-view-mode', newViewMode);
+  };
+
+  // Function to determine survey status based on dates
+  const getSurveyStatus = (survey: Survey): SurveyStatus => {
+    if (!survey.start_date || !survey.end_date) {
+      return 'active'; // Default for surveys without dates
+    }
+    
+    const startDate = new Date(survey.start_date);
+    const endDate = new Date(survey.end_date);
+    const now = currentTime;
+    
+    if (now < startDate) {
+      return 'yet-to-start';
+    } else if (now > endDate) {
+      return 'expired';
+    } else {
+      return 'active';
+    }
+  };
+
+  // Update current time every minute for live status updates
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 60000); // Update every minute
+    
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     setLoading(true);
@@ -97,6 +143,17 @@ export default function SurveysPage() {
   };
 
   const handleDeleteSurvey = async (id: string) => {
+    const survey = surveys.find(s => s.id === id);
+    if (!survey) return;
+    
+    const status = getSurveyStatus(survey);
+    
+    // Prevent deletion of active surveys
+    if (status === 'active') {
+      alert('The survey is currently active, and participants may still be submitting their responses. Therefore, it cannot be deleted at this time.');
+      return;
+    }
+    
     if (!confirm('Are you sure you want to delete this survey? This action cannot be undone.')) {
       return;
     }
@@ -117,6 +174,51 @@ export default function SurveysPage() {
     } finally {
       setDeletingId(null);
     }
+  };
+
+  // Status display component with animations
+  const StatusIndicator = ({ survey }: { survey: Survey }) => {
+    const status = getSurveyStatus(survey);
+    
+    const statusConfig = {
+      'yet-to-start': {
+        text: 'Yet to Start',
+        color: 'bg-yellow-500',
+        textColor: 'text-yellow-600',
+        bgColor: 'bg-yellow-50 dark:bg-yellow-900/20'
+      },
+      'active': {
+        text: 'Active',
+        color: 'bg-green-500',
+        textColor: 'text-green-600',
+        bgColor: 'bg-green-50 dark:bg-green-900/20'
+      },
+      'expired': {
+        text: 'Expired',
+        color: 'bg-red-500',
+        textColor: 'text-red-600',
+        bgColor: 'bg-red-50 dark:bg-red-900/20'
+      }
+    };
+    
+    const config = statusConfig[status];
+    
+    return (
+      <motion.div
+        key={status} // Key ensures animation on status change
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+        className={`flex items-center gap-2 text-sm ${config.textColor} px-2 py-1 rounded-lg ${config.bgColor}`}
+      >
+        <motion.div
+          className={`h-2 w-2 ${config.color} rounded-full`}
+          animate={status === 'active' ? { scale: [1, 1.2, 1] } : {}}
+          transition={status === 'active' ? { duration: 2, repeat: Infinity } : {}}
+        />
+        <span className="font-medium">{config.text}</span>
+      </motion.div>
+    );
   };
 
   const containerVariants: Variants = {
@@ -154,7 +256,7 @@ export default function SurveysPage() {
           {/* View Mode Toggle */}
           <div className="flex bg-gray-100 dark:bg-gray-800 rounded-xl p-1">
             <button
-              onClick={() => setViewMode('grid')}
+              onClick={() => handleViewModeChange('grid')}
               className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                 viewMode === 'grid'
                   ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
@@ -165,7 +267,7 @@ export default function SurveysPage() {
               Grid
             </button>
             <button
-              onClick={() => setViewMode('list')}
+              onClick={() => handleViewModeChange('list')}
               className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                 viewMode === 'list'
                   ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
@@ -239,10 +341,7 @@ export default function SurveysPage() {
                       </span>
                     </div>
                     <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-2">{survey.topic}</h2>
-                    <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                      <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse" />
-                      <span>Active</span>
-                    </div>
+                    <StatusIndicator survey={survey} />
                   </div>
                   <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 p-4">
                     <div className="flex items-center justify-center gap-2">
@@ -289,7 +388,7 @@ export default function SurveysPage() {
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
                         className="p-2 text-gray-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors rounded-lg hover:bg-white/50 dark:hover:bg-gray-800/50" 
-                        title="VAPI Voice Call"
+                        title="Demo Voice Call"
                       >
                         <PhoneArrowUpRightIcon className="h-5 w-5"/>
                       </motion.button>
@@ -337,10 +436,7 @@ export default function SurveysPage() {
                         <div>
                           <h2 className="text-xl font-bold text-gray-900 dark:text-white">{survey.topic}</h2>
                           <div className="flex items-center gap-4 mt-2">
-                            <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                              <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse" />
-                              <span>Active</span>
-                            </div>
+                            <StatusIndicator survey={survey} />
                             <span className="text-sm text-gray-500 dark:text-gray-400">
                               Created {new Date(survey.created_at).toLocaleDateString()}
                             </span>
@@ -391,7 +487,7 @@ export default function SurveysPage() {
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
                           className="p-2 text-gray-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700" 
-                          title="VAPI Voice Call"
+                          title="Demo Voice Call"
                         >
                           <PhoneArrowUpRightIcon className="h-5 w-5"/>
                         </motion.button>

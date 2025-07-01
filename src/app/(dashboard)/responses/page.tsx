@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Filter, Download, Eye, MessageSquare, Phone, Mail, User, Calendar, BarChart3, TrendingUp } from 'lucide-react';
+import { Filter, Download, Eye, MessageSquare, Phone, Mail, User, Calendar, BarChart3, TrendingUp } from 'lucide-react';
 import { ResponsesTable } from '@/components/responses/ResponsesTable';
 import { ResponsesStats } from '@/components/responses/ResponsesStats';
 import { ResponsesFilters } from '@/components/responses/ResponsesFilters';
@@ -32,7 +32,8 @@ interface Response {
 
 interface Survey {
   id: string;
-  title: string;
+  title?: string;
+  topic?: string;
   questions: Array<{ id: string; text: string; type: string }>;
 }
 
@@ -40,7 +41,6 @@ export default function ResponsesPage() {
   const [responses, setResponses] = useState<Response[]>([]);
   const [surveys, setSurveys] = useState<Survey[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState<string>('all');
   const [selectedSurvey, setSelectedSurvey] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'date' | 'survey' | 'type' | 'response_count'>('date');
@@ -103,16 +103,6 @@ export default function ResponsesPage() {
   }, []);
 
   const filteredResponses = responses.filter((response) => {
-    const displayEmail = getDisplayEmail(response);
-    const matchesSearch = searchTerm === '' || 
-      response.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (displayEmail && displayEmail.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      Object.values(response.answers || {}).some(answer => {
-        // Safely convert answer to string before searching
-        const answerStr = typeof answer === 'string' ? answer : String(answer || '');
-        return answerStr.toLowerCase().includes(searchTerm.toLowerCase());
-      });
-    
     // Update type filtering to match new mode concept
     const matchesType = selectedType === 'all' || 
       (selectedType === 'email' && response.type !== 'voice-extracted') ||
@@ -120,7 +110,7 @@ export default function ResponsesPage() {
     
     const matchesSurvey = selectedSurvey === 'all' || response.surveyId === selectedSurvey;
     
-    return matchesSearch && matchesType && matchesSurvey;
+    return matchesType && matchesSurvey;
   });
 
   // Calculate response counts by survey for sorting
@@ -189,7 +179,7 @@ export default function ResponsesPage() {
       return [
         response.id || '',
         response.surveyId || '',
-        survey?.title || survey?.topic || 'Unknown Survey',
+        survey?.topic || survey?.title || 'Unknown Survey',
         response.type === 'voice-extracted' ? 'Voice' : 'Email',
         displayEmail || 'Anonymous',
         submittedDate.toLocaleDateString(),
@@ -219,13 +209,10 @@ export default function ResponsesPage() {
     let filename = `survey-responses-${new Date().toISOString().split('T')[0]}`;
     if (selectedSurvey !== 'all') {
       const survey = surveys.find(s => s.id === selectedSurvey);
-      filename += `-${(survey?.title || survey?.topic || 'survey').replace(/[^a-z0-9]/gi, '_')}`;
+      filename += `-${(survey?.topic || survey?.title || 'survey').replace(/[^a-z0-9]/gi, '_')}`;
     }
     if (selectedType !== 'all') {
       filename += `-${selectedType}`;
-    }
-    if (searchTerm) {
-      filename += `-filtered`;
     }
     filename += '.csv';
     
@@ -291,39 +278,24 @@ export default function ResponsesPage() {
       {/* Stats Overview */}
       <ResponsesStats responses={responses} />
 
-      {/* Search and Filters */}
+      {/* Filters */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
         className="bg-white dark:bg-gray-800/50 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700/50 p-6 mb-6"
       >
-        <div className="flex flex-col lg:flex-row gap-4">
-          <div className="flex-1">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search responses by ID, email, or content..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800 focus:ring-2 focus:ring-violet-500 focus:border-transparent"
-              />
-            </div>
-          </div>
-          
-          <ResponsesFilters
-            surveys={surveys}
-            selectedType={selectedType}
-            setSelectedType={setSelectedType}
-            selectedSurvey={selectedSurvey}
-            setSelectedSurvey={setSelectedSurvey}
-            sortBy={sortBy}
-            setSortBy={setSortBy}
-            sortOrder={sortOrder}
-            setSortOrder={setSortOrder}
-          />
-        </div>
+        <ResponsesFilters
+          surveys={surveys}
+          selectedType={selectedType}
+          setSelectedType={setSelectedType}
+          selectedSurvey={selectedSurvey}
+          setSelectedSurvey={setSelectedSurvey}
+          sortBy={sortBy}
+          setSortBy={setSortBy}
+          sortOrder={sortOrder}
+          setSortOrder={setSortOrder}
+        />
       </motion.div>
 
       {/* Responses Table */}

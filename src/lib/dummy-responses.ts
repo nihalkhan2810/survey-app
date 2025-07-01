@@ -18,14 +18,15 @@ export interface DummyResponse {
 
 export interface DummySurvey {
   id: string;
-  title: string;
+  title?: string;
+  topic: string;
   questions: Array<{ id: string; text: string; type: string }>;
 }
 
 const dummySurveys: DummySurvey[] = [
   {
     id: 'survey-customer-satisfaction',
-    title: 'Customer Satisfaction Survey',
+    topic: 'Customer Satisfaction',
     questions: [
       { id: '1', text: 'How satisfied are you with our service?', type: 'rating' },
       { id: '2', text: 'What can we improve?', type: 'text' },
@@ -35,7 +36,7 @@ const dummySurveys: DummySurvey[] = [
   },
   {
     id: 'survey-product-feedback',
-    title: 'Product Feedback Survey',
+    topic: 'Product Feedback',
     questions: [
       { id: '1', text: 'How easy was it to use our product?', type: 'rating' },
       { id: '2', text: 'What features do you use most?', type: 'text' },
@@ -45,7 +46,7 @@ const dummySurveys: DummySurvey[] = [
   },
   {
     id: 'survey-employee-engagement',
-    title: 'Employee Engagement Survey',
+    topic: 'Employee Engagement',
     questions: [
       { id: '1', text: 'How engaged do you feel at work?', type: 'rating' },
       { id: '2', text: 'What motivates you most?', type: 'text' },
@@ -55,7 +56,7 @@ const dummySurveys: DummySurvey[] = [
   },
   {
     id: 'survey-market-research',
-    title: 'Market Research Survey',
+    topic: 'Market Research',
     questions: [
       { id: '1', text: 'Which brands do you prefer?', type: 'text' },
       { id: '2', text: 'How often do you shop online?', type: 'text' },
@@ -65,12 +66,22 @@ const dummySurveys: DummySurvey[] = [
   },
   {
     id: 'survey-event-feedback',
-    title: 'Event Feedback Survey',
+    topic: 'Event Feedback',
     questions: [
       { id: '1', text: 'How was the overall event experience?', type: 'rating' },
       { id: '2', text: 'Which session did you enjoy most?', type: 'text' },
       { id: '3', text: 'How was the venue?', type: 'rating' },
       { id: '4', text: 'Would you attend future events?', type: 'boolean' }
+    ]
+  },
+  {
+    id: 'survey-course-feedback',
+    topic: 'Course Feedback',
+    questions: [
+      { id: '1', text: 'How would you rate this course overall?', type: 'rating' },
+      { id: '2', text: 'What did you like most about the course?', type: 'text' },
+      { id: '3', text: 'What could be improved?', type: 'text' },
+      { id: '4', text: 'Would you recommend this course?', type: 'boolean' }
     ]
   }
 ];
@@ -123,6 +134,13 @@ const voiceResponseTemplates = {
     ['Amazing, 10', 'Technical workshop', 'Perfect venue, 9', 'Absolutely'],
     ['Okay, 6', 'Panel discussion', 'Decent, 6', 'Maybe'],
     ['Great, 8', 'Q&A session', 'Good setup, 8', 'Yes']
+  ],
+  'survey-course-feedback': [
+    ['Solid three out of 10, didn\'t really like it very much', 'The practical examples were helpful', 'More interactive content needed', 'No, wouldn\'t recommend'],
+    ['Pretty good, 7 out of 10', 'Clear explanations', 'Better pacing', 'Yes, would recommend'],
+    ['Excellent course, 9', 'Hands-on exercises', 'Nothing major', 'Definitely recommend'],
+    ['Average, 5', 'Some good points', 'More examples', 'Maybe'],
+    ['Great content, 8', 'Well structured', 'More time for questions', 'Yes']
   ]
 };
 
@@ -161,6 +179,13 @@ const textResponseTemplates = {
     ['Excellent organization and content', 'Technical workshops were great', 'Venue was perfect', 'Absolutely will attend'],
     ['Average event experience', 'Panel discussions', 'Venue was adequate', 'Maybe will attend'],
     ['Great learning experience', 'Interactive sessions', 'Excellent venue choice', 'Yes, planning to attend']
+  ],
+  'survey-course-feedback': [
+    ['Not very satisfied, only 3 out of 10', 'Some practical examples', 'Need more interactive content', 'Would not recommend this course'],
+    ['Good course overall, 7/10', 'Clear and structured content', 'Could use better pacing', 'Yes, would recommend'],
+    ['Excellent learning experience', 'Hands-on practical exercises', 'Nothing significant to improve', 'Definitely recommend'],
+    ['Average course, meets expectations', 'Some useful insights', 'More real-world examples', 'Maybe recommend'],
+    ['Very good course content', 'Well organized material', 'More time for Q&A', 'Yes, recommend']
   ]
 };
 
@@ -190,7 +215,7 @@ export function generateDummyResponses(): { responses: DummyResponse[], surveys:
   
   // Generate responses for each survey
   dummySurveys.forEach((survey, surveyIndex) => {
-    const responseCount = Math.floor(Math.random() * 50) + 20; // 20-70 responses per survey
+    const responseCount = Math.floor(Math.random() * 6) + 3; // 3-8 responses per survey
     
     for (let i = 0; i < responseCount; i++) {
       const responseType = Math.random();

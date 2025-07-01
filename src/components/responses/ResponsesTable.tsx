@@ -26,7 +26,8 @@ interface Response {
 
 interface Survey {
   id: string;
-  title: string;
+  title?: string;
+  topic?: string;
   questions: Array<{ id: string; text: string; type: string }>;
 }
 
@@ -59,7 +60,7 @@ export function ResponsesTable({ responses, surveys, onViewResponse }: Responses
 
   const getSurveyTitle = (surveyId: string) => {
     const survey = surveys.find(s => s.id === surveyId);
-    return survey?.title || `Survey ${surveyId.slice(0, 8)}`;
+    return survey?.topic || survey?.title || `Survey ${surveyId.slice(0, 8)}`;
   };
 
   const getResponsePreview = (answers: Record<string, string>) => {

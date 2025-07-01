@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Sparkles, FileText, Copy, Send, Plus, Trash2, ArrowLeft, Calendar, Clock, MessageSquare, Bot, Edit3 } from 'lucide-react';
+import { Sparkles, FileText, Copy, Send, Plus, Trash2, ArrowLeft, Calendar, Clock, MessageSquare, Bot, Edit3, Building2, Zap } from 'lucide-react';
 import { getSurveyUrl, calculateReminderDates, generateAIReminderMessage, validateReminderMessage, type ReminderConfig } from '@/lib/utils';
 import { CallReminderToggle, type CallReminderConfig } from '@/components/CallReminderToggle';
+import { industryConfigs, type IndustryConfig } from '@/lib/industry-config';
 
 type Question = {
   text: string;
@@ -34,6 +35,12 @@ export function CreateSurveyForm() {
   const [status, setStatus] = useState('');
   const [surveyLink, setSurveyLink] = useState('');
   const [createdSurvey, setCreatedSurvey] = useState<Survey | null>(null);
+  
+  // Industry selection states
+  const [selectedIndustry, setSelectedIndustry] = useState<string>('education');
+  const [useAIDetection, setUseAIDetection] = useState(false);
+  const [aiDetectedIndustry, setAiDetectedIndustry] = useState<string | null>(null);
+  const [aiDetectionConfidence, setAiDetectionConfidence] = useState(0);
   
   // Survey deadline states
   const [startDate, setStartDate] = useState('');
@@ -84,6 +91,37 @@ export function CreateSurveyForm() {
     }
   }, [useAIReminders, customReminderMessage]);
 
+  // AI Industry Detection
+  const detectIndustryFromTopic = async (surveyTopic: string) => {
+    if (!surveyTopic.trim()) return;
+    
+    try {
+      const response = await fetch('/api/detect-industry', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ topic: surveyTopic }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setAiDetectedIndustry(data.industry);
+        setAiDetectionConfidence(data.confidence);
+      }
+    } catch (error) {
+      console.log('AI detection failed, using manual selection');
+    }
+  };
+
+  // Auto-detect industry when topic changes (if AI detection is enabled)
+  useEffect(() => {
+    if (useAIDetection && topic.trim().length > 10) {
+      const debounceTimer = setTimeout(() => {
+        detectIndustryFromTopic(topic);
+      }, 1000);
+      return () => clearTimeout(debounceTimer);
+    }
+  }, [topic, useAIDetection]);
+
   const handleGenerateQuestions = async () => {
     if (!topic) {
       setStatus('Please enter a topic to generate questions.');
@@ -95,10 +133,16 @@ export function CreateSurveyForm() {
     setShowSuggestions(false);
 
     try {
+      const finalIndustry = useAIDetection && aiDetectedIndustry ? aiDetectedIndustry : selectedIndustry;
+      
       const response = await fetch('/api/generate-questions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ topic }),
+        body: JSON.stringify({ 
+          topic, 
+          industry: finalIndustry,
+          industryConfig: industryConfigs[finalIndustry]
+        }),
       });
 
       if (!response.ok) {
@@ -254,6 +298,7 @@ export function CreateSurveyForm() {
         body: JSON.stringify({ 
           topic, 
           questions,
+          industry: useAIDetection && aiDetectedIndustry ? aiDetectedIndustry : selectedIndustry,
           start_date: startDate,
           end_date: endDate,
           reminder_dates: calculatedReminders.flatMap(r => r.dates),
@@ -398,6 +443,141 @@ export function CreateSurveyForm() {
               <p className="text-xs text-gray-900 dark:text-gray-400">
                 Survey will be active from start date to end date. Links will expire after the end date.
               </p>
+            </div>
+          </div>
+
+          {/* Industry Selection Section */}
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl p-6 border border-blue-200 dark:border-blue-700">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="flex items-center justify-center w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl">
+                <Building2 className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+              </div>
+              <div>
+                <h3 className="text-xl font-semibold text-blue-900 dark:text-blue-300">Industry & Context</h3>
+                <p className="text-sm text-gray-900 dark:text-blue-400">Choose your survey category for optimized analytics</p>
+              </div>
+            </div>
+
+            {/* AI Detection Toggle */}
+            <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-xl border border-indigo-200 dark:border-indigo-600 mb-6">
+              <div className="flex items-center gap-3">
+                <Zap className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                <div>
+                  <p className="font-medium text-gray-900 dark:text-white">
+                    AI Industry Detection
+                  </p>
+                  <p className="text-sm text-gray-900 dark:text-gray-400">
+                    Let AI automatically detect the best category from your topic
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setUseAIDetection(!useAIDetection)}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  useAIDetection ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-gray-700'
+                }`}
+              >
+                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  useAIDetection ? 'translate-x-6' : 'translate-x-1'
+                }`} />
+              </button>
+            </div>
+
+            {/* AI Detection Result */}
+            {useAIDetection && aiDetectedIndustry && (
+              <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-700 mb-6">
+                <div className="flex items-center gap-3">
+                  <Bot className="h-5 w-5 text-green-600" />
+                  <div className="flex-1">
+                    <p className="font-medium text-green-900 dark:text-green-300">
+                      AI Detected: {industryConfigs[aiDetectedIndustry]?.name}
+                    </p>
+                    <p className="text-sm text-green-700 dark:text-green-400">
+                      Confidence: {Math.round(aiDetectionConfidence * 100)}% • {industryConfigs[aiDetectedIndustry]?.description}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setSelectedIndustry(aiDetectedIndustry)}
+                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
+                  >
+                    Accept
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Manual Industry Selection */}
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                  <Building2 className="h-4 w-4 inline mr-2" />
+                  {useAIDetection ? 'Override AI Detection' : 'Select Industry Category'}
+                </label>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {Object.entries(industryConfigs).map(([key, config]) => (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => setSelectedIndustry(key)}
+                      className={`p-4 text-left rounded-xl border-2 transition-all ${
+                        selectedIndustry === key
+                          ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-400'
+                          : 'border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500 bg-white dark:bg-gray-800'
+                      }`}
+                    >
+                      <h4 className="font-semibold text-gray-900 dark:text-white mb-1">
+                        {config.name}
+                      </h4>
+                      <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
+                        {config.description}
+                      </p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Selected Industry Info */}
+              <div className="p-4 bg-white dark:bg-gray-800 rounded-xl border border-blue-200 dark:border-blue-600">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                  <h4 className="font-semibold text-gray-900 dark:text-white">
+                    Selected: {industryConfigs[selectedIndustry]?.name}
+                  </h4>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p className="font-medium text-gray-700 dark:text-gray-300 mb-2">Key Metrics:</p>
+                    <div className="flex flex-wrap gap-1">
+                      {industryConfigs[selectedIndustry]?.metrics.slice(0, 3).map((metric, index) => (
+                        <span key={index} className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded text-xs">
+                          {metric}
+                        </span>
+                      ))}
+                      {industryConfigs[selectedIndustry]?.metrics.length > 3 && (
+                        <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded text-xs">
+                          +{industryConfigs[selectedIndustry].metrics.length - 3} more
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-700 dark:text-gray-300 mb-2">Question Types:</p>
+                    <div className="flex flex-wrap gap-1">
+                      {industryConfigs[selectedIndustry]?.questionTypes.slice(0, 2).map((type, index) => (
+                        <span key={index} className="px-2 py-1 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded text-xs">
+                          {type}
+                        </span>
+                      ))}
+                      {industryConfigs[selectedIndustry]?.questionTypes.length > 2 && (
+                        <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded text-xs">
+                          +{industryConfigs[selectedIndustry].questionTypes.length - 2} more
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 

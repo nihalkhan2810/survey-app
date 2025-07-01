@@ -1,11 +1,54 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { TrendingUp, TrendingDown, MessageCircle, Phone, Hash, Clock } from 'lucide-react';
-import { getSentimentAnalysis } from '@/lib/demo-data';
+import { getUniversalSentimentAnalysis } from '@/lib/universal-analytics';
 
 export function OpinionOverview() {
-  const analysis = getSentimentAnalysis();
+  const [analysis, setAnalysis] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadAnalysis = async () => {
+      setLoading(true);
+      try {
+        const data = await getUniversalSentimentAnalysis();
+        setAnalysis(data);
+      } catch (error) {
+        console.error('Failed to load opinion analysis:', error);
+        // Fallback to default data
+        setAnalysis({
+          sentimentCounts: { positive: 0, negative: 0, neutral: 0 },
+          sentimentPercentages: { positive: 0, negative: 0, neutral: 0 },
+          totalResponses: 0,
+          averageSatisfaction: 0,
+          responseTypeBreakdown: { link: 0, call: 0 },
+          topKeywords: ['quality', 'professional', 'helpful'],
+          recentTrends: {
+            thisWeek: { positive: 0, negative: 0, neutral: 0 },
+            lastWeek: { positive: 0, negative: 0, neutral: 0 },
+            change: { positive: 0, negative: 0, neutral: 0 }
+          }
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadAnalysis();
+  }, []);
+
+  // Show loading state
+  if (loading || !analysis) {
+    return (
+      <div className="bg-white dark:bg-gray-800/50 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700/50 p-6">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+        </div>
+      </div>
+    );
+  }
 
   const getOverallTrend = () => {
     const positiveChange = analysis.recentTrends.change.positive;

@@ -39,10 +39,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: 'Missing surveyId or answers' }, { status: 400 });
     }
 
-    // Create response record with identity information
+    // Get survey data to include industry context
+    let surveyIndustry = 'education'; // Default fallback
+    try {
+      const surveyData = await database.findSurveyById(surveyId);
+      if (surveyData && surveyData.industry) {
+        surveyIndustry = surveyData.industry;
+      }
+    } catch (error) {
+      console.warn('Could not fetch survey industry, using default:', error);
+    }
+
+    // Create response record with identity information and industry context
     const responseData = {
       id: nanoid(),
       surveyId,
+      industry: surveyIndustry, // Include industry context for analytics
       answers,
       identity: identity || { isAnonymous: true }, // Default to anonymous if not provided
       respondentEmail: actualEmail?.toLowerCase()?.trim() || null, // Store actual email for duplicate checking (from URL or input)

@@ -1,13 +1,50 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { MessageSquare, Phone, Calendar, User } from 'lucide-react';
-import { universityDemoResponses } from '@/lib/university-demo-data';
+import { getUniversalDemoResponses, getRealUniversalResponses } from '@/lib/universal-analytics';
+import { isUsingDummyData } from '@/lib/industry-config';
 
 export function RecentResponses() {
-  const recentResponses = universityDemoResponses
-    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-    .slice(0, 5);
+  const [recentResponses, setRecentResponses] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadResponses = async () => {
+      setLoading(true);
+      try {
+        const useDummy = isUsingDummyData();
+        const responses = useDummy ? getUniversalDemoResponses() : await getRealUniversalResponses();
+        const sortedResponses = responses
+          .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+          .slice(0, 5);
+        setRecentResponses(sortedResponses);
+      } catch (error) {
+        console.error('Failed to load recent responses:', error);
+        // Fallback to demo data
+        const fallbackResponses = getUniversalDemoResponses()
+          .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+          .slice(0, 5);
+        setRecentResponses(fallbackResponses);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadResponses();
+  }, []);
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="bg-white dark:bg-gray-800/50 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700/50 p-6">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+        </div>
+      </div>
+    );
+  }
 
   const getSentimentColor = (sentiment: string) => {
     switch (sentiment) {

@@ -14,7 +14,8 @@ import {
   FileText,
   Globe,
   ArrowRight,
-  TrendingUp
+  TrendingUp,
+  Building
 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
@@ -228,7 +229,14 @@ export default function AdminPage() {
         {hasPermission(userRole, 'system.view') && (
           <div>
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">System Management</h2>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <AdminSection
+                title="Industry Setup"
+                description="Configure industry-specific survey categories and metrics"
+                icon={Building}
+                color="bg-gradient-to-r from-emerald-500 to-emerald-600"
+                href="/admin/industry-setup"
+              />
               <AdminSection
                 title="Database & Storage"
                 description="Monitor database health and manage storage"

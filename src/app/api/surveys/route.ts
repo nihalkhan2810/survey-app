@@ -9,6 +9,7 @@ export async function POST(req: NextRequest) {
     const { 
       topic, 
       questions, 
+      industry,
       start_date, 
       end_date, 
       reminder_dates, 
@@ -37,6 +38,7 @@ export async function POST(req: NextRequest) {
       id: surveyId,
       topic,
       questions,
+      industry: industry || 'education', // Default to education if not provided
       start_date,
       end_date,
       reminder_dates: reminder_dates || [],
@@ -89,6 +91,7 @@ export async function GET(req: NextRequest) {
       id: survey.id,
       title: survey.topic || survey.title,
       topic: survey.topic,
+      industry: survey.industry || 'education',
       createdAt: survey.createdAt,
       created_at: survey.createdAt, // For compatibility
       start_date: survey.start_date,

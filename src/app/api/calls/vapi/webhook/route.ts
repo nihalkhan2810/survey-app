@@ -301,9 +301,21 @@ async function saveSurveyResponse(surveyId: string, answers: Record<string, stri
     // Validate answers if we have them
     const validatedAnswers = answers ? await validateAnswers(surveyId, answers) : {};
     
+    // Get survey data to include industry context
+    let surveyIndustry = 'education'; // Default fallback
+    try {
+      const surveyData = await database.findSurveyById(surveyId);
+      if (surveyData && surveyData.industry) {
+        surveyIndustry = surveyData.industry;
+      }
+    } catch (error) {
+      console.warn('Could not fetch survey industry for voice response, using default:', error);
+    }
+    
     const responseData = {
       id: nanoid(),
       surveyId,
+      industry: surveyIndustry, // Include industry context for analytics
       answers: validatedAnswers,
       identity: { isAnonymous: true }, // Voice responses are anonymous by default
       submittedAt: new Date().toISOString(),
@@ -325,7 +337,7 @@ async function saveSurveyResponse(surveyId: string, answers: Record<string, stri
 
     // Use the proper database abstraction layer
     await database.createResponse(responseData);
-    console.log(`Voice survey response saved for surveyId: ${surveyId}, callId: ${responseData.metadata.callId}`);
+    console.log(`Voice survey response saved for surveyId: ${surveyId}, industry: ${surveyIndustry}, callId: ${responseData.metadata.callId}`);
     
     return responseData;
   } catch (error) {

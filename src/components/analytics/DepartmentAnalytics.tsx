@@ -37,7 +37,7 @@ export function DepartmentAnalytics({ onDepartmentClick }: DepartmentAnalyticsPr
         </div>
         <div>
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Department Performance</h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400">University-wide department rankings</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Organization-wide department rankings</p>
         </div>
       </div>
 

@@ -61,14 +61,16 @@ export function ResponseDetail({ response, survey, onClose }: ResponseDetailProp
   };
 
   const getTypeInfo = () => {
+    if (response.type === 'voice-extracted' || response.type === 'voice-vapi') {
+      return {
+        icon: <Phone className="h-5 w-5 text-emerald-600" />,
+        label: 'Voice Response',
+        color: 'emerald',
+        description: 'Response extracted from voice call'
+      };
+    }
+    
     switch (response.type) {
-      case 'voice-extracted':
-        return {
-          icon: <Phone className="h-5 w-5 text-emerald-600" />,
-          label: 'Voice Response',
-          color: 'emerald',
-          description: 'Response extracted from voice call'
-        };
       case 'text':
         return {
           icon: <MessageSquare className="h-5 w-5 text-blue-600" />,

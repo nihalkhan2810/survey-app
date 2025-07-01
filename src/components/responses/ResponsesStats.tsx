@@ -17,7 +17,7 @@ interface ResponsesStatsProps {
 
 export function ResponsesStats({ responses }: ResponsesStatsProps) {
   const totalResponses = responses.length;
-  const voiceResponses = responses.filter(r => r.type === 'voice-extracted').length;
+  const voiceResponses = responses.filter(r => r.type === 'voice-extracted' || r.type === 'voice-vapi').length;
   const emailResponses = responses.filter(r => r.email && r.type !== 'anonymous').length;
   const anonymousResponses = responses.filter(r => r.type === 'anonymous' || !r.email).length;
   
@@ -36,7 +36,7 @@ export function ResponsesStats({ responses }: ResponsesStatsProps) {
     : '0';
 
   // Average response time for voice surveys
-  const voiceWithDuration = responses.filter(r => r.type === 'voice-extracted' && r.metadata?.duration);
+  const voiceWithDuration = responses.filter(r => (r.type === 'voice-extracted' || r.type === 'voice-vapi') && r.metadata?.duration);
   const avgDuration = voiceWithDuration.length > 0
     ? voiceWithDuration.reduce((sum, r) => sum + (r.metadata?.duration || 0), 0) / voiceWithDuration.length
     : 0;

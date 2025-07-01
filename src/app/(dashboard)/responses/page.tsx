@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { Filter, Download, Eye, MessageSquare, Phone, Mail, User, Calendar, BarChart3, TrendingUp } from 'lucide-react';
 import { ResponsesTable } from '@/components/responses/ResponsesTable';
@@ -102,45 +103,63 @@ export default function ResponsesPage() {
     fetchData();
   }, []);
 
-  const filteredResponses = responses.filter((response) => {
-    // Update type filtering to match new mode concept
-    const matchesType = selectedType === 'all' || 
-      (selectedType === 'email' && response.type !== 'voice-extracted') ||
-      (selectedType === 'voice-extracted' && response.type === 'voice-extracted');
-    
-    const matchesSurvey = selectedSurvey === 'all' || response.surveyId === selectedSurvey;
-    
-    return matchesType && matchesSurvey;
-  });
+  const filteredResponses = React.useMemo(() => {
+    return responses.filter((response) => {
+      // Fix type filtering - handle both voice types correctly
+      const isVoiceResponse = response.type === 'voice-extracted' || response.type === 'voice-vapi';
+      const isEmailResponse = response.type === 'text' || response.type === 'anonymous';
+      
+      const matchesType = selectedType === 'all' || 
+        (selectedType === 'email' && isEmailResponse) ||
+        (selectedType === 'voice-extracted' && isVoiceResponse);
+      
+      const matchesSurvey = selectedSurvey === 'all' || response.surveyId === selectedSurvey;
+      
+      return matchesType && matchesSurvey;
+    });
+  }, [responses, selectedType, selectedSurvey]);
 
-  // Calculate response counts by survey for sorting
-  const responseCounts = responses.reduce((acc, response) => {
-    acc[response.surveyId] = (acc[response.surveyId] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+  // Calculate response counts by survey for sorting - memoized for performance
+  const responseCounts = React.useMemo(() => {
+    return responses.reduce((acc, response) => {
+      acc[response.surveyId] = (acc[response.surveyId] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+  }, [responses]);
 
-  const sortedResponses = [...filteredResponses].sort((a, b) => {
-    let comparison = 0;
-    
-    switch (sortBy) {
-      case 'date':
-        comparison = new Date(a.submittedAt).getTime() - new Date(b.submittedAt).getTime();
-        break;
-      case 'survey':
-        const surveyA = surveys.find(s => s.id === a.surveyId)?.title || a.surveyId;
-        const surveyB = surveys.find(s => s.id === b.surveyId)?.title || b.surveyId;
-        comparison = surveyA.localeCompare(surveyB);
-        break;
-      case 'type':
-        comparison = a.type.localeCompare(b.type);
-        break;
-      case 'response_count':
-        comparison = (responseCounts[a.surveyId] || 0) - (responseCounts[b.surveyId] || 0);
-        break;
-    }
-    
-    return sortOrder === 'asc' ? comparison : -comparison;
-  });
+  // Create survey lookup map for O(1) access during sorting
+  const surveyLookup = React.useMemo(() => {
+    const lookup: Record<string, string> = {};
+    surveys.forEach(survey => {
+      lookup[survey.id] = survey.topic || survey.title || 'Untitled Survey';
+    });
+    return lookup;
+  }, [surveys]);
+
+  const sortedResponses = React.useMemo(() => {
+    return [...filteredResponses].sort((a, b) => {
+      let comparison = 0;
+      
+      switch (sortBy) {
+        case 'date':
+          comparison = new Date(a.submittedAt).getTime() - new Date(b.submittedAt).getTime();
+          break;
+        case 'survey':
+          const surveyA = surveyLookup[a.surveyId] || a.surveyId;
+          const surveyB = surveyLookup[b.surveyId] || b.surveyId;
+          comparison = surveyA.localeCompare(surveyB);
+          break;
+        case 'type':
+          comparison = a.type.localeCompare(b.type);
+          break;
+        case 'response_count':
+          comparison = (responseCounts[a.surveyId] || 0) - (responseCounts[b.surveyId] || 0);
+          break;
+      }
+      
+      return sortOrder === 'asc' ? comparison : -comparison;
+    });
+  }, [filteredResponses, sortBy, sortOrder, surveyLookup, responseCounts]);
 
   const exportToCSV = () => {
     if (sortedResponses.length === 0) {

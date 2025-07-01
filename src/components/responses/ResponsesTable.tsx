@@ -39,28 +39,24 @@ interface ResponsesTableProps {
 
 export function ResponsesTable({ responses, surveys, onViewResponse }: ResponsesTableProps) {
   const getModeIcon = (type: string) => {
-    switch (type) {
-      case 'voice-extracted':
-        return <Phone className="h-4 w-4 text-emerald-600" />;
-      default:
-        // All non-voice responses are considered Email mode
-        return <Mail className="h-4 w-4 text-blue-600" />;
+    if (type === 'voice-extracted' || type === 'voice-vapi') {
+      return <Phone className="h-4 w-4 text-emerald-600" />;
     }
+    // All non-voice responses are considered Email mode
+    return <Mail className="h-4 w-4 text-blue-600" />;
   };
 
   const getModeLabel = (type: string) => {
-    switch (type) {
-      case 'voice-extracted':
-        return 'Voice';
-      default:
-        // All non-voice responses are considered Email mode
-        return 'Email';
+    if (type === 'voice-extracted' || type === 'voice-vapi') {
+      return 'Voice';
     }
+    // All non-voice responses are considered Email mode
+    return 'Email';
   };
 
   const getSurveyTitle = (surveyId: string) => {
     const survey = surveys.find(s => s.id === surveyId);
-    return survey?.topic || survey?.title || `Survey ${surveyId.slice(0, 8)}`;
+    return survey?.topic || survey?.title || 'Untitled Survey';
   };
 
   const getResponsePreview = (answers: Record<string, string>) => {

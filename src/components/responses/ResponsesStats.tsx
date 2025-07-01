@@ -106,11 +106,10 @@ export function ResponsesStats({ responses }: ResponsesStatsProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: index * 0.1 }}
-          whileHover={{ scale: 1.02, y: -2 }}
-          className="relative overflow-hidden bg-white dark:bg-gray-800/50 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700/50 p-6 cursor-pointer group"
+          className="relative overflow-hidden bg-white dark:bg-gray-800/50 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700/50 p-6 group"
         >
           <div className="flex items-center justify-between mb-4">
-            <div className={`p-3 bg-gradient-to-br ${stat.gradient} rounded-xl shadow-lg group-hover:shadow-xl transition-shadow`}>
+            <div className={`p-3 bg-gradient-to-br ${stat.gradient} rounded-xl shadow-lg`}>
               <stat.icon className="h-5 w-5 text-white" />
             </div>
             <div className="text-right">
@@ -127,7 +126,7 @@ export function ResponsesStats({ responses }: ResponsesStatsProps) {
           </div>
           
           <div>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white group-hover:scale-105 transition-transform">
+            <p className="text-2xl font-bold text-gray-900 dark:text-white">
               {stat.value}
             </p>
             <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mt-1">
@@ -138,7 +137,7 @@ export function ResponsesStats({ responses }: ResponsesStatsProps) {
             </p>
           </div>
           
-          <div className={`absolute -right-8 -bottom-8 h-24 w-24 bg-gradient-to-br ${stat.gradient} opacity-10 rounded-full blur-2xl group-hover:opacity-20 transition-opacity`} />
+          <div className={`absolute -right-8 -bottom-8 h-24 w-24 bg-gradient-to-br ${stat.gradient} opacity-10 rounded-full blur-2xl`} />
         </motion.div>
       ))}
     </div>

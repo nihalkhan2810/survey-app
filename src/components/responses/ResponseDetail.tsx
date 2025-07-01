@@ -155,10 +155,24 @@ export function ResponseDetail({ response, survey, onClose }: ResponseDetailProp
                     <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
                       Survey
                     </label>
-                    <div className="mt-1">
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">
+                    <div className="mt-1 space-y-1">
+                      <div className="text-sm font-medium text-gray-900 dark:text-white">
                         {survey?.title || 'Unknown Survey'}
-                      </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <code className="text-xs font-mono bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
+                          ID: {response.surveyId}
+                        </code>
+                        <button
+                          onClick={() => copyToClipboard(response.surveyId, 'surveyId')}
+                          className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                        >
+                          <Copy className="h-3 w-3" />
+                        </button>
+                        {copiedField === 'surveyId' && (
+                          <span className="text-xs text-emerald-600">Copied!</span>
+                        )}
+                      </div>
                     </div>
                   </div>
 

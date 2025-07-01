@@ -318,19 +318,16 @@ export default function InteractiveDashboard() {
             <motion.div
               key={metric}
               variants={itemVariants}
-              whileHover={{ y: -8, scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => handleMetricClick(metric)}
-              className="cursor-pointer relative group"
+              className="relative group"
             >
-              <div className={`absolute inset-0 bg-gradient-to-r ${config.gradient} rounded-2xl blur-xl opacity-20 group-hover:opacity-40 transition-all duration-300`} />
-              <div className={`relative bg-gradient-to-br ${config.bgGradient} backdrop-blur-xl rounded-2xl shadow-lg border border-white/20 dark:border-gray-700/50 overflow-hidden transition-all duration-300 group-hover:shadow-2xl`}>
+              <div className={`absolute inset-0 bg-gradient-to-r ${config.gradient} rounded-2xl blur-xl opacity-20`} />
+              <div className={`relative bg-gradient-to-br ${config.bgGradient} backdrop-blur-xl rounded-2xl shadow-lg border border-white/20 dark:border-gray-700/50 overflow-hidden`}>
                 <div className="p-6">
                   <div className="flex items-center justify-between mb-4">
-                    <div className={`p-3 bg-gradient-to-br ${config.gradient} rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                    <div className={`p-3 bg-gradient-to-br ${config.gradient} rounded-xl shadow-lg`}>
                       <Icon className="h-6 w-6 text-white" />
                     </div>
-                    <ChevronRight className="h-5 w-5 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors" />
+                    <ChevronRight className="h-5 w-5 text-gray-400" />
                   </div>
                   
                   <div className="mb-4">
@@ -361,7 +358,7 @@ export default function InteractiveDashboard() {
 
                   <div className="mt-4 flex items-center text-xs text-gray-500 dark:text-gray-400">
                     <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse mr-2" />
-                    Click for details
+                    Live metrics
                   </div>
                 </div>
               </div>

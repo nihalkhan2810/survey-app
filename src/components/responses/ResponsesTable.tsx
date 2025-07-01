@@ -200,6 +200,9 @@ export function ResponsesTable({ responses, surveys, onViewResponse }: Responses
                   <div className="text-sm text-gray-900 dark:text-white font-medium">
                     {getSurveyTitle(response.surveyId)}
                   </div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400 font-mono">
+                    ID: {response.surveyId.slice(0, 8)}...
+                  </div>
                   <div className="text-xs text-gray-500 dark:text-gray-400">
                     {Object.keys(response.answers).length} answers
                   </div>

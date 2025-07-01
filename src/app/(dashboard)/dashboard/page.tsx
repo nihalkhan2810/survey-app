@@ -119,7 +119,6 @@ export default function DashboardPage() {
           color="green"
           change="+18%"
           trend="up"
-          onClick={() => handleMetricClick('responses', 'Total Responses', totalResponses.toString(), 'green')}
         />
         <StatCard 
           title="Active Users" 

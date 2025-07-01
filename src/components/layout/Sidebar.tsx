@@ -253,24 +253,6 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
                     );
                 })}
             </nav>
-
-            {/* Footer - Only show when expanded */}
-            <AnimatePresence>
-                {!isCollapsed && (
-                    <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="p-4 border-t border-gray-200/30 dark:border-gray-800/30 mt-auto"
-                    >
-                        <div className="p-3 bg-gradient-to-br from-emerald-500/5 to-blue-500/5 dark:from-emerald-500/10 dark:to-blue-500/10 rounded-lg border border-emerald-200/20 dark:border-emerald-800/20">
-                            <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Quick tip</p>
-                            <p className="text-xs text-gray-700 dark:text-gray-300">Use Ctrl+K for shortcuts</p>
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
         </motion.aside>
     );
 } 

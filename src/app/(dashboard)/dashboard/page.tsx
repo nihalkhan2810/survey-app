@@ -117,8 +117,8 @@ export default function DashboardPage() {
           icon={ClipboardList} 
           progress={Math.min(totalSurveys * 10, 100)} 
           color="blue"
-          change="+12%"
-          trend="up"
+          change={totalSurveys === 0 ? "No surveys yet" : "All time"}
+          trend={totalSurveys > 0 ? "up" : "none"}
           onClick={() => handleMetricClick('surveys', 'Total Surveys', totalSurveys.toString(), 'blue')}
         />
         <StatCard 
@@ -127,8 +127,8 @@ export default function DashboardPage() {
           icon={MessageSquare} 
           progress={Math.min(totalResponses * 2, 100)} 
           color="green"
-          change="+18%"
-          trend="up"
+          change={totalResponses === 0 ? "No responses yet" : "All time"}
+          trend={totalResponses > 0 ? "up" : "none"}
           onClick={() => handleMetricClick('responses', 'Total Responses', totalResponses.toString(), 'green')}
         />
         <StatCard 
@@ -137,7 +137,7 @@ export default function DashboardPage() {
           icon={Users} 
           progress={Math.min(totalUsers * 2, 100)} 
           color="yellow"
-          change={totalUsers > 0 ? "+8%" : "0%"}
+          change={totalUsers === 0 ? "No users yet" : "Registered users"}
           trend={totalUsers > 0 ? "up" : "none"}
           onClick={() => handleMetricClick('users', 'Active Users', totalUsers.toString(), 'yellow')}
         />
@@ -147,8 +147,8 @@ export default function DashboardPage() {
           icon={TrendingUp} 
           progress={avgResponseRate} 
           color="red"
-          change={avgResponseRate > 50 ? "+5%" : "-2%"}
-          trend={avgResponseRate > 50 ? "up" : "down"}
+          change={totalSurveys === 0 ? "No data" : `${totalResponses}/${totalSurveys} surveys`}
+          trend={avgResponseRate > 0 ? "up" : "none"}
           onClick={() => handleMetricClick('engagement', 'Response Rate', `${avgResponseRate}%`, 'red')}
         />
       </motion.div>

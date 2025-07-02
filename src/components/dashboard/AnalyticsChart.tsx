@@ -1,26 +1,74 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { TrendingUp, Calendar } from 'lucide-react';
+import { TrendingUp, Calendar, BarChart } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 export function AnalyticsChart() {
-  const data = [
-    { month: 'Jan', value: 65 },
-    { month: 'Feb', value: 78 },
-    { month: 'Mar', value: 90 },
-    { month: 'Apr', value: 81 },
-    { month: 'May', value: 95 },
-    { month: 'Jun', value: 88 },
-  ];
+  const [data, setData] = useState<Array<{ month: string; value: number }>>([]);
+  const [loading, setLoading] = useState(true);
+  const [totalResponses, setTotalResponses] = useState(0);
 
-  const maxValue = Math.max(...data.map(d => d.value));
+  useEffect(() => {
+    const fetchResponseData = async () => {
+      try {
+        const response = await fetch('/api/all-responses');
+        const responses = await response.json();
+        
+        if (Array.isArray(responses)) {
+          setTotalResponses(responses.length);
+          
+          // Generate last 6 months data
+          const monthlyData = [];
+          const now = new Date();
+          
+          for (let i = 5; i >= 0; i--) {
+            const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            const monthName = date.toLocaleDateString('en-US', { month: 'short' });
+            const nextMonth = new Date(now.getFullYear(), now.getMonth() - i + 1, 1);
+            
+            const monthResponses = responses.filter((r: any) => {
+              const responseDate = new Date(r.submittedAt || r.submitted_at || r.createdAt || r.created_at);
+              return responseDate >= date && responseDate < nextMonth;
+            });
+            
+            monthlyData.push({
+              month: monthName,
+              value: monthResponses.length
+            });
+          }
+          
+          setData(monthlyData);
+        }
+      } catch (error) {
+        console.error('Failed to fetch response data:', error);
+        // Fallback to empty data
+        setData([
+          { month: 'Jan', value: 0 },
+          { month: 'Feb', value: 0 },
+          { month: 'Mar', value: 0 },
+          { month: 'Apr', value: 0 },
+          { month: 'May', value: 0 },
+          { month: 'Jun', value: 0 },
+        ]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchResponseData();
+  }, []);
+
+  const maxValue = Math.max(...data.map(d => d.value), 1); // Ensure at least 1 to avoid division by 0
 
   return (
     <div className="bg-white dark:bg-gray-800/50 backdrop-blur-xl rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700/50 p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Response Analytics</h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Monthly survey responses</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            {loading ? 'Loading...' : `${totalResponses} total responses`}
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <Calendar className="h-4 w-4 text-gray-400" />
@@ -29,8 +77,13 @@ export function AnalyticsChart() {
       </div>
       
       <div className="relative h-64">
-        <div className="absolute inset-0 flex items-end justify-between gap-2">
-          {data.map((item, index) => (
+        {loading ? (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="h-8 w-8 border-2 border-violet-200 border-t-violet-600 rounded-full animate-spin"></div>
+          </div>
+        ) : (
+          <div className="absolute inset-0 flex items-end justify-between gap-2">
+            {data.map((item, index) => (
             <motion.div
               key={item.month}
               className="flex-1 flex flex-col items-center"
@@ -58,15 +111,26 @@ export function AnalyticsChart() {
               </div>
               <span className="text-xs text-gray-500 dark:text-gray-400 mt-2">{item.month}</span>
             </motion.div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="mt-6 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <TrendingUp className="h-4 w-4 text-green-500" />
-          <span className="text-sm font-medium text-green-600 dark:text-green-400">+15.3%</span>
-          <span className="text-sm text-gray-500 dark:text-gray-400">vs last period</span>
+          {totalResponses > 0 ? (
+            <>
+              <BarChart className="h-4 w-4 text-blue-500" />
+              <span className="text-sm font-medium text-blue-600 dark:text-blue-400">{totalResponses} responses</span>
+              <span className="text-sm text-gray-500 dark:text-gray-400">real data</span>
+            </>
+          ) : (
+            <>
+              <BarChart className="h-4 w-4 text-gray-400" />
+              <span className="text-sm font-medium text-gray-600 dark:text-gray-400">No responses yet</span>
+              <span className="text-sm text-gray-500 dark:text-gray-400">create surveys to see data</span>
+            </>
+          )}
         </div>
         <button className="text-sm font-medium text-violet-600 hover:text-violet-700 dark:text-violet-400 dark:hover:text-violet-300 transition-colors">
           View Details →

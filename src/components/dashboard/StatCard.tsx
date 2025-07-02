@@ -94,7 +94,7 @@ export function StatCard({ title, value, icon: Icon, progress, color, onClick, c
                   }`}>
                     {change}
                   </span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">vs last month</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">current period</span>
                 </div>
               )}
             </div>

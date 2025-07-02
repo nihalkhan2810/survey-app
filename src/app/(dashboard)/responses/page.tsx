@@ -67,7 +67,7 @@ export default function ResponsesPage() {
     const fetchData = async () => {
       try {
         const [responsesRes, surveysRes] = await Promise.all([
-          fetch('/api/all-responses'),
+          fetch('/api/all-responses?includeDummy=true'), // Include dummy data for responses page demonstration
           fetch('/api/surveys-with-dummy')
         ]);
         

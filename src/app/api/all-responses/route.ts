@@ -4,16 +4,22 @@ import { generateDummyResponses } from '@/lib/dummy-responses';
 import fs from 'fs/promises';
 import path from 'path';
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const url = new URL(request.url);
+    const includeDummy = url.searchParams.get('includeDummy') === 'true';
+    
     // Try to get responses from database first
     const responses = await database.getAllResponses();
     
-    // Only add dummy responses for demonstration in responses page
-    const { responses: dummyResponses } = generateDummyResponses();
-    const allResponses = [...responses, ...dummyResponses];
+    // Only add dummy responses when explicitly requested (for responses page demo)
+    if (includeDummy) {
+      const { responses: dummyResponses } = generateDummyResponses();
+      const allResponses = [...responses, ...dummyResponses];
+      return NextResponse.json(allResponses, { status: 200 });
+    }
     
-    return NextResponse.json(allResponses, { status: 200 });
+    return NextResponse.json(responses, { status: 200 });
   } catch (dbError) {
     console.warn('Failed to get responses from database, falling back to file system:', dbError);
     
@@ -32,17 +38,30 @@ export async function GET() {
         }
       }
 
-      // Only add dummy responses for demonstration in responses page
-      const { responses: dummyResponses } = generateDummyResponses();
-      const allResponses = [...fileResponses, ...dummyResponses];
+      const url = new URL(request.url);
+      const includeDummy = url.searchParams.get('includeDummy') === 'true';
+      
+      // Only add dummy responses when explicitly requested
+      if (includeDummy) {
+        const { responses: dummyResponses } = generateDummyResponses();
+        const allResponses = [...fileResponses, ...dummyResponses];
+        return NextResponse.json(allResponses, { status: 200 });
+      }
 
-      return NextResponse.json(allResponses, { status: 200 });
+      return NextResponse.json(fileResponses, { status: 200 });
     } catch (error) {
       console.error('Failed to read response files:', error);
-      // If the directory doesn't exist, return dummy data
+      // If the directory doesn't exist, return empty array for real data, dummy for demo
       if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
-        const { responses: dummyResponses } = generateDummyResponses();
-        return NextResponse.json(dummyResponses, { status: 200 });
+        const url = new URL(request.url);
+        const includeDummy = url.searchParams.get('includeDummy') === 'true';
+        
+        if (includeDummy) {
+          const { responses: dummyResponses } = generateDummyResponses();
+          return NextResponse.json(dummyResponses, { status: 200 });
+        }
+        
+        return NextResponse.json([], { status: 200 });
       }
       return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
     }

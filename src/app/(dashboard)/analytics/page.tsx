@@ -158,36 +158,41 @@ export default function AnalyticsPage() {
   const getBasicStats = () => {
     if (!analysis) return [];
     
+    const totalResponses = analysis.totalResponses || 0;
+    const avgRating = analysis.averageSatisfaction || 0;
+    const completionRate = analysis.completionRate || 0;
+    const recommendationScore = Math.round(analysis.insights?.recommendationScore || 0);
+    
     return [
       {
         title: 'Total Responses',
-        value: analysis.totalResponses?.toString() || '0',
-        change: '+12.5%',
-        trend: 'up' as const,
+        value: totalResponses.toString(),
+        change: totalResponses === 0 ? 'No data' : 'All time',
+        trend: totalResponses > 0 ? 'up' as const : 'none' as const,
         icon: Users,
         gradient: 'from-blue-500 to-cyan-500',
       },
       {
         title: 'Avg. Rating',
-        value: `${analysis.averageSatisfaction || 0}/10`,
-        change: '+0.3',
-        trend: 'up' as const,
+        value: `${Math.round(avgRating * 10) / 10}/10`,
+        change: avgRating === 0 ? 'No ratings' : avgRating >= 7 ? 'High satisfaction' : avgRating >= 5 ? 'Good' : 'Needs improvement',
+        trend: avgRating >= 7 ? 'up' as const : avgRating >= 5 ? 'up' as const : avgRating > 0 ? 'down' as const : 'none' as const,
         icon: Star,
         gradient: 'from-emerald-500 to-teal-500',
       },
       {
         title: 'Completion Rate',
-        value: `${analysis.completionRate || 0}%`,
-        change: '+5.2%',
-        trend: 'up' as const,
+        value: `${Math.round(completionRate)}%`,
+        change: completionRate === 0 ? 'No data' : completionRate >= 80 ? 'Excellent' : completionRate >= 60 ? 'Good' : 'Low completion',
+        trend: completionRate >= 60 ? 'up' as const : completionRate > 0 ? 'down' as const : 'none' as const,
         icon: Target,
         gradient: 'from-purple-500 to-indigo-500',
       },
       {
         title: 'Recommendation Score',
-        value: `${Math.round(analysis.insights?.recommendationScore || 0)}%`,
-        change: '+8.1%',
-        trend: 'up' as const,
+        value: `${recommendationScore}%`,
+        change: recommendationScore === 0 ? 'No data' : recommendationScore >= 70 ? 'Strong' : recommendationScore >= 50 ? 'Moderate' : 'Weak',
+        trend: recommendationScore >= 50 ? 'up' as const : recommendationScore > 0 ? 'down' as const : 'none' as const,
         icon: TrendingUp,
         gradient: 'from-rose-500 to-pink-500',
       }
@@ -315,7 +320,7 @@ export default function AnalyticsPage() {
                     {stat.change}
                   </div>
                   <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
-                    vs last month
+                    {stat.trend === 'none' ? 'no data' : 'current status'}
                   </span>
                 </div>
               </div>
@@ -445,11 +450,12 @@ export default function AnalyticsPage() {
             analyticsData={analysis}
             onViewDetails={() => {
               // Create a special chart metric for detailed view
+              const totalResponses = analysis?.totalResponses || 0;
               const chartMetric = {
                 title: 'Response Analytics',
-                value: `${analysis?.totalResponses || 0} responses`,
-                change: '+12.5%',
-                trend: 'up' as const,
+                value: `${totalResponses} responses`,
+                change: totalResponses === 0 ? 'No data' : 'All time',
+                trend: totalResponses > 0 ? 'up' as const : 'none' as const,
                 icon: BarChart3,
                 gradient: 'from-indigo-500 to-purple-600'
               };

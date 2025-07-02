@@ -80,7 +80,7 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
                                 animate={{ opacity: 1, x: 0 }}
                                 exit={{ opacity: 0, x: -10 }}
                                 transition={{ duration: 0.2 }}
-                                className="flex items-center justify-center"
+                                className="flex items-center justify-center flex-1"
                             >
                                 <SayzLogo size={48} />
                             </motion.div>
@@ -90,7 +90,7 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
                             onClick={onToggle}
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
-                            className="w-7 h-7 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 rounded-md transition-all duration-200"
+                            className="w-7 h-7 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 rounded-md transition-all duration-200 ml-2"
                             title="Collapse sidebar"
                         >
                             <PanelLeftClose className="h-4 w-4" />

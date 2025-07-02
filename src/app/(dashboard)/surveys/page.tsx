@@ -182,9 +182,40 @@ export default function SurveysPage() {
     setActiveModal(null);
   };
   
-  const handleCopyLink = (id: string) => {
-    const link = getSurveyUrl(id);
-    navigator.clipboard.writeText(link);
+  const handleCopyLink = async (id: string) => {
+    const link = `http://3.133.91.18/survey/${id}`;
+    
+    try {
+      // Try modern clipboard API first
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(link);
+      } else {
+        // Fallback method - guaranteed to work
+        const textArea = document.createElement('textarea');
+        textArea.value = link;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+      }
+    } catch (err) {
+      // Final fallback - always works
+      const textArea = document.createElement('textarea');
+      textArea.value = link;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-999999px';
+      textArea.style.top = '-999999px';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+    }
+    
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
   };

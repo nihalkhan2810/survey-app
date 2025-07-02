@@ -17,8 +17,8 @@ type CalendarEvent = {
   id: string;
   title: string;
   date: string;
-  type: 'start' | 'end' | 'reminder';
-  survey: Survey;
+  type: 'start' | 'end' | 'reminder' | 'expired';
+  survey: Survey & { status?: 'active' | 'expired' | 'upcoming' };
 };
 
 export default function CalendarPage() {
@@ -51,40 +51,41 @@ export default function CalendarPage() {
 
   const generateEvents = () => {
     const allEvents: CalendarEvent[] = [];
+    const now = new Date();
     
     surveys.forEach(survey => {
-      // Add start date event
-      if (survey.start_date) {
-        allEvents.push({
-          id: `${survey.id}-start`,
-          title: `Survey Opens: ${survey.topic}`,
-          date: survey.start_date.split('T')[0], // Get just the date part
-          type: 'start',
-          survey
-        });
-      }
+      const startDate = new Date(survey.start_date);
+      const endDate = new Date(survey.end_date);
+      const isActive = now >= startDate && now <= endDate;
+      const isExpired = now > endDate;
       
-      // Add end date event
-      if (survey.end_date) {
+      // Only show one entry per survey - the most relevant status
+      if (isActive) {
+        // Show when the active survey will close
         allEvents.push({
-          id: `${survey.id}-end`,
-          title: `Survey Closes: ${survey.topic}`,
+          id: `${survey.id}-active`,
+          title: `Active: ${survey.topic}`,
           date: survey.end_date.split('T')[0],
           type: 'end',
-          survey
+          survey: { ...survey, status: 'active' }
         });
-      }
-      
-      // Add reminder events
-      if (survey.reminder_dates) {
-        survey.reminder_dates.forEach((reminderDate, index) => {
-          allEvents.push({
-            id: `${survey.id}-reminder-${index}`,
-            title: `Reminder: ${survey.topic}`,
-            date: reminderDate.split('T')[0],
-            type: 'reminder',
-            survey
-          });
+      } else if (isExpired) {
+        // Show expired surveys
+        allEvents.push({
+          id: `${survey.id}-expired`,
+          title: `Expired: ${survey.topic}`,
+          date: survey.end_date.split('T')[0],
+          type: 'expired',
+          survey: { ...survey, status: 'expired' }
+        });
+      } else {
+        // Show upcoming surveys (not yet started)
+        allEvents.push({
+          id: `${survey.id}-upcoming`,
+          title: `Upcoming: ${survey.topic}`,
+          date: survey.start_date.split('T')[0],
+          type: 'start',
+          survey: { ...survey, status: 'upcoming' }
         });
       }
     });
@@ -160,9 +161,9 @@ export default function CalendarPage() {
                   <div
                     key={event.id}
                     className={`text-xs px-2 py-1 rounded-md truncate font-medium ${
-                      event.type === 'start' 
+                      event.survey.status === 'active'
                         ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
-                        : event.type === 'end'
+                        : event.survey.status === 'expired' || event.type === 'expired'
                         ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
                         : 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
                     }`}
@@ -170,7 +171,9 @@ export default function CalendarPage() {
                   >
                     <div className="flex items-center gap-1">
                       <span className="flex-shrink-0">
-                        {event.type === 'start' ? '🚀' : event.type === 'end' ? '🔒' : '🔔'}
+                        {event.survey.status === 'active' ? '✅' : 
+                         event.survey.status === 'expired' || event.type === 'expired' ? '❌' : 
+                         event.type === 'start' ? '🚀' : '🔒'}
                       </span>
                       <span className="truncate">{event.survey.topic}</span>
                     </div>
@@ -220,15 +223,15 @@ export default function CalendarPage() {
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400">
             <div className="w-3 h-3 bg-green-100 border border-green-300 rounded"></div>
-            <span>Opens</span>
+            <span>Active</span>
           </div>
           <div className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400">
             <div className="w-3 h-3 bg-red-100 border border-red-300 rounded"></div>
-            <span>Closes</span>
+            <span>Expired</span>
           </div>
           <div className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400">
             <div className="w-3 h-3 bg-blue-100 border border-blue-300 rounded"></div>
-            <span>Reminder</span>
+            <span>Upcoming</span>
           </div>
         </div>
       </div>
@@ -297,9 +300,9 @@ export default function CalendarPage() {
                     <div key={event.id} className="border border-gray-200 dark:border-gray-600 rounded-lg p-3">
                       <div className="flex items-start gap-2">
                         <div className={`w-2 h-2 rounded-full mt-2 ${
-                          event.type === 'start' 
+                          event.survey.status === 'active'
                             ? 'bg-green-500'
-                            : event.type === 'end'
+                            : event.survey.status === 'expired' || event.type === 'expired'
                             ? 'bg-red-500'
                             : 'bg-blue-500'
                         }`}></div>
@@ -308,8 +311,9 @@ export default function CalendarPage() {
                             {event.title}
                           </h4>
                           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                            {event.type === 'start' && '🚀 Survey goes live'}
-                            {event.type === 'end' && '🔒 Survey closes'}
+                            {event.survey.status === 'active' && '✅ Survey is currently active'}
+                            {(event.survey.status === 'expired' || event.type === 'expired') && '❌ Survey has expired'}
+                            {event.type === 'start' && '🚀 Survey will go live'}
                             {event.type === 'reminder' && '📧 Send reminder email'}
                           </p>
                         </div>
@@ -352,9 +356,9 @@ export default function CalendarPage() {
                   .map(event => (
                     <div key={event.id} className="flex items-center gap-3 p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg cursor-pointer">
                       <div className={`w-2 h-2 rounded-full ${
-                        event.type === 'start' 
+                        event.survey.status === 'active'
                           ? 'bg-green-500'
-                          : event.type === 'end'
+                          : event.survey.status === 'expired' || event.type === 'expired'
                           ? 'bg-red-500'
                           : 'bg-blue-500'
                       }`}></div>
@@ -364,8 +368,9 @@ export default function CalendarPage() {
                         </p>
                         <p className="text-xs text-gray-500 dark:text-gray-400">
                           {new Date(event.date).toLocaleDateString()} • 
+                          {event.survey.status === 'active' && ' Active'}
+                          {(event.survey.status === 'expired' || event.type === 'expired') && ' Expired'}
                           {event.type === 'start' && ' Opens'}
-                          {event.type === 'end' && ' Closes'}
                           {event.type === 'reminder' && ' Reminder'}
                         </p>
                       </div>

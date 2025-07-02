@@ -24,6 +24,7 @@ export const TABLES = {
   ANSWERS: process.env.DYNAMODB_ANSWERS_TABLE || 'sayz-answers',
   REMINDERS: process.env.DYNAMODB_REMINDERS_TABLE || 'sayz-reminders',
   API_CONFIGS: process.env.DYNAMODB_API_CONFIGS_TABLE || 'sayz-api-configs',
+  RECIPIENTS: process.env.DYNAMODB_RECIPIENTS_TABLE || 'sayz-recipients',
 }
 
 // User operations
@@ -349,4 +350,75 @@ export const apiConfigOperations = {
     config[key] = value
     return await this.updateConfig(config)
   },
+}
+
+// Recipient operations
+export const recipientOperations = {
+  async createRecipients(surveyId: string, emails: string[]) {
+    const batchId = Date.now().toString()
+    const items = emails.map(email => ({
+      id: `${surveyId}-${email}`,
+      surveyId,
+      email,
+      batchId,
+      createdAt: new Date().toISOString(),
+    }))
+
+    // Batch write items (DynamoDB supports up to 25 items per batch)
+    const batches = []
+    for (let i = 0; i < items.length; i += 25) {
+      batches.push(items.slice(i, i + 25))
+    }
+
+    for (const batch of batches) {
+      const commands = batch.map(item => new PutCommand({
+        TableName: TABLES.RECIPIENTS,
+        Item: item,
+      }))
+      
+      await Promise.all(commands.map(cmd => dynamodb.send(cmd)))
+    }
+
+    return { batchId, recipientCount: items.length }
+  },
+
+  async getRecipientsBySurvey(surveyId: string) {
+    const command = new ScanCommand({
+      TableName: TABLES.RECIPIENTS,
+      FilterExpression: 'surveyId = :surveyId',
+      ExpressionAttributeValues: {
+        ':surveyId': surveyId,
+      },
+    })
+    
+    const result = await dynamodb.send(command)
+    return result.Items || []
+  },
+
+  async getNonRespondents(surveyId: string) {
+    // Get all recipients for this survey
+    const recipients = await this.getRecipientsBySurvey(surveyId)
+    
+    // Get all responses for this survey
+    const responsesCommand = new ScanCommand({
+      TableName: TABLES.RESPONSES,
+      FilterExpression: 'surveyId = :surveyId',
+      ExpressionAttributeValues: {
+        ':surveyId': surveyId,
+      },
+    })
+    
+    const responsesResult = await dynamodb.send(responsesCommand)
+    const responses = responsesResult.Items || []
+    
+    // Get emails of people who responded
+    const respondedEmails = new Set(
+      responses
+        .map(r => r.email || r.respondentEmail || r.identity?.email)
+        .filter(Boolean)
+    )
+    
+    // Return recipients who haven't responded
+    return recipients.filter(recipient => !respondedEmails.has(recipient.email))
+  }
 }

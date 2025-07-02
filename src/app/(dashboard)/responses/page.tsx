@@ -15,7 +15,7 @@ interface Response {
   surveyId: string;
   submittedAt: string;
   answers: Record<string, string>;
-  type: 'text' | 'voice-extracted' | 'anonymous';
+  type: 'text' | 'voice-extracted' | 'anonymous' | 'email' | 'web' | string;
   email?: string;
   respondentEmail?: string; // Email used for tracking (from URL)
   identity?: {

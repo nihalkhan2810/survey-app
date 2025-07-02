@@ -1,5 +1,5 @@
 import { simpleDb } from './simple-db'
-import { userOperations, surveyOperations, responseOperations, apiConfigOperations } from './dynamodb'
+import { userOperations, surveyOperations, responseOperations, apiConfigOperations, recipientOperations } from './dynamodb'
 
 // Check if we should use DynamoDB based on environment configuration
 // Support both AWS_ prefix and DYNAMODB_ prefix for flexibility
@@ -259,6 +259,44 @@ export const database = {
       return value
     } catch (error) {
       console.error('Error updating API config value:', error)
+      throw error
+    }
+  },
+
+  // Recipient operations
+  async createRecipients(surveyId: string, emails: string[]) {
+    try {
+      if (USE_DYNAMODB) {
+        return await recipientOperations.createRecipients(surveyId, emails)
+      }
+      // For simple DB, we'll just return success (recipients not tracked in file system)
+      return { batchId: Date.now().toString(), recipientCount: emails.length }
+    } catch (error) {
+      console.error('Error creating recipients:', error)
+      throw error
+    }
+  },
+
+  async getRecipientsBySurvey(surveyId: string) {
+    try {
+      if (USE_DYNAMODB) {
+        return await recipientOperations.getRecipientsBySurvey(surveyId)
+      }
+      return []
+    } catch (error) {
+      console.error('Error getting recipients:', error)
+      throw error
+    }
+  },
+
+  async getNonRespondents(surveyId: string) {
+    try {
+      if (USE_DYNAMODB) {
+        return await recipientOperations.getNonRespondents(surveyId)
+      }
+      return []
+    } catch (error) {
+      console.error('Error getting non-respondents:', error)
       throw error
     }
   },

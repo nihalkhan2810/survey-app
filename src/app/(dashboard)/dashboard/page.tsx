@@ -19,6 +19,7 @@ type MetricType = 'surveys' | 'responses' | 'users' | 'engagement';
 export default function DashboardPage() {
   const [surveys, setSurveys] = useState<Survey[]>([]);
   const [allResponses, setAllResponses] = useState<any[]>([]);
+  const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMetric, setSelectedMetric] = useState<{
     type: MetricType;
@@ -27,11 +28,11 @@ export default function DashboardPage() {
     color: string;
   } | null>(null);
 
-  // Computed metrics
+  // Computed metrics from real data
   const totalSurveys = surveys.length;
   const totalResponses = allResponses.length;
+  const totalUsers = users.length;
   const avgResponseRate = totalSurveys > 0 ? Math.round((totalResponses / totalSurveys) * 100) : 0;
-  const activeToday = Math.floor(totalResponses * 0.2) + 1;
 
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
@@ -46,20 +47,29 @@ export default function DashboardPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [surveysRes, responsesRes] = await Promise.all([
+        const [surveysRes, responsesRes, usersRes] = await Promise.all([
           fetch('/api/surveys'),
-          fetch('/api/all-responses')
+          fetch('/api/all-responses'),
+          fetch('/api/users')
         ]);
 
         const surveysData = await surveysRes.json();
         const responsesData = await responsesRes.json();
+        let usersData = [];
+
+        // Handle users endpoint gracefully
+        if (usersRes.ok) {
+          usersData = await usersRes.json();
+        }
 
         setSurveys(Array.isArray(surveysData) ? surveysData : []);
         setAllResponses(Array.isArray(responsesData) ? responsesData : []);
+        setUsers(Array.isArray(usersData) ? usersData : []);
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
         setSurveys([]);
         setAllResponses([]);
+        setUsers([]);
       } finally {
         setLoading(false);
       }
@@ -119,16 +129,17 @@ export default function DashboardPage() {
           color="green"
           change="+18%"
           trend="up"
+          onClick={() => handleMetricClick('responses', 'Total Responses', totalResponses.toString(), 'green')}
         />
         <StatCard 
           title="Active Users" 
-          value={`${Math.floor(totalResponses * 0.7) + 45}`} 
+          value={totalUsers.toString()} 
           icon={Users} 
-          progress={Math.min((Math.floor(totalResponses * 0.7) + 45) * 2, 100)} 
+          progress={Math.min(totalUsers * 2, 100)} 
           color="yellow"
-          change="+8%"
-          trend="up"
-          onClick={() => handleMetricClick('users', 'Active Users', `${Math.floor(totalResponses * 0.7) + 45}`, 'yellow')}
+          change={totalUsers > 0 ? "+8%" : "0%"}
+          trend={totalUsers > 0 ? "up" : "none"}
+          onClick={() => handleMetricClick('users', 'Active Users', totalUsers.toString(), 'yellow')}
         />
         <StatCard 
           title="Response Rate" 
@@ -167,8 +178,8 @@ export default function DashboardPage() {
             <div className="space-y-3">
               {[
                 { action: 'New survey created', time: '2 hours ago', color: 'from-blue-500 to-cyan-500' },
-                { action: `${Math.floor(totalResponses * 0.3)} new responses`, time: '5 hours ago', color: 'from-emerald-500 to-teal-500' },
-                { action: 'Voice survey completed', time: '1 day ago', color: 'from-violet-500 to-purple-500' },
+                { action: `${totalResponses} total responses`, time: 'All time', color: 'from-emerald-500 to-teal-500' },
+                { action: `${totalUsers} registered users`, time: 'All time', color: 'from-violet-500 to-purple-500' },
               ].map((item, index) => (
                 <motion.div
                   key={index}
@@ -194,11 +205,11 @@ export default function DashboardPage() {
               Engagement Score
             </h3>
             <div className="text-center">
-              <p className="text-5xl font-bold">{(8.7 + (avgResponseRate / 100)).toFixed(1)}</p>
+              <p className="text-5xl font-bold">{Math.min(avgResponseRate / 10, 10).toFixed(1)}</p>
               <p className="text-sm mt-2 opacity-90">Out of 10</p>
               <div className="mt-4 flex items-center justify-center gap-2">
                 <span className="text-xs bg-white/20 px-2 py-1 rounded-full">
-                  +{Math.floor(avgResponseRate / 10)}% this month
+                  {avgResponseRate}% response rate
                 </span>
               </div>
             </div>

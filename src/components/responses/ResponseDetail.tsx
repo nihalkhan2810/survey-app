@@ -9,7 +9,7 @@ interface Response {
   surveyId: string;
   submittedAt: string;
   answers: Record<string, string>;
-  type: 'text' | 'voice-extracted' | 'anonymous';
+  type: 'text' | 'voice-extracted' | 'anonymous' | 'email' | 'web' | string;
   email?: string;
   respondentEmail?: string; // Email used for tracking (from URL)
   identity?: {
@@ -61,7 +61,8 @@ export function ResponseDetail({ response, survey, onClose }: ResponseDetailProp
   };
 
   const getTypeInfo = () => {
-    if (response.type === 'voice-extracted' || response.type === 'voice-vapi') {
+    // Handle voice responses
+    if (response.type === 'voice-extracted' || response.type === 'voice-vapi' || response.type?.includes('voice')) {
       return {
         icon: <Phone className="h-5 w-5 text-emerald-600" />,
         label: 'Voice Response',
@@ -78,6 +79,13 @@ export function ResponseDetail({ response, survey, onClose }: ResponseDetailProp
           color: 'blue',
           description: 'Direct text submission'
         };
+      case 'email':
+        return {
+          icon: <Mail className="h-5 w-5 text-purple-600" />,
+          label: 'Email Response',
+          color: 'purple',
+          description: 'Response submitted via email'
+        };
       case 'anonymous':
         return {
           icon: <User className="h-5 w-5 text-gray-600" />,
@@ -85,12 +93,28 @@ export function ResponseDetail({ response, survey, onClose }: ResponseDetailProp
           color: 'gray',
           description: 'Anonymous submission'
         };
+      case 'web':
+        return {
+          icon: <MessageSquare className="h-5 w-5 text-blue-600" />,
+          label: 'Web Response',
+          color: 'blue',
+          description: 'Response submitted via web form'
+        };
       default:
+        // If we still get an unknown type, check if it has an email to infer the type
+        if (response.email || response.respondentEmail || response.identity?.email) {
+          return {
+            icon: <Mail className="h-5 w-5 text-purple-600" />,
+            label: 'Email Response',
+            color: 'purple',
+            description: 'Response submitted via email'
+          };
+        }
         return {
           icon: <MessageSquare className="h-5 w-5 text-gray-600" />,
-          label: 'Unknown Type',
+          label: 'Web Response',
           color: 'gray',
-          description: 'Unknown response type'
+          description: `Response type: ${response.type || 'unknown'}`
         };
     }
   };

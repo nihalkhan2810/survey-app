@@ -9,6 +9,7 @@ import { getSurveyUrl } from '@/lib/utils';
 import { ResultsModal } from "@/components/surveys/ResultsModal";
 import { CallModal } from "@/components/surveys/CallModal";
 import VapiCallModal from "@/components/surveys/VapiCallModal";
+import { ReminderModal } from "@/components/surveys/ReminderModal";
 
 type Survey = {
   id: string;
@@ -21,7 +22,7 @@ type Survey = {
 
 type SurveyStatus = 'yet-to-start' | 'active' | 'expired';
 
-type ModalType = 'results' | 'call' | 'vapi-call' | null;
+type ModalType = 'results' | 'call' | 'vapi-call' | 'reminder' | null;
 
 const gradients = [
   'from-emerald-500 to-teal-600',
@@ -272,7 +273,7 @@ export default function SurveysPage() {
         bgColor: 'bg-green-50 dark:bg-green-900/20'
       },
       'expired': {
-        text: 'Expired',
+        text: 'Closed',
         color: 'bg-red-500',
         textColor: 'text-red-600',
         bgColor: 'bg-red-50 dark:bg-red-900/20'
@@ -442,25 +443,32 @@ export default function SurveysPage() {
                           </motion.div>
                         </AnimatePresence>
                       </motion.button>
-                      <motion.button 
-                        onClick={() => openModal(survey, 'results')} 
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        className="p-2 text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors rounded-lg hover:bg-white/50 dark:hover:bg-gray-800/50" 
-                        title="View Results"
-                      >
-                        <EyeIcon className="h-5 w-5"/>
-                      </motion.button>
-                      <Link href={`/surveys/send?surveyId=${survey.id}`}>
+                      
+                      {/* Show different actions based on survey status */}
+                      {getSurveyStatus(survey, currentTime) === 'active' ? (
+                        // For active surveys, show reminder option
                         <motion.button 
+                          onClick={() => openModal(survey, 'reminder')}
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
                           className="p-2 text-gray-500 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors rounded-lg hover:bg-white/50 dark:hover:bg-gray-800/50" 
-                          title="Send via Email"
+                          title="Send Reminder"
                         >
                           <PaperAirplaneIcon className="h-5 w-5"/>
                         </motion.button>
-                      </Link>
+                      ) : (
+                        // For non-active surveys, show view results
+                        <motion.button 
+                          onClick={() => openModal(survey, 'results')} 
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          className="p-2 text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors rounded-lg hover:bg-white/50 dark:hover:bg-gray-800/50" 
+                          title="View Results"
+                        >
+                          <EyeIcon className="h-5 w-5"/>
+                        </motion.button>
+                      )}
+                      
                       <motion.button 
                         onClick={() => openModal(survey, 'vapi-call')} 
                         whileHover={{ scale: 1.1 }}
@@ -541,25 +549,32 @@ export default function SurveysPage() {
                             </motion.div>
                           </AnimatePresence>
                         </motion.button>
-                        <motion.button 
-                          onClick={() => openModal(survey, 'results')} 
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
-                          className="p-2 text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700" 
-                          title="View Results"
-                        >
-                          <EyeIcon className="h-5 w-5"/>
-                        </motion.button>
-                        <Link href={`/surveys/send?surveyId=${survey.id}`}>
+                        
+                        {/* Show different actions based on survey status */}
+                        {getSurveyStatus(survey, currentTime) === 'active' ? (
+                          // For active surveys, show reminder option
                           <motion.button 
+                            onClick={() => openModal(survey, 'reminder')}
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}
                             className="p-2 text-gray-500 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700" 
-                            title="Send via Email"
+                            title="Send Reminder"
                           >
                             <PaperAirplaneIcon className="h-5 w-5"/>
                           </motion.button>
-                        </Link>
+                        ) : (
+                          // For non-active surveys, show view results
+                          <motion.button 
+                            onClick={() => openModal(survey, 'results')} 
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            className="p-2 text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700" 
+                            title="View Results"
+                          >
+                            <EyeIcon className="h-5 w-5"/>
+                          </motion.button>
+                        )}
+                        
                         <motion.button 
                           onClick={() => openModal(survey, 'vapi-call')} 
                           whileHover={{ scale: 1.1 }}
@@ -622,6 +637,14 @@ export default function SurveysPage() {
               topic: activeSurvey.topic,
               questions: activeSurvey.questions || []
             }}
+          />
+        )}
+        {activeModal === 'reminder' && activeSurvey && (
+          <ReminderModal
+            isOpen={true}
+            onClose={closeModal}
+            surveyId={activeSurvey.id}
+            surveyTopic={activeSurvey.topic}
           />
         )}
       </AnimatePresence>

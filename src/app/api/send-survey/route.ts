@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 import { createParticipants } from '@/lib/participant_tracker';
 import { scheduleEmailReminders } from '@/lib/email_reminder_scheduler';
+import { database } from '@/lib/database';
 
 export async function POST(req: NextRequest) {
   const { 
@@ -42,6 +43,18 @@ export async function POST(req: NextRequest) {
 
   // Generate a unique batch identifier for this email send
   const batchId = Date.now().toString();
+
+  // Store recipients for reminder functionality
+  let recipientBatch = null;
+  if (surveyId && emails && emails.length > 0) {
+    try {
+      recipientBatch = await database.createRecipients(surveyId, emails);
+      console.log(`Stored ${recipientBatch.recipientCount} recipients for survey ${surveyId}`);
+    } catch (error) {
+      console.error('Failed to store recipients:', error);
+      // Don't fail the send operation if recipient storage fails
+    }
+  }
 
   const emailPromises = emails.map((email: string, index: number) => {
     let personalizedLink = surveyLink;

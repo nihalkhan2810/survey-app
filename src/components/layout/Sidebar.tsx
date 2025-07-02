@@ -56,7 +56,7 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
                                 transition={{ duration: 0.2 }}
                                 className="flex items-center justify-center"
                             >
-                                <SayzIcon size={20} />
+                                <SayzIcon size={32} />
                             </motion.div>
                         </AnimatePresence>
                         
@@ -80,12 +80,9 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
                                 animate={{ opacity: 1, x: 0 }}
                                 exit={{ opacity: 0, x: -10 }}
                                 transition={{ duration: 0.2 }}
-                                className="flex items-center gap-3"
+                                className="flex items-center justify-center"
                             >
-                                <SayzLogo size={32} />
-                                <span className="text-lg font-semibold text-gray-800 dark:text-white">
-                                    Sayz
-                                </span>
+                                <SayzLogo size={48} />
                             </motion.div>
                         </AnimatePresence>
                         

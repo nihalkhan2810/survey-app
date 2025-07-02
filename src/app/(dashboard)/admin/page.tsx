@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   UserCogIcon, 
@@ -15,7 +16,9 @@ import {
   Globe,
   ArrowRight,
   TrendingUp,
-  Building
+  Building,
+  XCircle,
+  CheckCircle
 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
@@ -93,6 +96,75 @@ function AdminSection({ title, description, icon: Icon, color, href, children }:
 export default function AdminPage() {
   const { data: session } = useSession();
   const userRole = session?.user?.role || 'USER';
+  
+  const [stats, setStats] = useState({
+    totalUsers: 0,
+    totalSurveys: 0,
+    activeSurveys: 0,
+    closedSurveys: 0,
+    totalResponses: 0,
+    responseRate: 0,
+    loading: true
+  });
+
+  useEffect(() => {
+    const fetchAdminStats = async () => {
+      try {
+        const [surveysRes, responsesRes, usersRes] = await Promise.all([
+          fetch('/api/surveys'),
+          fetch('/api/all-responses'),
+          fetch('/api/users') // We'll need to create this endpoint
+        ]);
+
+        const surveys = await surveysRes.json();
+        const responses = await responsesRes.json();
+        let users = [];
+        
+        // Handle users endpoint gracefully
+        if (usersRes.ok) {
+          users = await usersRes.json();
+        }
+
+        const now = new Date();
+        const surveysArray = Array.isArray(surveys) ? surveys : [];
+        const responsesArray = Array.isArray(responses) ? responses : [];
+        const usersArray = Array.isArray(users) ? users : [];
+
+        // Calculate active vs closed surveys
+        const activeSurveys = surveysArray.filter(survey => {
+          if (!survey.start_date || !survey.end_date) return true; // No dates = active
+          const startDate = new Date(survey.start_date);
+          const endDate = new Date(survey.end_date);
+          return now >= startDate && now <= endDate;
+        }).length;
+
+        const closedSurveys = surveysArray.filter(survey => {
+          if (!survey.end_date) return false;
+          const endDate = new Date(survey.end_date);
+          return now > endDate;
+        }).length;
+
+        const responseRate = surveysArray.length > 0 
+          ? Math.round((responsesArray.length / surveysArray.length) * 100) 
+          : 0;
+
+        setStats({
+          totalUsers: usersArray.length,
+          totalSurveys: surveysArray.length,
+          activeSurveys,
+          closedSurveys,
+          totalResponses: responsesArray.length,
+          responseRate,
+          loading: false
+        });
+      } catch (error) {
+        console.error('Failed to fetch admin stats:', error);
+        setStats(prev => ({ ...prev, loading: false }));
+      }
+    };
+
+    fetchAdminStats();
+  }, []);
 
   return (
     <div className="space-y-8">
@@ -116,36 +188,55 @@ export default function AdminPage() {
       </motion.div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <QuickStat
-          title="Total Users"
-          value="1,234"
-          change="+12% this month"
-          positive={true}
-          icon={Users}
-        />
-        <QuickStat
-          title="Active Surveys"
-          value="48"
-          change="+8% this week"
-          positive={true}
-          icon={FileText}
-        />
-        <QuickStat
-          title="Response Rate"
-          value="87%"
-          change="+3% this month"
-          positive={true}
-          icon={BarChart3}
-        />
-        <QuickStat
-          title="System Health"
-          value="99.9%"
-          change="Excellent"
-          positive={true}
-          icon={Activity}
-        />
-      </div>
+      {stats.loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 animate-pulse">
+              <div className="h-4 bg-gray-200 rounded mb-2"></div>
+              <div className="h-8 bg-gray-200 rounded mb-2"></div>
+              <div className="h-3 bg-gray-200 rounded"></div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+          <QuickStat
+            title="Total Users"
+            value={stats.totalUsers.toLocaleString()}
+            change="+12% this month"
+            positive={true}
+            icon={Users}
+          />
+          <QuickStat
+            title="Total Surveys"
+            value={stats.totalSurveys.toString()}
+            change={`${stats.activeSurveys} active`}
+            positive={true}
+            icon={FileText}
+          />
+          <QuickStat
+            title="Active Surveys"
+            value={stats.activeSurveys.toString()}
+            change={`${Math.round((stats.activeSurveys / Math.max(stats.totalSurveys, 1)) * 100)}% of total`}
+            positive={true}
+            icon={CheckCircle}
+          />
+          <QuickStat
+            title="Closed Surveys"
+            value={stats.closedSurveys.toString()}
+            change={`${Math.round((stats.closedSurveys / Math.max(stats.totalSurveys, 1)) * 100)}% of total`}
+            positive={false}
+            icon={XCircle}
+          />
+          <QuickStat
+            title="Response Rate"
+            value={`${stats.responseRate}%`}
+            change={`${stats.totalResponses} responses`}
+            positive={stats.responseRate > 50}
+            icon={BarChart3}
+          />
+        </div>
+      )}
 
       {/* Admin Sections */}
       <div className="space-y-8">

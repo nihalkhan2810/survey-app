@@ -18,7 +18,8 @@
       "Bash(ls:*)",
       "Bash(npx tsc:*)",
       "Bash(grep:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(npm run create-tables:*)"
     ],
     "deny": []
   }

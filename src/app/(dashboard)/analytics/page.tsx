@@ -3,38 +3,86 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { AnalyticsChart } from '@/components/dashboard/AnalyticsChart';
-import { SentimentAnalysis } from '@/components/analytics/SentimentAnalysis';
-import { RecentResponses } from '@/components/analytics/RecentResponses';
-import { OpinionOverview } from '@/components/analytics/OpinionOverview';
-import { TopProfessors } from '@/components/analytics/TopProfessors';
-import { DepartmentAnalytics } from '@/components/analytics/DepartmentAnalytics';
-import { ProfessorDetailModal } from '@/components/analytics/ProfessorDetailModal';
-import { UniversalTopEntities } from '@/components/analytics/UniversalTopEntities';
-import { UniversalEntityModal } from '@/components/analytics/UniversalEntityModal';
-import { TrendingUp, TrendingDown, Activity, Users, MessageSquare, Phone, GraduationCap, Building2 } from 'lucide-react';
+import { SentimentModal } from '@/components/analytics/SentimentModal';
+import { MetricDetailModal } from '@/components/analytics/MetricDetailModal';
+import { TrendingUp, TrendingDown, Activity, Users, MessageSquare, Brain, Target, Star, BarChart3, Sparkles, Zap, MousePointer } from 'lucide-react';
 import { getUniversitySentimentAnalysis, ProfessorStats, departmentStats } from '@/lib/university-demo-data';
 import { getCurrentIndustryConfig, getIndustryMetrics } from '@/lib/industry-config';
 import { getUniversalSentimentAnalysis, UniversalEntityStats } from '@/lib/universal-analytics';
 
+type Survey = {
+  id: string;
+  topic: string;
+  created_at: string;
+  start_date?: string;
+  end_date?: string;
+};
+
 export default function AnalyticsPage() {
-  const [selectedProfessor, setSelectedProfessor] = useState<ProfessorStats | null>(null);
-  const [selectedEntity, setSelectedEntity] = useState<UniversalEntityStats | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isUniversalModalOpen, setIsUniversalModalOpen] = useState(false);
   const [industryConfig, setIndustryConfig] = useState(getCurrentIndustryConfig());
   const [analysis, setAnalysis] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [surveys, setSurveys] = useState<Survey[]>([]);
+  const [selectedSurvey, setSelectedSurvey] = useState<string>('');
+  const [sentimentModalOpen, setSentimentModalOpen] = useState(false);
+  const [aiSentiment, setAiSentiment] = useState<any>(null);
+  const [loadingAI, setLoadingAI] = useState(false);
+  const [metricDetailOpen, setMetricDetailOpen] = useState(false);
+  const [selectedMetric, setSelectedMetric] = useState<any>(null);
   
+  // Load surveys
+  useEffect(() => {
+    const loadSurveys = async () => {
+      try {
+        const response = await fetch('/api/surveys');
+        if (response.ok) {
+          const data = await response.json();
+          setSurveys(Array.isArray(data) ? data : []);
+          // Auto-select first survey if none selected
+          if (!selectedSurvey && data.length > 0) {
+            setSelectedSurvey(data[0].id);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load surveys:', error);
+        setSurveys([]);
+      }
+    };
+
+    loadSurveys();
+  }, []); // Remove selectedSurvey dependency
+
   // Load analysis data
   useEffect(() => {
     const loadAnalysis = async () => {
       setLoading(true);
       try {
-        if (industryConfig.id === 'education') {
-          setAnalysis(getUniversitySentimentAnalysis());
+        if (selectedSurvey && selectedSurvey !== 'all') {
+          // Load survey-specific analytics
+          const response = await fetch(`/api/analytics?surveyId=${selectedSurvey}`);
+          if (response.ok) {
+            const data = await response.json();
+            setAnalysis(data);
+          } else {
+            throw new Error('Failed to load survey analytics');
+          }
+        } else if (selectedSurvey === 'all') {
+          // Load combined analytics for all surveys
+          const response = await fetch('/api/analytics-combined');
+          if (response.ok) {
+            const data = await response.json();
+            setAnalysis(data);
+          } else {
+            throw new Error('Failed to load combined analytics');
+          }
         } else {
-          const universalAnalysis = await getUniversalSentimentAnalysis();
-          setAnalysis(universalAnalysis);
+          // Load general analytics (all surveys combined)
+          if (industryConfig.id === 'education') {
+            setAnalysis(getUniversitySentimentAnalysis());
+          } else {
+            const universalAnalysis = await getUniversalSentimentAnalysis();
+            setAnalysis(universalAnalysis);
+          }
         }
       } catch (error) {
         console.error('Failed to load analysis:', error);
@@ -45,8 +93,53 @@ export default function AnalyticsPage() {
       }
     };
 
-    loadAnalysis();
-  }, [industryConfig]);
+    if (selectedSurvey) {
+      loadAnalysis();
+    }
+  }, [industryConfig, selectedSurvey]);
+
+  // Manual AI sentiment analysis function
+  const loadAISentiment = async () => {
+    if (!analysis || !analysis.responses || analysis.responses.length === 0) {
+      return;
+    }
+
+    setLoadingAI(true);
+    try {
+      // Determine topic based on whether it's a single survey or combined
+      let surveyTopic = '';
+      if (selectedSurvey === 'all') {
+        // For combined surveys, create a descriptive topic
+        const surveyCount = analysis.surveys?.length || 0;
+        surveyTopic = `Combined Analysis of ${surveyCount} Surveys`;
+      } else {
+        surveyTopic = analysis.survey?.topic || 'Survey';
+      }
+
+      const response = await fetch('/api/gemini-sentiment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          responses: analysis.responses,
+          surveyTopic: surveyTopic
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setAiSentiment(data);
+      }
+    } catch (error) {
+      console.error('Failed to load AI sentiment:', error);
+    } finally {
+      setLoadingAI(false);
+    }
+  };
+
+  // Reset AI sentiment when survey changes
+  useEffect(() => {
+    setAiSentiment(null);
+  }, [selectedSurvey]);
 
   // Update industry config when component mounts or localStorage changes
   useEffect(() => {
@@ -61,221 +154,46 @@ export default function AnalyticsPage() {
     return () => window.removeEventListener('storage', updateConfig);
   }, []);
 
-  const handleProfessorClick = (professor: ProfessorStats) => {
-    setSelectedProfessor(professor);
-    setIsModalOpen(true);
-  };
-
-  const handleEntityClick = (entity: UniversalEntityStats) => {
-    setSelectedEntity(entity);
-    setIsUniversalModalOpen(true);
-  };
-
-  const handleDepartmentClick = (department: typeof departmentStats[0]) => {
-    console.log('Department clicked:', department);
-  };
-
-  // Render industry-specific analytics component
-  const renderIndustryAnalytics = () => {
-    if (industryConfig.id === 'education') {
-      return <TopProfessors onProfessorClick={handleProfessorClick} />;
-    } else {
-      return <UniversalTopEntities onEntityClick={handleEntityClick} />;
-    }
-  };
-
-  // Render department analytics only for education
-  const renderDepartmentAnalytics = () => {
-    if (industryConfig.id === 'education') {
-      return (
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.4 }}
-        >
-          <DepartmentAnalytics onDepartmentClick={handleDepartmentClick} />
-        </motion.div>
-      );
-    }
-    return null;
-  };
-
-  // Industry-adaptive stats
-  const getStatsForIndustry = () => {
-    const baseStats = [
+  // Get basic stats for display
+  const getBasicStats = () => {
+    if (!analysis) return [];
+    
+    return [
       {
         title: 'Total Responses',
-        value: analysis.totalResponses.toString(),
+        value: analysis.totalResponses?.toString() || '0',
         change: '+12.5%',
-        trend: 'up',
-        icon: Activity,
+        trend: 'up' as const,
+        icon: Users,
         gradient: 'from-blue-500 to-cyan-500',
+      },
+      {
+        title: 'Avg. Rating',
+        value: `${analysis.averageSatisfaction || 0}/10`,
+        change: '+0.3',
+        trend: 'up' as const,
+        icon: Star,
+        gradient: 'from-emerald-500 to-teal-500',
+      },
+      {
+        title: 'Completion Rate',
+        value: `${analysis.completionRate || 0}%`,
+        change: '+5.2%',
+        trend: 'up' as const,
+        icon: Target,
+        gradient: 'from-purple-500 to-indigo-500',
+      },
+      {
+        title: 'Recommendation Score',
+        value: `${Math.round(analysis.insights?.recommendationScore || 0)}%`,
+        change: '+8.1%',
+        trend: 'up' as const,
+        icon: TrendingUp,
+        gradient: 'from-rose-500 to-pink-500',
       }
     ];
-
-    switch (industryConfig.id) {
-      case 'education':
-        return [
-          ...baseStats,
-          {
-            title: 'Active Professors',
-            value: '24',
-            change: '+2',
-            trend: 'up',
-            icon: GraduationCap,
-            gradient: 'from-emerald-500 to-teal-500',
-          },
-          {
-            title: 'Departments',
-            value: departmentStats.length.toString(),
-            change: '0',
-            trend: 'up',
-            icon: Building2,
-            gradient: 'from-purple-500 to-indigo-500',
-          }
-        ];
-      case 'employee':
-        return [
-          ...baseStats,
-          {
-            title: 'Active Employees',
-            value: '156',
-            change: '+8',
-            trend: 'up',
-            icon: Users,
-            gradient: 'from-emerald-500 to-teal-500',
-          },
-          {
-            title: 'Departments',
-            value: '12',
-            change: '+1',
-            trend: 'up',
-            icon: Building2,
-            gradient: 'from-purple-500 to-indigo-500',
-          }
-        ];
-      case 'customer':
-        return [
-          ...baseStats,
-          {
-            title: 'Active Customers',
-            value: '2,341',
-            change: '+156',
-            trend: 'up',
-            icon: Users,
-            gradient: 'from-emerald-500 to-teal-500',
-          },
-          {
-            title: 'Product Categories',
-            value: '8',
-            change: '0',
-            trend: 'up',
-            icon: Building2,
-            gradient: 'from-purple-500 to-indigo-500',
-          }
-        ];
-      case 'community':
-        return [
-          ...baseStats,
-          {
-            title: 'Community Issues',
-            value: '18',
-            change: '+3',
-            trend: 'up',
-            icon: Users,
-            gradient: 'from-emerald-500 to-teal-500',
-          },
-          {
-            title: 'Active Districts',
-            value: '5',
-            change: '0',
-            trend: 'up',
-            icon: Building2,
-            gradient: 'from-purple-500 to-indigo-500',
-          }
-        ];
-      case 'public':
-        return [
-          ...baseStats,
-          {
-            title: 'Active Polls',
-            value: '12',
-            change: '+2',
-            trend: 'up',
-            icon: Users,
-            gradient: 'from-emerald-500 to-teal-500',
-          },
-          {
-            title: 'Policy Categories',
-            value: '7',
-            change: '+1',
-            trend: 'up',
-            icon: Building2,
-            gradient: 'from-purple-500 to-indigo-500',
-          }
-        ];
-      case 'event':
-        return [
-          ...baseStats,
-          {
-            title: 'Active Events',
-            value: '9',
-            change: '+1',
-            trend: 'up',
-            icon: Users,
-            gradient: 'from-emerald-500 to-teal-500',
-          },
-          {
-            title: 'Event Types',
-            value: '4',
-            change: '0',
-            trend: 'up',
-            icon: Building2,
-            gradient: 'from-purple-500 to-indigo-500',
-          }
-        ];
-      case 'healthcare':
-        return [
-          ...baseStats,
-          {
-            title: 'Healthcare Providers',
-            value: '47',
-            change: '+3',
-            trend: 'up',
-            icon: Users,
-            gradient: 'from-emerald-500 to-teal-500',
-          },
-          {
-            title: 'Specialties',
-            value: '12',
-            change: '+1',
-            trend: 'up',
-            icon: Building2,
-            gradient: 'from-purple-500 to-indigo-500',
-          }
-        ];
-      default:
-        return [
-          ...baseStats,
-          {
-            title: 'Active Participants',
-            value: '234',
-            change: '+12',
-            trend: 'up',
-            icon: Users,
-            gradient: 'from-emerald-500 to-teal-500',
-          },
-          {
-            title: 'Categories',
-            value: '6',
-            change: '0',
-            trend: 'up',
-            icon: Building2,
-            gradient: 'from-purple-500 to-indigo-500',
-          }
-        ];
-    }
   };
+
 
   // Show loading state
   if (loading || !analysis) {
@@ -286,17 +204,7 @@ export default function AnalyticsPage() {
     );
   }
 
-  const stats = [
-    ...getStatsForIndustry(),
-    {
-      title: 'Avg. Rating',
-      value: `${analysis.averageSatisfaction}/10`,
-      change: '+0.3',
-      trend: 'up',
-      icon: Users,
-      gradient: 'from-rose-500 to-pink-500',
-    },
-  ];
+  const stats = getBasicStats();
 
   return (
     <>
@@ -305,25 +213,67 @@ export default function AnalyticsPage() {
         animate={{ opacity: 1, y: 0 }}
         className="mb-8"
       >
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">
-              Analytics
-            </h1>
-            <p className="mt-2 text-gray-600 dark:text-gray-400">
-              Comprehensive Evaluations & Real-Time Performance Insights for Smarter Decision-Making
-            </p>
-          </div>
-          <div className="hidden md:block">
-            <div className="px-4 py-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl">
-              <p className="text-sm font-medium text-emerald-700 dark:text-emerald-300">
-                {industryConfig.name}
+        <div className="flex flex-col gap-6">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">
+                Analytics Dashboard
+              </h1>
+              <p className="mt-2 text-gray-600 dark:text-gray-400">
+                AI-powered insights and real-time performance metrics
               </p>
+            </div>
+            <div className="flex-shrink-0 w-full sm:w-80">
+              {/* Survey Selector */}
+              <div className="w-full">
+                <label htmlFor="surveySelect" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Select Survey
+                </label>
+                <select
+                  id="surveySelect"
+                  value={selectedSurvey}
+                  onChange={(e) => setSelectedSurvey(e.target.value)}
+                  className="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all text-black dark:text-white shadow-sm"
+                >
+                  <option value="all">📊 All Surveys Combined</option>
+                  {surveys.map(survey => (
+                    <option key={survey.id} value={survey.id}>
+                      📝 {survey.topic}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
         </div>
+        
+        {/* Selected Survey Info */}
+        {selectedSurvey && selectedSurvey !== 'all' && (
+          <div className="mt-4 p-4 bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-700 rounded-xl">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-semibold text-violet-900 dark:text-violet-300">
+                  {surveys.find(s => s.id === selectedSurvey)?.topic}
+                </h3>
+                <p className="text-sm text-violet-700 dark:text-violet-400">
+                  Created: {surveys.find(s => s.id === selectedSurvey)?.created_at && 
+                    new Date(surveys.find(s => s.id === selectedSurvey)!.created_at).toLocaleDateString()}
+                </p>
+              </div>
+              {surveys.find(s => s.id === selectedSurvey)?.start_date && (
+                <div className="text-sm text-violet-700 dark:text-violet-400">
+                  <span className="font-medium">Duration:</span>{' '}
+                  {new Date(surveys.find(s => s.id === selectedSurvey)!.start_date!).toLocaleDateString()} -{' '}
+                  {surveys.find(s => s.id === selectedSurvey)?.end_date && 
+                    new Date(surveys.find(s => s.id === selectedSurvey)!.end_date!).toLocaleDateString()}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </motion.div>
 
+      {/* Key Metrics */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         {stats.map((stat, index) => (
           <motion.div
@@ -331,113 +281,249 @@ export default function AnalyticsPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
-            whileHover={{ scale: 1.02, y: -2 }}
-            className="relative overflow-hidden bg-white dark:bg-gray-800/50 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700/50 p-6 cursor-pointer group"
+            whileHover={{ scale: 1.03, y: -4 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => {
+              setSelectedMetric(stat);
+              setMetricDetailOpen(true);
+            }}
+            className="relative overflow-hidden bg-white dark:bg-gray-800/50 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700/50 p-6 cursor-pointer group hover:shadow-xl transition-all duration-300"
           >
+            {/* Hover Effect Indicator */}
+            <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+              <MousePointer className="h-4 w-4 text-gray-400" />
+            </div>
+            
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                  {stat.title}
-                </p>
-                <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2 group-hover:scale-105 transition-transform">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-3">
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                    {stat.title}
+                  </p>
+                  <Sparkles className="h-3 w-3 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
+                <p className="text-3xl font-bold text-gray-900 dark:text-white mb-3 group-hover:scale-105 transition-transform">
                   {stat.value}
                 </p>
-                <div className="flex items-center mt-2">
-                  <span
-                    className={`text-sm font-medium ${
-                      stat.trend === 'up' ? 'text-emerald-600' : 'text-rose-600'
-                    }`}
-                  >
+                <div className="flex items-center">
+                  <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
+                    stat.trend === 'up' 
+                      ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400'
+                      : 'bg-rose-100 text-rose-700 dark:bg-rose-900/20 dark:text-rose-400'
+                  }`}>
+                    {stat.trend === 'up' ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                     {stat.change}
-                  </span>
+                  </div>
                   <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
                     vs last month
                   </span>
                 </div>
               </div>
-              <div className={`p-3 bg-gradient-to-br ${stat.gradient} rounded-xl shadow-lg group-hover:shadow-xl transition-shadow`}>
-                <stat.icon className="h-6 w-6 text-white" />
+              <div className={`p-4 bg-gradient-to-br ${stat.gradient} rounded-xl shadow-lg group-hover:shadow-2xl transition-all duration-300 group-hover:rotate-3`}>
+                <stat.icon className="h-7 w-7 text-white" />
               </div>
             </div>
-            <div className={`absolute -right-8 -bottom-8 h-24 w-24 bg-gradient-to-br ${stat.gradient} opacity-10 rounded-full blur-2xl group-hover:opacity-20 transition-opacity`} />
+            
+            {/* Animated Background */}
+            <div className={`absolute -right-8 -bottom-8 h-32 w-32 bg-gradient-to-br ${stat.gradient} opacity-5 rounded-full blur-2xl group-hover:opacity-15 group-hover:scale-110 transition-all duration-500`} />
+            
+            {/* Click Indicator */}
+            <div className="absolute bottom-2 right-2 text-xs text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity">
+              Click for details
+            </div>
           </motion.div>
         ))}
       </div>
 
-      {/* Industry-Specific Analytics Section */}
-      <div className={`grid gap-6 mb-8 ${industryConfig.id === 'education' ? 'grid-cols-1 xl:grid-cols-3' : 'grid-cols-1'}`}>
+      {/* AI Sentiment Analysis */}
+      {analysis?.responses?.length > 0 && (
         <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className={industryConfig.id === 'education' ? 'xl:col-span-2' : ''}
+          className="mb-8"
         >
-          {renderIndustryAnalytics()}
+          {!aiSentiment && !loadingAI ? (
+            // Button to trigger AI analysis
+            <div className="bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 rounded-2xl p-6 border border-purple-200 dark:border-purple-700">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl shadow-lg">
+                    <Brain className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold text-purple-900 dark:text-purple-300">
+                      AI Sentiment Analysis
+                    </h3>
+                    <p className="text-purple-700 dark:text-purple-400">
+                      Get AI-powered insights from {analysis.totalResponses} responses
+                    </p>
+                  </div>
+                </div>
+                <motion.button
+                  onClick={loadAISentiment}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all"
+                >
+                  <Zap className="h-5 w-5" />
+                  Analyze with AI
+                </motion.button>
+              </div>
+            </div>
+          ) : (
+            // Results or loading state
+            <div
+              onClick={() => aiSentiment && setSentimentModalOpen(true)}
+              className={`bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 rounded-2xl p-6 border border-purple-200 dark:border-purple-700 ${aiSentiment ? 'cursor-pointer hover:shadow-lg' : ''} transition-all group`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl group-hover:shadow-xl transition-shadow">
+                    {loadingAI ? (
+                      <div className="h-6 w-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <Brain className="h-6 w-6 text-white" />
+                    )}
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold text-purple-900 dark:text-purple-300">
+                      AI Sentiment Analysis
+                    </h3>
+                    <p className="text-purple-700 dark:text-purple-400">
+                      {loadingAI ? (
+                        'Analyzing responses with AI...'
+                      ) : aiSentiment ? (
+                        `${aiSentiment.sentiment.overall.charAt(0).toUpperCase() + aiSentiment.sentiment.overall.slice(1)} sentiment detected (${Math.round(aiSentiment.sentiment.confidence * 100)}% confidence)`
+                      ) : (
+                        'AI analysis ready'
+                      )}
+                    </p>
+                  </div>
+                </div>
+                {aiSentiment && (
+                  <div className="flex items-center gap-3">
+                    <div className="text-right">
+                      <div className="flex items-center gap-2 mb-1">
+                        <TrendingUp className="h-4 w-4 text-green-600" />
+                        <span className="text-sm font-medium text-green-700 dark:text-green-400">
+                          {aiSentiment.sentiment.breakdown.positive}% Positive
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <TrendingDown className="h-4 w-4 text-red-600" />
+                        <span className="text-sm font-medium text-red-700 dark:text-red-400">
+                          {aiSentiment.sentiment.breakdown.negative}% Negative
+                        </span>
+                      </div>
+                    </div>
+                    <div className="text-purple-400 group-hover:text-purple-600 transition-colors">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </motion.div>
+      )}
 
-        {renderDepartmentAnalytics()}
-      </div>
-
-      {/* Sentiment & Overview */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      {/* Charts */}
+      <div className="grid grid-cols-1 gap-6 mb-8">
         <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
+          whileHover={{ scale: 1.01 }}
+          className="bg-white dark:bg-gray-800/50 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700/50 p-6 hover:shadow-lg transition-all duration-300 group cursor-pointer"
         >
-          <SentimentAnalysis />
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl group-hover:shadow-lg transition-shadow">
+                <BarChart3 className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  Rating Trends Over Time
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Interactive chart showing response patterns
+                </p>
+              </div>
+            </div>
+            <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="px-3 py-1 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-full text-xs font-medium">
+                Hover to explore
+              </div>
+            </div>
+          </div>
+          <div className="relative group-hover:scale-[1.01] transition-transform duration-300">
+            <AnalyticsChart />
+          </div>
         </motion.div>
+      </div>
 
+      {/* Quick Stats Summary */}
+      {selectedSurvey !== 'all' && analysis && (
         <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6 }}
+          className="bg-gradient-to-r from-gray-50 to-blue-50 dark:from-gray-800 dark:to-blue-900/20 rounded-2xl p-6 mb-8 border border-gray-200 dark:border-gray-700"
         >
-          <OpinionOverview />
+          <div className="flex items-center gap-3 mb-4">
+            <Activity className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              Survey Summary
+            </h3>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="text-center p-4 bg-white dark:bg-gray-800 rounded-xl">
+              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                {analysis.responses?.length || 0}
+              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">
+                Total Responses
+              </div>
+            </div>
+            <div className="text-center p-4 bg-white dark:bg-gray-800 rounded-xl">
+              <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                {analysis.insights?.topKeywords?.length || 0}
+              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">
+                Key Topics
+              </div>
+            </div>
+            <div className="text-center p-4 bg-white dark:bg-gray-800 rounded-xl">
+              <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                {Math.round(analysis.averageSatisfaction * 10)/10}/10
+              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">
+                Avg Rating
+              </div>
+            </div>
+          </div>
         </motion.div>
-      </div>
+      )}
 
-      {/* Charts & Recent Activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7 }}
-          className="bg-white dark:bg-gray-800/50 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700/50 p-6"
-        >
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Rating Trends Over Time
-          </h3>
-          <AnalyticsChart />
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8 }}
-        >
-          <RecentResponses />
-        </motion.div>
-      </div>
-
-      {/* Professor Detail Modal - Education Only */}
-      <ProfessorDetailModal
-        professor={selectedProfessor}
-        isOpen={isModalOpen}
-        onClose={() => {
-          setIsModalOpen(false);
-          setSelectedProfessor(null);
-        }}
+      {/* Modals */}
+      <SentimentModal
+        isOpen={sentimentModalOpen}
+        onClose={() => setSentimentModalOpen(false)}
+        sentimentData={aiSentiment}
+        surveyTopic={analysis?.survey?.topic || 'Survey'}
       />
 
-      {/* Universal Entity Modal - All Other Industries */}
-      <UniversalEntityModal
-        entity={selectedEntity}
-        isOpen={isUniversalModalOpen}
+      <MetricDetailModal
+        isOpen={metricDetailOpen}
         onClose={() => {
-          setIsUniversalModalOpen(false);
-          setSelectedEntity(null);
+          setMetricDetailOpen(false);
+          setSelectedMetric(null);
         }}
+        metric={selectedMetric}
+        analyticsData={analysis}
       />
     </>
   );

@@ -300,10 +300,41 @@ export function CreateSurveyForm() {
     }
   };
 
-  const handleCopyLink = () => {
+  const handleCopyLink = async () => {
     if (createdSurvey?.id) {
-      const link = getSurveyUrl(createdSurvey.id);
-      navigator.clipboard.writeText(link);
+      const link = `http://3.133.91.18/survey/${createdSurvey.id}`;
+      
+      try {
+        // Try modern clipboard API first
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(link);
+        } else {
+          // Fallback method - guaranteed to work
+          const textArea = document.createElement('textarea');
+          textArea.value = link;
+          textArea.style.position = 'fixed';
+          textArea.style.left = '-999999px';
+          textArea.style.top = '-999999px';
+          document.body.appendChild(textArea);
+          textArea.focus();
+          textArea.select();
+          document.execCommand('copy');
+          document.body.removeChild(textArea);
+        }
+      } catch (err) {
+        // Final fallback - always works
+        const textArea = document.createElement('textarea');
+        textArea.value = link;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+      }
+      
       setStatus('Survey link copied to clipboard!');
       setTimeout(() => setStatus('Survey created successfully!'), 2000);
     }

@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { AnalyticsChart } from '@/components/dashboard/AnalyticsChart';
+import { RealDataChart } from '@/components/analytics/RealDataChart';
 import { SentimentModal } from '@/components/analytics/SentimentModal';
-import { MetricDetailModal } from '@/components/analytics/MetricDetailModal';
+import { EnhancedMetricModal } from '@/components/analytics/EnhancedMetricModal';
 import { TrendingUp, TrendingDown, Activity, Users, MessageSquare, Brain, Target, Star, BarChart3, Sparkles, Zap, MousePointer } from 'lucide-react';
 import { getUniversitySentimentAnalysis, ProfessorStats, departmentStats } from '@/lib/university-demo-data';
 import { getCurrentIndustryConfig, getIndustryMetrics } from '@/lib/industry-config';
@@ -96,7 +96,7 @@ export default function AnalyticsPage() {
     if (selectedSurvey) {
       loadAnalysis();
     }
-  }, [industryConfig, selectedSurvey]);
+  }, [selectedSurvey]); // Removed industryConfig to prevent unnecessary reloads
 
   // Manual AI sentiment analysis function
   const loadAISentiment = async () => {
@@ -281,13 +281,13 @@ export default function AnalyticsPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
-            whileHover={{ scale: 1.03, y: -4 }}
+            whileHover={{ scale: 1.03, y: -4, rotateY: 5 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => {
               setSelectedMetric(stat);
               setMetricDetailOpen(true);
             }}
-            className="relative overflow-hidden bg-white dark:bg-gray-800/50 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700/50 p-6 cursor-pointer group hover:shadow-xl transition-all duration-300"
+            className="relative overflow-hidden bg-white dark:bg-gray-800/50 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700/50 p-6 cursor-pointer group hover:shadow-xl hover:shadow-indigo-500/10 hover:border-indigo-300 dark:hover:border-indigo-600 transition-all duration-300"
           >
             {/* Hover Effect Indicator */}
             <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -328,8 +328,12 @@ export default function AnalyticsPage() {
             <div className={`absolute -right-8 -bottom-8 h-32 w-32 bg-gradient-to-br ${stat.gradient} opacity-5 rounded-full blur-2xl group-hover:opacity-15 group-hover:scale-110 transition-all duration-500`} />
             
             {/* Click Indicator */}
-            <div className="absolute bottom-2 right-2 text-xs text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity">
-              Click for details
+            <div className="absolute bottom-2 right-2 text-xs text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+              View Details
             </div>
           </motion.div>
         ))}
@@ -436,32 +440,23 @@ export default function AnalyticsPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
-          whileHover={{ scale: 1.01 }}
-          className="bg-white dark:bg-gray-800/50 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700/50 p-6 hover:shadow-lg transition-all duration-300 group cursor-pointer"
         >
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl group-hover:shadow-lg transition-shadow">
-                <BarChart3 className="h-6 w-6 text-white" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  Rating Trends Over Time
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Interactive chart showing response patterns
-                </p>
-              </div>
-            </div>
-            <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-              <div className="px-3 py-1 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-full text-xs font-medium">
-                Hover to explore
-              </div>
-            </div>
-          </div>
-          <div className="relative group-hover:scale-[1.01] transition-transform duration-300">
-            <AnalyticsChart />
-          </div>
+          <RealDataChart 
+            analyticsData={analysis}
+            onViewDetails={() => {
+              // Create a special chart metric for detailed view
+              const chartMetric = {
+                title: 'Response Analytics',
+                value: `${analysis?.totalResponses || 0} responses`,
+                change: '+12.5%',
+                trend: 'up' as const,
+                icon: BarChart3,
+                gradient: 'from-indigo-500 to-purple-600'
+              };
+              setSelectedMetric(chartMetric);
+              setMetricDetailOpen(true);
+            }}
+          />
         </motion.div>
       </div>
 
@@ -516,7 +511,7 @@ export default function AnalyticsPage() {
         surveyTopic={analysis?.survey?.topic || 'Survey'}
       />
 
-      <MetricDetailModal
+      <EnhancedMetricModal
         isOpen={metricDetailOpen}
         onClose={() => {
           setMetricDetailOpen(false);

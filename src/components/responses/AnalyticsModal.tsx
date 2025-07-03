@@ -295,11 +295,18 @@ export function AnalyticsModal({ responses, surveys, onClose }: AnalyticsModalPr
                           <div className="flex items-center gap-2 mb-2">
                             <TrendingUp className="h-4 w-4 text-blue-600" />
                             <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                              Completion Rate
+                              Response Quality
                             </span>
                           </div>
                           <div className="text-xl font-bold text-blue-600">
-                            89%
+                            {(() => {
+                              const avgAnswers = responses.length > 0 ? 
+                                responses.reduce((sum, r) => sum + Object.keys(r.answers || {}).length, 0) / responses.length : 0;
+                              return Math.round(avgAnswers * 10) / 10;
+                            })()}
+                          </div>
+                          <div className="text-xs text-blue-500 mt-1">
+                            avg questions answered
                           </div>
                         </div>
 

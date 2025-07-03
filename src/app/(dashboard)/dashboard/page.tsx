@@ -32,7 +32,7 @@ export default function DashboardPage() {
   const totalSurveys = surveys.length;
   const totalResponses = allResponses.length;
   const totalUsers = users.length;
-  const avgResponseRate = totalSurveys > 0 ? Math.round((totalResponses / totalSurveys) * 100) : 0;
+  const avgResponsesPerSurvey = totalSurveys > 0 ? Math.round(totalResponses / totalSurveys) : 0;
 
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
@@ -118,7 +118,7 @@ export default function DashboardPage() {
           progress={Math.min(totalSurveys * 10, 100)} 
           color="blue"
           change={totalSurveys === 0 ? "No surveys yet" : "All time"}
-          trend={totalSurveys > 0 ? "up" : "none"}
+          trend={totalSurveys > 0 ? "up" : "neutral"}
           onClick={() => handleMetricClick('surveys', 'Total Surveys', totalSurveys.toString(), 'blue')}
         />
         <StatCard 
@@ -128,7 +128,7 @@ export default function DashboardPage() {
           progress={Math.min(totalResponses * 2, 100)} 
           color="green"
           change={totalResponses === 0 ? "No responses yet" : "All time"}
-          trend={totalResponses > 0 ? "up" : "none"}
+          trend={totalResponses > 0 ? "up" : "neutral"}
           onClick={() => handleMetricClick('responses', 'Total Responses', totalResponses.toString(), 'green')}
         />
         <StatCard 
@@ -138,18 +138,18 @@ export default function DashboardPage() {
           progress={Math.min(totalUsers * 2, 100)} 
           color="yellow"
           change={totalUsers === 0 ? "No users yet" : "Registered users"}
-          trend={totalUsers > 0 ? "up" : "none"}
+          trend={totalUsers > 0 ? "up" : "neutral"}
           onClick={() => handleMetricClick('users', 'Active Users', totalUsers.toString(), 'yellow')}
         />
         <StatCard 
-          title="Response Rate" 
-          value={`${avgResponseRate}%`} 
+          title="Avg per Survey" 
+          value={`${avgResponsesPerSurvey}`} 
           icon={TrendingUp} 
-          progress={avgResponseRate} 
+          progress={Math.min(avgResponsesPerSurvey * 5, 100)} 
           color="red"
           change={totalSurveys === 0 ? "No data" : `${totalResponses}/${totalSurveys} surveys`}
-          trend={avgResponseRate > 0 ? "up" : "none"}
-          onClick={() => handleMetricClick('engagement', 'Response Rate', `${avgResponseRate}%`, 'red')}
+          trend={avgResponsesPerSurvey > 0 ? "up" : "neutral"}
+          onClick={() => handleMetricClick('engagement', 'Avg per Survey', `${avgResponsesPerSurvey}`, 'red')}
         />
       </motion.div>
 
@@ -205,11 +205,11 @@ export default function DashboardPage() {
               Engagement Score
             </h3>
             <div className="text-center">
-              <p className="text-5xl font-bold">{Math.min(avgResponseRate / 10, 10).toFixed(1)}</p>
+              <p className="text-5xl font-bold">{Math.min(avgResponsesPerSurvey / 10, 10).toFixed(1)}</p>
               <p className="text-sm mt-2 opacity-90">Out of 10</p>
               <div className="mt-4 flex items-center justify-center gap-2">
                 <span className="text-xs bg-white/20 px-2 py-1 rounded-full">
-                  {avgResponseRate}% response rate
+                  {avgResponsesPerSurvey} responses per survey
                 </span>
               </div>
             </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   BarChart3, 
@@ -124,24 +124,36 @@ export default function InteractiveDashboard() {
 
   const fetchDashboardData = async () => {
     try {
-      const [surveysRes, responsesRes] = await Promise.all([
+      const [surveysRes, responsesRes, analyticsRes] = await Promise.all([
         fetch('/api/surveys'),
-        fetch('/api/all-responses')
+        fetch('/api/all-responses'),
+        fetch('/api/analytics-combined')
       ]);
 
       const surveys = await surveysRes.json();
       const responses = await responsesRes.json();
+      const analytics = await analyticsRes.json();
 
       const surveyCount = Array.isArray(surveys) ? surveys.length : 0;
       const responseCount = Array.isArray(responses) ? responses.length : 0;
       
+      // Calculate real metrics instead of mock data
+      const realResponseRate = analytics.completionRate || 0; // Use real completion rate from analytics
+      const realCompletionRate = analytics.completionRate || 0;
+      const realAvgRating = analytics.averageSatisfaction || 0;
+      
+      // Calculate active users from unique respondents
+      const uniqueRespondents = new Set(
+        responses.filter((r: any) => r.email || r.respondentEmail).map((r: any) => r.email || r.respondentEmail)
+      ).size;
+      
       setData({
         totalSurveys: surveyCount,
         totalResponses: responseCount,
-        activeUsers: Math.floor(responseCount * 0.7) + 12,
-        completionRate: surveyCount > 0 ? Math.round((responseCount / surveyCount) * 100) : 0,
-        avgRating: 4.2 + Math.random() * 0.6,
-        responseRate: Math.min(Math.round((responseCount / Math.max(surveyCount * 10, 1)) * 100), 100),
+        activeUsers: Math.max(uniqueRespondents, Math.floor(responseCount * 0.3)), // Estimate unique users
+        completionRate: realCompletionRate,
+        avgRating: realAvgRating,
+        responseRate: realResponseRate, // Use real response rate instead of broken calculation
         recentActivity: Math.floor(responseCount * 0.3) + 5,
         trendingTopics: Math.min(surveyCount, 8)
       });
@@ -387,7 +399,7 @@ export default function InteractiveDashboard() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <div className="p-2 bg-white/20 rounded-lg">
-                      <METRIC_CONFIGS[selectedMetric].icon className="h-6 w-6" />
+                      {React.createElement(METRIC_CONFIGS[selectedMetric].icon, { className: "h-6 w-6" })}
                     </div>
                     <div>
                       <h2 className="text-2xl font-bold">{metricDetails.title}</h2>

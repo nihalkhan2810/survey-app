@@ -1,10 +1,9 @@
 import { NextResponse } from 'next/server';
-import { getDatabase } from '@/lib/database';
+import { database } from '@/lib/database';
 
 export async function GET() {
   try {
-    const db = getDatabase();
-    const users = await db.getAllUsers();
+    const users = await database.getAllUsers();
     
     // Return users with minimal information for stats
     const userStats = users.map(user => ({

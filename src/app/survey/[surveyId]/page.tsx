@@ -1,10 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
-
-// Force dynamic rendering - this page reads URL parameters
-export const dynamic = 'force-dynamic';
 
 type Question = {
   text: string;
@@ -30,7 +27,7 @@ type RespondentIdentity = {
   isAnonymous: boolean;
 };
 
-export default function SurveyPage() {
+function SurveyPageContent() {
   const params = useParams();
   const searchParams = useSearchParams();
   const surveyId = params.surveyId as string;
@@ -404,5 +401,17 @@ export default function SurveyPage() {
         </form>
       </div>
     </main>
+  );
+}
+
+export default function SurveyPage() {
+  return (
+    <Suspense fallback={
+      <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600"></div>
+      </main>
+    }>
+      <SurveyPageContent />
+    </Suspense>
   );
 } 

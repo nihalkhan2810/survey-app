@@ -1,9 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-
-// Force dynamic rendering - this page reads URL parameters
-export const dynamic = 'force-dynamic';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, Send, Sparkles, Users, Mail, Clock } from 'lucide-react';
 import { getSurveyUrl } from '@/lib/utils';
@@ -30,7 +27,7 @@ type TargetAudience = {
 // Empty array - will be populated with imported Salesforce contacts
 const mockTargetAudiences: TargetAudience[] = [];
 
-export default function SendSurveyPage() {
+function SendSurveyPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const preselectedSurveyId = searchParams.get('surveyId');
@@ -1608,5 +1605,17 @@ export default function SendSurveyPage() {
         />
       )}
     </div>
+  );
+}
+
+export default function SendSurveyPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-emerald-600"></div>
+      </div>
+    }>
+      <SendSurveyPageContent />
+    </Suspense>
   );
 }

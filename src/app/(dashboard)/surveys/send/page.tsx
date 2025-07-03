@@ -23,229 +23,8 @@ type TargetAudience = {
   emails: string[];
 };
 
-const mockTargetAudiences: TargetAudience[] = [
-  // Engineering Students - Year-wise
-  { 
-    id: 'ece-1st', 
-    name: 'ECE 1st Year', 
-    description: 'Electronics and Communication Engineering - First Year', 
-    count: 45, 
-    category: 'Engineering',
-    emails: Array.from({length: 45}, (_, i) => `ece1st.${String(i+1).padStart(3, '0')}@university.edu`)
-  },
-  { 
-    id: 'ece-2nd', 
-    name: 'ECE 2nd Year', 
-    description: 'Electronics and Communication Engineering - Second Year', 
-    count: 42, 
-    category: 'Engineering',
-    emails: Array.from({length: 42}, (_, i) => `ece2nd.${String(i+1).padStart(3, '0')}@university.edu`)
-  },
-  { 
-    id: 'ece-3rd', 
-    name: 'ECE 3rd Year', 
-    description: 'Electronics and Communication Engineering - Third Year', 
-    count: 38, 
-    category: 'Engineering',
-    emails: Array.from({length: 38}, (_, i) => `ece3rd.${String(i+1).padStart(3, '0')}@university.edu`)
-  },
-  { 
-    id: 'ece-4th', 
-    name: 'ECE 4th Year', 
-    description: 'Electronics and Communication Engineering - Final Year', 
-    count: 35, 
-    category: 'Engineering',
-    emails: Array.from({length: 35}, (_, i) => `ece4th.${String(i+1).padStart(3, '0')}@university.edu`)
-  },
-  
-  // Computer Science Students
-  { 
-    id: 'cs-1st', 
-    name: 'CS 1st Year', 
-    description: 'Computer Science - First Year', 
-    count: 67, 
-    category: 'Engineering',
-    emails: Array.from({length: 67}, (_, i) => `cs1st.${String(i+1).padStart(3, '0')}@university.edu`)
-  },
-  { 
-    id: 'cs-2nd', 
-    name: 'CS 2nd Year', 
-    description: 'Computer Science - Second Year', 
-    count: 59, 
-    category: 'Engineering',
-    emails: Array.from({length: 59}, (_, i) => `cs2nd.${String(i+1).padStart(3, '0')}@university.edu`)
-  },
-  { 
-    id: 'cs-3rd', 
-    name: 'CS 3rd Year', 
-    description: 'Computer Science - Third Year', 
-    count: 54, 
-    category: 'Engineering',
-    emails: Array.from({length: 54}, (_, i) => `cs3rd.${String(i+1).padStart(3, '0')}@university.edu`)
-  },
-  { 
-    id: 'cs-4th', 
-    name: 'CS 4th Year', 
-    description: 'Computer Science - Final Year', 
-    count: 52, 
-    category: 'Engineering',
-    emails: Array.from({length: 52}, (_, i) => `cs4th.${String(i+1).padStart(3, '0')}@university.edu`)
-  },
-  
-  // Mechanical Engineering Students
-  { 
-    id: 'me-1st', 
-    name: 'ME 1st Year', 
-    description: 'Mechanical Engineering - First Year', 
-    count: 41, 
-    category: 'Engineering',
-    emails: Array.from({length: 41}, (_, i) => `me1st.${String(i+1).padStart(3, '0')}@university.edu`)
-  },
-  { 
-    id: 'me-2nd', 
-    name: 'ME 2nd Year', 
-    description: 'Mechanical Engineering - Second Year', 
-    count: 39, 
-    category: 'Engineering',
-    emails: Array.from({length: 39}, (_, i) => `me2nd.${String(i+1).padStart(3, '0')}@university.edu`)
-  },
-  { 
-    id: 'me-3rd', 
-    name: 'ME 3rd Year', 
-    description: 'Mechanical Engineering - Third Year', 
-    count: 37, 
-    category: 'Engineering',
-    emails: Array.from({length: 37}, (_, i) => `me3rd.${String(i+1).padStart(3, '0')}@university.edu`)
-  },
-  { 
-    id: 'me-4th', 
-    name: 'ME 4th Year', 
-    description: 'Mechanical Engineering - Final Year', 
-    count: 34, 
-    category: 'Engineering',
-    emails: Array.from({length: 34}, (_, i) => `me4th.${String(i+1).padStart(3, '0')}@university.edu`)
-  },
-  
-  // Business Students
-  { 
-    id: 'mba-1st', 
-    name: 'MBA 1st Year', 
-    description: 'Master of Business Administration - First Year', 
-    count: 45, 
-    category: 'Business',
-    emails: Array.from({length: 45}, (_, i) => `mba1st.${String(i+1).padStart(3, '0')}@business.university.edu`)
-  },
-  { 
-    id: 'mba-2nd', 
-    name: 'MBA 2nd Year', 
-    description: 'Master of Business Administration - Second Year', 
-    count: 42, 
-    category: 'Business',
-    emails: Array.from({length: 42}, (_, i) => `mba2nd.${String(i+1).padStart(3, '0')}@business.university.edu`)
-  },
-  { 
-    id: 'business-undergrad', 
-    name: 'Business Undergrad', 
-    description: 'Undergraduate Business Students (All Years)', 
-    count: 89, 
-    category: 'Business',
-    emails: Array.from({length: 89}, (_, i) => `busundergrad.${String(i+1).padStart(3, '0')}@business.university.edu`)
-  },
-  
-  // Alumni Groups
-  { 
-    id: 'alumni-2020', 
-    name: 'Alumni 2020', 
-    description: '2020 Graduation Batch - All Departments', 
-    count: 156, 
-    category: 'Alumni',
-    emails: Array.from({length: 156}, (_, i) => `alumni2020.${String(i+1).padStart(3, '0')}@alumni.university.edu`)
-  },
-  { 
-    id: 'alumni-2021', 
-    name: 'Alumni 2021', 
-    description: '2021 Graduation Batch - All Departments', 
-    count: 143, 
-    category: 'Alumni',
-    emails: Array.from({length: 143}, (_, i) => `alumni2021.${String(i+1).padStart(3, '0')}@alumni.university.edu`)
-  },
-  { 
-    id: 'alumni-2022', 
-    name: 'Alumni 2022', 
-    description: '2022 Graduation Batch - All Departments', 
-    count: 134, 
-    category: 'Alumni',
-    emails: Array.from({length: 134}, (_, i) => `alumni2022.${String(i+1).padStart(3, '0')}@alumni.university.edu`)
-  },
-  { 
-    id: 'alumni-2023', 
-    name: 'Alumni 2023', 
-    description: '2023 Graduation Batch - All Departments', 
-    count: 128, 
-    category: 'Alumni',
-    emails: Array.from({length: 128}, (_, i) => `alumni2023.${String(i+1).padStart(3, '0')}@alumni.university.edu`)
-  },
-  
-  // Faculty and Staff
-  { 
-    id: 'faculty-cs', 
-    name: 'CS Faculty', 
-    description: 'Computer Science Department Faculty', 
-    count: 12, 
-    category: 'Faculty',
-    emails: Array.from({length: 12}, (_, i) => `csfaculty.${String(i+1).padStart(2, '0')}@faculty.university.edu`)
-  },
-  { 
-    id: 'faculty-ece', 
-    name: 'ECE Faculty', 
-    description: 'Electronics and Communication Engineering Faculty', 
-    count: 10, 
-    category: 'Faculty',
-    emails: Array.from({length: 10}, (_, i) => `ecefaculty.${String(i+1).padStart(2, '0')}@faculty.university.edu`)
-  },
-  { 
-    id: 'faculty-business', 
-    name: 'Business Faculty', 
-    description: 'Business School Faculty Members', 
-    count: 15, 
-    category: 'Faculty',
-    emails: Array.from({length: 15}, (_, i) => `bizfaculty.${String(i+1).padStart(2, '0')}@business.university.edu`)
-  },
-  { 
-    id: 'staff-admin', 
-    name: 'Administrative Staff', 
-    description: 'University Administrative and Support Staff', 
-    count: 89, 
-    category: 'Staff',
-    emails: Array.from({length: 89}, (_, i) => `admin.${String(i+1).padStart(3, '0')}@admin.university.edu`)
-  },
-  
-  // Research Students
-  { 
-    id: 'phd-engineering', 
-    name: 'PhD Engineering', 
-    description: 'Doctoral Students - Engineering Departments', 
-    count: 45, 
-    category: 'Research',
-    emails: Array.from({length: 45}, (_, i) => `phdeng.${String(i+1).padStart(3, '0')}@research.university.edu`)
-  },
-  { 
-    id: 'phd-business', 
-    name: 'PhD Business', 
-    description: 'Doctoral Students - Business School', 
-    count: 18, 
-    category: 'Research',
-    emails: Array.from({length: 18}, (_, i) => `phdbiz.${String(i+1).padStart(2, '0')}@research.university.edu`)
-  },
-  { 
-    id: 'research-associates', 
-    name: 'Research Associates', 
-    description: 'Post-doctoral and Research Associates', 
-    count: 25, 
-    category: 'Research',
-    emails: Array.from({length: 25}, (_, i) => `research.${String(i+1).padStart(2, '0')}@research.university.edu`)
-  },
-];
+// Empty array - will be populated with imported Salesforce contacts
+const mockTargetAudiences: TargetAudience[] = [];
 
 export default function SendSurveyPage() {
   const router = useRouter();
@@ -268,6 +47,7 @@ export default function SendSurveyPage() {
   const [showSalesforceImport, setShowSalesforceImport] = useState(false);
   const [showSalesforceModal, setShowSalesforceModal] = useState(false);
   const [salesforceContacts, setSalesforceContacts] = useState<any[]>([]);
+  const [importedAudiences, setImportedAudiences] = useState<TargetAudience[]>([]);
   
   // Paired recipient inputs for call reminders
   const [recipients, setRecipients] = useState<{ email: string; phone: string; id: string }[]>([
@@ -368,6 +148,9 @@ export default function SendSurveyPage() {
 
   const surveyLink = selectedSurvey ? getSurveyUrl(selectedSurvey.id) : '';
 
+  // Combine imported audiences with any remaining mock audiences
+  const allAudiences = [...importedAudiences, ...mockTargetAudiences];
+
   // Calculate current emails for reminder component
   const getCurrentEmails = (): string[] => {
     if (emailInputMethod === 'manual') {
@@ -379,7 +162,7 @@ export default function SendSurveyPage() {
         return studentEmails.split(',').map((email) => email.trim()).filter(Boolean);
       }
     } else {
-      const selectedAudienceData = mockTargetAudiences.filter(audience => 
+      const selectedAudienceData = allAudiences.filter(audience => 
         selectedAudiences.includes(audience.id)
       );
       // Use the actual email addresses from our detailed audience data and filter out excluded emails
@@ -424,7 +207,7 @@ export default function SendSurveyPage() {
     if (emailInputMethod === 'manual') {
       return studentEmails.split(',').map((email) => email.trim()).filter(Boolean);
     } else {
-      const selectedAudienceData = mockTargetAudiences.filter(audience => 
+      const selectedAudienceData = allAudiences.filter(audience => 
         selectedAudiences.includes(audience.id)
       );
       return selectedAudienceData.flatMap(audience => audience.emails);
@@ -439,24 +222,47 @@ export default function SendSurveyPage() {
     setSalesforceContacts(contacts);
     setShowSalesforceModal(false);
     
-    // If voice reminders are enabled, populate recipients array
-    if (enableReminders) {
-      const contactsWithPhone = contacts.filter(contact => contact.phone);
-      setRecipients(contactsWithPhone.map((contact, index) => ({
-        email: contact.email,
-        phone: contact.phone,
-        id: (index + 1).toString()
-      })));
-    } else {
-      // For email-only, add to target audiences or set email list
-      const emails = contacts.map(contact => contact.email).join(', ');
-      setStudentEmails(emails);
-    }
+    // Create target audiences from imported contacts grouped by company
+    const companiesMap = new Map<string, any[]>();
     
-    setStatus(`Successfully imported ${contacts.length} contacts from Salesforce!`);
+    // Group contacts by company
+    contacts.forEach(contact => {
+      const company = contact.company || 'No Company';
+      if (!companiesMap.has(company)) {
+        companiesMap.set(company, []);
+      }
+      companiesMap.get(company)!.push(contact);
+    });
+    
+    // Create target audiences from companies
+    const newAudiences: TargetAudience[] = Array.from(companiesMap.entries()).map(([company, companyContacts], index) => ({
+      id: `salesforce-${index}`,
+      name: company,
+      description: `${companyContacts.length} contacts from ${company}`,
+      count: companyContacts.length,
+      category: 'Salesforce Import',
+      emails: companyContacts.map(contact => contact.email).filter(Boolean)
+    }));
+    
+    // Add a "All Imported Contacts" group
+    const allContactsAudience: TargetAudience = {
+      id: 'salesforce-all',
+      name: 'All Imported Contacts',
+      description: `All ${contacts.length} contacts from Salesforce`,
+      count: contacts.length,
+      category: 'Salesforce Import',
+      emails: contacts.map(contact => contact.email).filter(Boolean)
+    };
+    
+    setImportedAudiences([allContactsAudience, ...newAudiences]);
+    
+    // Auto-select the "All Imported Contacts" audience
+    setSelectedAudiences(['salesforce-all']);
+    
+    setStatus(`Successfully imported ${contacts.length} contacts from Salesforce and created ${newAudiences.length + 1} target audiences!`);
   };
 
-  const filteredAudiences = mockTargetAudiences.filter(audience =>
+  const filteredAudiences = allAudiences.filter(audience =>
     audience.name.toLowerCase().includes(audienceSearch.toLowerCase()) ||
     audience.description.toLowerCase().includes(audienceSearch.toLowerCase())
   );
@@ -999,7 +805,7 @@ export default function SendSurveyPage() {
                     <div className="space-y-4">
                       <div className="flex flex-wrap gap-3">
                         {selectedAudiences.map(audienceId => {
-                          const audience = mockTargetAudiences.find(a => a.id === audienceId);
+                          const audience = allAudiences.find(a => a.id === audienceId);
                           if (!audience) return null;
                           return (
                             <div
@@ -1137,7 +943,7 @@ export default function SendSurveyPage() {
                             <span>
                               <strong>Source audiences:</strong><br/>
                               {selectedAudiences.map(id => {
-                                const audience = mockTargetAudiences.find(a => a.id === id);
+                                const audience = allAudiences.find(a => a.id === id);
                                 if (!audience) return '';
                                 const audienceEmails = audience.emails.filter(email => !excludedEmails.has(email));
                                 return `• ${audience.name}: ${audienceEmails.length}/${audience.count} recipients`;

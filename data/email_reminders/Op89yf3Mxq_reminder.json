@@ -1,15 +1,14 @@
 {
   "surveyId": "Op89yf3Mxq",
   "emails": [
-    "mohammednihal281001@gmail.com",
-    "thelegendgamerfinal@gmail.com",
     "nihalkhana2001@gmail.com",
-    "craftr2810@gmail.com"
+    "thelegendgamerfinal@gmail.com",
+    "mohammednihal281001@gmail.com"
   ],
   "surveyTopic": "Employee Picnic Survey 2025",
   "surveyLink": "http://localhost:3000/survey/Op89yf3Mxq",
   "reminderTime": "2025-07-04T17:56:00.000Z",
   "status": "scheduled",
-  "createdAt": "2025-07-03T00:00:25.739Z",
+  "createdAt": "2025-07-03T06:35:48.959Z",
   "testMode": false
 }

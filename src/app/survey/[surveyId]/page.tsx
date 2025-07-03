@@ -3,6 +3,9 @@
 import { useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 
+// Force dynamic rendering - this page reads URL parameters
+export const dynamic = 'force-dynamic';
+
 type Question = {
   text: string;
   type: 'text' | 'multiple-choice' | 'single-choice' | 'rating';

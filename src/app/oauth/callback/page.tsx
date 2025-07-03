@@ -3,6 +3,10 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
+// Force dynamic rendering - this page can't be statically generated
+// because it needs to read URL parameters at runtime
+export const dynamic = 'force-dynamic';
+
 export default function SalesforceCallback() {
   const router = useRouter();
   const searchParams = useSearchParams();

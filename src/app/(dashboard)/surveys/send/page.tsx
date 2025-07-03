@@ -1,6 +1,9 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+
+// Force dynamic rendering - this page reads URL parameters
+export const dynamic = 'force-dynamic';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, Send, Sparkles, Users, Mail, Clock } from 'lucide-react';
 import { getSurveyUrl } from '@/lib/utils';

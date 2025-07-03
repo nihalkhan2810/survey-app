@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, Send, Sparkles, Users, Mail, Clock } from 'lucide-react';
 import { getSurveyUrl } from '@/lib/utils';
+import { SalesforceContactImporter } from '@/components/surveys/SalesforceContactImporter';
 
 type Survey = {
   id: string;
@@ -265,6 +266,8 @@ export default function SendSurveyPage() {
   const [status, setStatus] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [showSalesforceImport, setShowSalesforceImport] = useState(false);
+  const [showSalesforceModal, setShowSalesforceModal] = useState(false);
+  const [salesforceContacts, setSalesforceContacts] = useState<any[]>([]);
   
   // Paired recipient inputs for call reminders
   const [recipients, setRecipients] = useState<{ email: string; phone: string; id: string }[]>([
@@ -429,11 +432,28 @@ export default function SendSurveyPage() {
   };
 
   const handleSalesforceImport = () => {
-    setShowSalesforceImport(true);
-    setTimeout(() => {
-      setStatus('Successfully imported 127 contacts from Salesforce!');
-      setShowSalesforceImport(false);
-    }, 2000);
+    setShowSalesforceModal(true);
+  };
+
+  const handleSalesforceContactsSelected = (contacts: any[]) => {
+    setSalesforceContacts(contacts);
+    setShowSalesforceModal(false);
+    
+    // If voice reminders are enabled, populate recipients array
+    if (enableReminders) {
+      const contactsWithPhone = contacts.filter(contact => contact.phone);
+      setRecipients(contactsWithPhone.map((contact, index) => ({
+        email: contact.email,
+        phone: contact.phone,
+        id: (index + 1).toString()
+      })));
+    } else {
+      // For email-only, add to target audiences or set email list
+      const emails = contacts.map(contact => contact.email).join(', ');
+      setStudentEmails(emails);
+    }
+    
+    setStatus(`Successfully imported ${contacts.length} contacts from Salesforce!`);
   };
 
   const filteredAudiences = mockTargetAudiences.filter(audience =>
@@ -1624,6 +1644,15 @@ export default function SendSurveyPage() {
           </form>
         </div>
       </div>
+
+      {/* Salesforce Contact Importer Modal */}
+      {showSalesforceModal && (
+        <SalesforceContactImporter
+          onContactsSelected={handleSalesforceContactsSelected}
+          onClose={() => setShowSalesforceModal(false)}
+          enableVoiceReminders={enableReminders}
+        />
+      )}
     </div>
   );
 }

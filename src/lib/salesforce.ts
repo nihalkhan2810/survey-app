@@ -11,6 +11,9 @@ export interface SalesforceContact {
   LastName: string
   Email: string
   Phone?: string
+  MobilePhone?: string
+  Title?: string
+  Department?: string
   Account?: {
     Name: string
   }
@@ -36,6 +39,18 @@ export class SalesforceClient {
   async authenticate(username: string, password: string): Promise<void> {
     try {
       const loginUrl = this.config.loginUrl || 'https://login.salesforce.com'
+      const fullPassword = password + this.config.securityToken
+      
+      console.log('Salesforce auth attempt:', {
+        loginUrl,
+        username,
+        passwordLength: password.length,
+        securityTokenLength: this.config.securityToken.length,
+        fullPasswordLength: fullPassword.length,
+        consumerKeyPrefix: this.config.consumerKey.substring(0, 10) + '...',
+        consumerSecretPrefix: this.config.consumerSecret.substring(0, 10) + '...'
+      })
+      
       const response = await fetch(`${loginUrl}/services/oauth2/token`, {
         method: 'POST',
         headers: {
@@ -46,18 +61,22 @@ export class SalesforceClient {
           client_id: this.config.consumerKey,
           client_secret: this.config.consumerSecret,
           username: username,
-          password: password + this.config.securityToken,
+          password: fullPassword,
         }),
       })
 
       if (!response.ok) {
-        throw new Error(`Authentication failed: ${response.statusText}`)
+        const errorText = await response.text()
+        console.error('Salesforce auth error response:', errorText)
+        throw new Error(`Authentication failed: ${response.statusText} - ${errorText}`)
       }
 
       const result = await response.json()
+      console.log('Salesforce auth success:', { instanceUrl: result.instance_url })
       this.accessToken = result.access_token
       this.instanceUrl = result.instance_url
     } catch (error) {
+      console.error('Full Salesforce auth error:', error)
       throw new Error(`Salesforce authentication failed: ${error}`)
     }
   }
@@ -138,6 +157,38 @@ export class SalesforceClient {
       return result.records as SalesforceContact[]
     } catch (error) {
       throw new Error(`Failed to fetch contacts: ${error}`)
+    }
+  }
+
+  async getEnhancedContacts(searchTerm: string = '', limit: number = 100): Promise<SalesforceContact[]> {
+    try {
+      let query: string;
+      
+      if (searchTerm.trim()) {
+        // Search query with filters
+        query = `SELECT Id, FirstName, LastName, Email, Phone, MobilePhone, Title, Department, Account.Name 
+                 FROM Contact 
+                 WHERE Email != null 
+                 AND (FirstName LIKE '%${searchTerm}%' 
+                      OR LastName LIKE '%${searchTerm}%' 
+                      OR Email LIKE '%${searchTerm}%' 
+                      OR Account.Name LIKE '%${searchTerm}%')
+                 ORDER BY LastName, FirstName 
+                 LIMIT ${limit}`;
+      } else {
+        // Get all contacts with enhanced fields
+        query = `SELECT Id, FirstName, LastName, Email, Phone, MobilePhone, Title, Department, Account.Name 
+                 FROM Contact 
+                 WHERE Email != null 
+                 ORDER BY LastName, FirstName 
+                 LIMIT ${limit}`;
+      }
+      
+      const result = await this.makeRequest(`/services/data/v57.0/query/?q=${encodeURIComponent(query)}`);
+      return result.records as SalesforceContact[];
+      
+    } catch (error) {
+      throw new Error(`Failed to fetch enhanced contacts: ${error}`);
     }
   }
 

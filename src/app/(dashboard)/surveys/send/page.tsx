@@ -21,6 +21,7 @@ type TargetAudience = {
   count: number;
   category: string;
   emails: string[];
+  phoneNumbers?: string[]; // Optional for call reminder audiences
 };
 
 // Empty array - will be populated with imported Salesforce contacts
@@ -154,7 +155,7 @@ export default function SendSurveyPage() {
   // Calculate current emails for reminder component
   const getCurrentEmails = (): string[] => {
     if (emailInputMethod === 'manual') {
-      if (callReminderEnabled || forceCallReminderMode) {
+      if (callReminderEnabled || forceCallReminderMode || enableReminders) {
         // Use paired recipients when call reminders are enabled
         return recipients.map(r => r.email.trim()).filter(Boolean);
       } else {
@@ -224,7 +225,7 @@ export default function SendSurveyPage() {
     
     // Check if call reminders are enabled
     if (enableReminders) {
-      // Filter contacts to only those with phone numbers
+      // Filter contacts to only those with phone numbers for call reminders
       const contactsWithPhone = contacts.filter(contact => contact.phone && contact.phone.trim() !== '');
       
       if (contactsWithPhone.length === 0) {
@@ -232,13 +233,46 @@ export default function SendSurveyPage() {
         return;
       }
       
-      // Switch to manual entry mode and populate recipients
-      setEmailInputMethod('manual');
-      setRecipients(contactsWithPhone.map((contact, index) => ({
-        email: contact.email,
-        phone: contact.phone,
-        id: (index + 1).toString()
-      })));
+      // Create target audiences from contacts with phone numbers, grouped by company
+      const companiesMap = new Map<string, any[]>();
+      
+      // Group contacts with phone numbers by company
+      contactsWithPhone.forEach(contact => {
+        const company = contact.company || 'No Company';
+        if (!companiesMap.has(company)) {
+          companiesMap.set(company, []);
+        }
+        companiesMap.get(company)!.push(contact);
+      });
+      
+      // Create target audiences from companies (call reminder enabled)
+      const newAudiences: TargetAudience[] = Array.from(companiesMap.entries()).map(([company, companyContacts], index) => ({
+        id: `salesforce-call-${index}`,
+        name: `${company} (Call Reminders)`,
+        description: `${companyContacts.length} contacts with phone numbers from ${company}`,
+        count: companyContacts.length,
+        category: 'Salesforce Import - Call Reminders',
+        emails: companyContacts.map(contact => contact.email).filter(Boolean),
+        // Store phone numbers for call reminders
+        phoneNumbers: companyContacts.map(contact => contact.phone).filter(Boolean)
+      }));
+      
+      // Add a "All Call Reminder Contacts" group
+      const allCallReminderAudience: TargetAudience = {
+        id: 'salesforce-call-all',
+        name: 'All Call Reminder Contacts',
+        description: `All ${contactsWithPhone.length} contacts with phone numbers from Salesforce`,
+        count: contactsWithPhone.length,
+        category: 'Salesforce Import - Call Reminders',
+        emails: contactsWithPhone.map(contact => contact.email).filter(Boolean),
+        // Store phone numbers for call reminders
+        phoneNumbers: contactsWithPhone.map(contact => contact.phone).filter(Boolean)
+      };
+      
+      setImportedAudiences([allCallReminderAudience, ...newAudiences]);
+      
+      // Auto-select the "All Call Reminder Contacts" audience
+      setSelectedAudiences(['salesforce-call-all']);
       
       const excludedCount = contacts.length - contactsWithPhone.length;
       setStatus(`✅ Successfully imported ${contactsWithPhone.length} contacts with phone numbers for call reminders!${excludedCount > 0 ? ` (${excludedCount} contacts excluded - no phone numbers)` : ''}`);
@@ -434,7 +468,7 @@ export default function SendSurveyPage() {
     
     // Validate recipients if call reminder is enabled and using manual entry
     let phoneNumbersList: string[] = [];
-    if ((callReminderEnabled || forceCallReminderMode) && emailInputMethod === 'manual') {
+    if ((callReminderEnabled || forceCallReminderMode || enableReminders) && emailInputMethod === 'manual') {
       // Validate paired recipients
       const validRecipients = recipients.filter(r => r.email.trim() && r.phone.trim());
       
@@ -477,7 +511,7 @@ export default function SendSurveyPage() {
       };
       
       // Include phone numbers and call reminder info if enabled
-      if ((callReminderEnabled || forceCallReminderMode) && emailInputMethod === 'manual') {
+      if ((callReminderEnabled || forceCallReminderMode || enableReminders) && emailInputMethod === 'manual') {
         requestBody.phoneNumbers = phoneNumbersList;
         requestBody.callReminderEnabled = true;
       }
@@ -502,7 +536,7 @@ export default function SendSurveyPage() {
         statusMessage += ` Email reminder scheduled ${testReminderMode ? '(test mode: 2 min)' : '(6 hours before expiry)'}.`;
       }
       
-      if ((callReminderEnabled || forceCallReminderMode) && emailInputMethod === 'manual') {
+      if ((callReminderEnabled || forceCallReminderMode || enableReminders) && emailInputMethod === 'manual') {
         statusMessage += ' Call reminders are now active for non-responders.';
         setSentSurveyId(selectedSurvey.id);
       }
@@ -957,6 +991,24 @@ export default function SendSurveyPage() {
                         <div className="grid grid-cols-1 gap-1">
                           {getAllEmails().map((email, index) => {
                             const isExcluded = excludedEmails.has(email);
+                            
+                            // Check if this email is from a call reminder audience
+                            const selectedCallReminderAudiences = allAudiences.filter(audience => 
+                              selectedAudiences.includes(audience.id) && audience.phoneNumbers
+                            );
+                            
+                            let phoneNumber = null;
+                            if (selectedCallReminderAudiences.length > 0) {
+                              // Find the corresponding phone number for this email
+                              for (const audience of selectedCallReminderAudiences) {
+                                const emailIndex = audience.emails.indexOf(email);
+                                if (emailIndex !== -1 && audience.phoneNumbers && audience.phoneNumbers[emailIndex]) {
+                                  phoneNumber = audience.phoneNumbers[emailIndex];
+                                  break;
+                                }
+                              }
+                            }
+                            
                             return (
                               <div 
                                 key={index} 
@@ -966,7 +1018,14 @@ export default function SendSurveyPage() {
                                     : 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-700'
                                 }`}
                               >
-                                <span className="break-all">{email}</span>
+                                <div className="flex-1">
+                                  <div className="break-all">{email}</div>
+                                  {phoneNumber && (
+                                    <div className="text-xs text-blue-600 dark:text-blue-400 mt-1 flex items-center gap-1">
+                                      📞 {phoneNumber}
+                                    </div>
+                                  )}
+                                </div>
                                 <button
                                   type="button"
                                   onClick={() => handleEmailToggle(email)}
@@ -990,6 +1049,14 @@ export default function SendSurveyPage() {
                           <span>
                             <strong>{currentEmails.length} email addresses</strong> will receive your survey invitation.
                             {excludedEmails.size > 0 && <span className="text-amber-600 dark:text-amber-400"> ({excludedEmails.size} excluded from original list)</span>}
+                            {/* Check if any selected audiences have call reminders */}
+                            {allAudiences.some(audience => 
+                              selectedAudiences.includes(audience.id) && audience.phoneNumbers
+                            ) && (
+                              <span className="text-blue-600 dark:text-blue-400 font-medium">
+                                {' '}📞 Call reminders enabled for contacts with phone numbers
+                              </span>
+                            )}
                           </span>
                         </p>
                         {emailInputMethod === 'audience' && selectedAudiences.length > 0 && (
@@ -1046,13 +1113,18 @@ export default function SendSurveyPage() {
                     </div>
                   </div>
                   
-                  {(callReminderEnabled || forceCallReminderMode) ? (
+                  {(callReminderEnabled || forceCallReminderMode || enableReminders) ? (
                     /* Paired Email-Phone Input for Call Reminders */
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <div>
                           <h4 className="text-lg font-medium text-gray-900 dark:text-white">
                             📧📞 Email & Phone Pairs
+                            {enableReminders && recipients.length > 0 && (
+                              <span className="ml-2 text-sm text-emerald-600 dark:text-emerald-400 font-normal">
+                                (Imported from Salesforce)
+                              </span>
+                            )}
                           </h4>
                           <p className="text-sm text-gray-600 dark:text-gray-400">
                             Each recipient needs both email and phone number for call reminders
@@ -1069,6 +1141,24 @@ export default function SendSurveyPage() {
                           Add Recipient
                         </button>
                       </div>
+                      
+                      {/* Show summary when imported from Salesforce */}
+                      {enableReminders && recipients.length > 0 && (
+                        <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg border border-emerald-200 dark:border-emerald-700">
+                          <div className="flex items-center gap-2 mb-2">
+                            <svg className="h-5 w-5 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <h5 className="font-medium text-emerald-900 dark:text-emerald-100">
+                              Salesforce Import Summary
+                            </h5>
+                          </div>
+                          <p className="text-sm text-emerald-700 dark:text-emerald-300">
+                            Successfully imported <strong>{recipients.length} contacts</strong> with phone numbers for call reminders.
+                            All contacts below have both email addresses and phone numbers.
+                          </p>
+                        </div>
+                      )}
                       
                       {recipients.map((recipient, index) => (
                         <div key={recipient.id} className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-700">

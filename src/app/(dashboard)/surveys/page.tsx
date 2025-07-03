@@ -444,9 +444,19 @@ export default function SurveysPage() {
                         </AnimatePresence>
                       </motion.button>
                       
-                      {/* Show different actions based on survey status */}
-                      {getSurveyStatus(survey, currentTime) === 'active' ? (
-                        // For active surveys, show reminder option
+                      {/* Always show view results button */}
+                      <motion.button 
+                        onClick={() => openModal(survey, 'results')} 
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        className="p-2 text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors rounded-lg hover:bg-white/50 dark:hover:bg-gray-800/50" 
+                        title="View Results"
+                      >
+                        <EyeIcon className="h-5 w-5"/>
+                      </motion.button>
+                      
+                      {/* Show reminder button only for active surveys */}
+                      {getSurveyStatus(survey, currentTime) === 'active' && (
                         <motion.button 
                           onClick={() => openModal(survey, 'reminder')}
                           whileHover={{ scale: 1.1 }}
@@ -455,17 +465,6 @@ export default function SurveysPage() {
                           title="Send Reminder"
                         >
                           <PaperAirplaneIcon className="h-5 w-5"/>
-                        </motion.button>
-                      ) : (
-                        // For non-active surveys, show view results
-                        <motion.button 
-                          onClick={() => openModal(survey, 'results')} 
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
-                          className="p-2 text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors rounded-lg hover:bg-white/50 dark:hover:bg-gray-800/50" 
-                          title="View Results"
-                        >
-                          <EyeIcon className="h-5 w-5"/>
                         </motion.button>
                       )}
                       
@@ -550,9 +549,19 @@ export default function SurveysPage() {
                           </AnimatePresence>
                         </motion.button>
                         
-                        {/* Show different actions based on survey status */}
-                        {getSurveyStatus(survey, currentTime) === 'active' ? (
-                          // For active surveys, show reminder option
+                        {/* Always show view results button */}
+                        <motion.button 
+                          onClick={() => openModal(survey, 'results')} 
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          className="p-2 text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700" 
+                          title="View Results"
+                        >
+                          <EyeIcon className="h-5 w-5"/>
+                        </motion.button>
+                        
+                        {/* Show reminder button only for active surveys */}
+                        {getSurveyStatus(survey, currentTime) === 'active' && (
                           <motion.button 
                             onClick={() => openModal(survey, 'reminder')}
                             whileHover={{ scale: 1.1 }}
@@ -561,17 +570,6 @@ export default function SurveysPage() {
                             title="Send Reminder"
                           >
                             <PaperAirplaneIcon className="h-5 w-5"/>
-                          </motion.button>
-                        ) : (
-                          // For non-active surveys, show view results
-                          <motion.button 
-                            onClick={() => openModal(survey, 'results')} 
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
-                            className="p-2 text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700" 
-                            title="View Results"
-                          >
-                            <EyeIcon className="h-5 w-5"/>
                           </motion.button>
                         )}
                         

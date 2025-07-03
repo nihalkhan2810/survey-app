@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
         grant_type: 'authorization_code',
         client_id: process.env.SALESFORCE_CONSUMER_KEY!,
         client_secret: process.env.SALESFORCE_CONSUMER_SECRET!,
-        redirect_uri: 'http://localhost:3000/oauth/callback',
+        redirect_uri: `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/oauth/callback`,
         code: code,
         code_verifier: codeVerifier,
       }),
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
         requestBody: {
           grant_type: 'authorization_code',
           client_id: process.env.SALESFORCE_CONSUMER_KEY?.substring(0, 10) + '...',
-          redirect_uri: 'http://localhost:3000/oauth/callback',
+          redirect_uri: `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/oauth/callback`,
           code: code.substring(0, 10) + '...',
           code_verifier: codeVerifier.substring(0, 10) + '...'
         }

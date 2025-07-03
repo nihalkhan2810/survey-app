@@ -222,44 +222,67 @@ export default function SendSurveyPage() {
     setSalesforceContacts(contacts);
     setShowSalesforceModal(false);
     
-    // Create target audiences from imported contacts grouped by company
-    const companiesMap = new Map<string, any[]>();
-    
-    // Group contacts by company
-    contacts.forEach(contact => {
-      const company = contact.company || 'No Company';
-      if (!companiesMap.has(company)) {
-        companiesMap.set(company, []);
+    // Check if call reminders are enabled
+    if (enableReminders) {
+      // Filter contacts to only those with phone numbers
+      const contactsWithPhone = contacts.filter(contact => contact.phone && contact.phone.trim() !== '');
+      
+      if (contactsWithPhone.length === 0) {
+        setStatus(`❌ No contacts with phone numbers found! Call reminders require phone numbers. Found ${contacts.length} total contacts but none have phone numbers.`);
+        return;
       }
-      companiesMap.get(company)!.push(contact);
-    });
-    
-    // Create target audiences from companies
-    const newAudiences: TargetAudience[] = Array.from(companiesMap.entries()).map(([company, companyContacts], index) => ({
-      id: `salesforce-${index}`,
-      name: company,
-      description: `${companyContacts.length} contacts from ${company}`,
-      count: companyContacts.length,
-      category: 'Salesforce Import',
-      emails: companyContacts.map(contact => contact.email).filter(Boolean)
-    }));
-    
-    // Add a "All Imported Contacts" group
-    const allContactsAudience: TargetAudience = {
-      id: 'salesforce-all',
-      name: 'All Imported Contacts',
-      description: `All ${contacts.length} contacts from Salesforce`,
-      count: contacts.length,
-      category: 'Salesforce Import',
-      emails: contacts.map(contact => contact.email).filter(Boolean)
-    };
-    
-    setImportedAudiences([allContactsAudience, ...newAudiences]);
-    
-    // Auto-select the "All Imported Contacts" audience
-    setSelectedAudiences(['salesforce-all']);
-    
-    setStatus(`Successfully imported ${contacts.length} contacts from Salesforce and created ${newAudiences.length + 1} target audiences!`);
+      
+      // Switch to manual entry mode and populate recipients
+      setEmailInputMethod('manual');
+      setRecipients(contactsWithPhone.map((contact, index) => ({
+        email: contact.email,
+        phone: contact.phone,
+        id: (index + 1).toString()
+      })));
+      
+      const excludedCount = contacts.length - contactsWithPhone.length;
+      setStatus(`✅ Successfully imported ${contactsWithPhone.length} contacts with phone numbers for call reminders!${excludedCount > 0 ? ` (${excludedCount} contacts excluded - no phone numbers)` : ''}`);
+      
+    } else {
+      // Regular import - create target audiences grouped by company
+      const companiesMap = new Map<string, any[]>();
+      
+      // Group contacts by company
+      contacts.forEach(contact => {
+        const company = contact.company || 'No Company';
+        if (!companiesMap.has(company)) {
+          companiesMap.set(company, []);
+        }
+        companiesMap.get(company)!.push(contact);
+      });
+      
+      // Create target audiences from companies
+      const newAudiences: TargetAudience[] = Array.from(companiesMap.entries()).map(([company, companyContacts], index) => ({
+        id: `salesforce-${index}`,
+        name: company,
+        description: `${companyContacts.length} contacts from ${company}`,
+        count: companyContacts.length,
+        category: 'Salesforce Import',
+        emails: companyContacts.map(contact => contact.email).filter(Boolean)
+      }));
+      
+      // Add a "All Imported Contacts" group
+      const allContactsAudience: TargetAudience = {
+        id: 'salesforce-all',
+        name: 'All Imported Contacts',
+        description: `All ${contacts.length} contacts from Salesforce`,
+        count: contacts.length,
+        category: 'Salesforce Import',
+        emails: contacts.map(contact => contact.email).filter(Boolean)
+      };
+      
+      setImportedAudiences([allContactsAudience, ...newAudiences]);
+      
+      // Auto-select the "All Imported Contacts" audience
+      setSelectedAudiences(['salesforce-all']);
+      
+      setStatus(`✅ Successfully imported ${contacts.length} contacts from Salesforce and created ${newAudiences.length + 1} target audiences!`);
+    }
   };
 
   const filteredAudiences = allAudiences.filter(audience =>
@@ -697,16 +720,48 @@ export default function SendSurveyPage() {
               
               {emailInputMethod === 'audience' ? (
                 <div className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">Select your target audiences:</span>
-                    <button
-                      type="button"
-                      onClick={handleSalesforceImport}
-                      disabled={showSalesforceImport}
-                      className="px-4 py-2 bg-gradient-to-r from-orange-500 to-red-500 text-white text-sm rounded-lg hover:from-orange-600 hover:to-red-600 disabled:opacity-50 transition-all duration-200"
-                    >
-                      {showSalesforceImport ? 'Importing...' : 'Import from Salesforce'}
-                    </button>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600 dark:text-gray-400">Select your target audiences:</span>
+                      <button
+                        type="button"
+                        onClick={handleSalesforceImport}
+                        disabled={showSalesforceImport}
+                        className="px-4 py-2 bg-gradient-to-r from-orange-500 to-red-500 text-white text-sm rounded-lg hover:from-orange-600 hover:to-red-600 disabled:opacity-50 transition-all duration-200"
+                      >
+                        {showSalesforceImport ? 'Importing...' : 'Import from Salesforce'}
+                      </button>
+                    </div>
+                    
+                    {/* Call Reminder Toggle for Salesforce Import */}
+                    <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-700">
+                      <div className="flex items-center gap-3">
+                        <div className="h-8 w-8 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
+                          <svg className="h-4 w-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                          </svg>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-900 dark:text-white">
+                            Enable Call Reminders for Salesforce Import
+                          </p>
+                          <p className="text-xs text-gray-600 dark:text-gray-400">
+                            Only import contacts with phone numbers for voice reminders
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setEnableReminders(!enableReminders)}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                          enableReminders ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'
+                        }`}
+                      >
+                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          enableReminders ? 'translate-x-6' : 'translate-x-1'
+                        }`} />
+                      </button>
+                    </div>
                   </div>
                   
                   {/* Search Input with Dropdown Toggle */}

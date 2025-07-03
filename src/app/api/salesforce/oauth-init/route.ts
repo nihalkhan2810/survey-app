@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     const consumerKey = process.env.SALESFORCE_CONSUMER_KEY;
     // Use your org-specific login URL for developer orgs
     const loginUrl = process.env.SALESFORCE_LOGIN_URL || 'https://orgfarm-22f82d590b-dev-ed.develop.my.salesforce.com';
-    const redirectUri = 'http://localhost:3000/oauth/callback';
+    const redirectUri = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/oauth/callback`;
 
     console.log('OAuth Init Debug:', {
       consumerKey: consumerKey ? consumerKey.substring(0, 10) + '...' : 'MISSING',

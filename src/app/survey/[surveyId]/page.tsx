@@ -248,15 +248,15 @@ function SurveyPageContent() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center bg-gray-100 p-8 dark:bg-gray-900">
-      <div className="w-full max-w-2xl rounded-lg bg-white p-8 shadow-lg dark:bg-gray-800">
-        <h1 className="mb-4 text-3xl font-bold text-gray-800 dark:text-white">
+    <main className="flex min-h-screen flex-col items-center bg-gray-100 p-4 sm:p-8 dark:bg-gray-900">
+      <div className="w-full max-w-2xl rounded-lg bg-white p-4 sm:p-8 shadow-lg dark:bg-gray-800">
+        <h1 className="mb-4 text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white">
           {survey.topic}
         </h1>
         
         {/* Identity Section */}
-        <div className="mb-8 rounded-lg border border-gray-200 bg-gray-50 p-6 dark:border-gray-600 dark:bg-gray-700/50">
-          <h2 className="mb-4 text-lg font-semibold text-gray-800 dark:text-white">
+        <div className="mb-6 sm:mb-8 rounded-lg border border-gray-200 bg-gray-50 p-4 sm:p-6 dark:border-gray-600 dark:bg-gray-700/50">
+          <h2 className="mb-4 text-base sm:text-lg font-semibold text-gray-800 dark:text-white">
             Response Identification (Optional)
           </h2>
           {!recipientEmail && (
@@ -307,10 +307,10 @@ function SurveyPageContent() {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-8">
+        <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
           {survey.questions.map((q, index) => (
             <div key={index}>
-              <label className="block text-lg font-medium text-gray-700 dark:text-gray-300">
+              <label className="block text-base sm:text-lg font-medium text-gray-700 dark:text-gray-300">
                 {index + 1}. {q.text}
               </label>
               {q.type === 'text' && (
@@ -393,7 +393,7 @@ function SurveyPageContent() {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full rounded-md bg-indigo-600 px-6 py-3 text-base font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
+            className="w-full rounded-md bg-indigo-600 px-6 py-4 text-base font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 min-h-[44px]"
           >
             {submitting ? 'Submitting...' : 'Submit Survey'}
           </button>

@@ -45,9 +45,17 @@ export default function SurveysPage() {
   const [loadingFullSurvey, setLoadingFullSurvey] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [isMobile, setIsMobile] = useState(false);
 
-  // Load view mode from localStorage on component mount
+  // Load view mode from localStorage and detect mobile
   useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
     // Small delay to ensure localStorage is available
     const timer = setTimeout(() => {
       const savedViewMode = localStorage.getItem('surveys-view-mode') as 'grid' | 'list';
@@ -56,7 +64,10 @@ export default function SurveysPage() {
       }
     }, 0);
     
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', checkMobile);
+    };
   }, []);
 
   // Save view mode to localStorage when it changes
@@ -324,19 +335,31 @@ export default function SurveysPage() {
 
   return (
     <>
-      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="flex flex-col sm:flex-row items-center justify-between mb-6">
+      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className={`flex flex-col mb-6 ${
+        isMobile ? 'gap-4' : 'sm:flex-row sm:items-center sm:justify-between'
+      }`}>
         <div>
-            <h1 className="text-3xl font-bold text-gray-800 dark:text-white">
+            <h1 className={`font-bold text-gray-800 dark:text-white ${
+              isMobile ? 'text-2xl' : 'text-3xl'
+            }`}>
             Surveys
             </h1>
-            <p className="text-gray-500 dark:text-gray-400 mt-1">Create, manage, and view your surveys.</p>
+            <p className={`text-gray-500 dark:text-gray-400 mt-1 ${
+              isMobile ? 'text-sm' : 'text-base'
+            }`}>Create, manage, and view your surveys.</p>
         </div>
-        <div className="flex items-center gap-3">
-          {/* View Mode Toggle */}
-          <div className="flex bg-gray-100 dark:bg-gray-800 rounded-xl p-1">
+        <div className={`flex gap-2 ${
+          isMobile ? 'flex-col' : 'items-center gap-3'
+        }`}>
+          {/* View Mode Toggle - Now visible on mobile */}
+          <div className={`flex bg-gray-100 dark:bg-gray-800 rounded-xl p-1 ${
+            isMobile ? 'self-start' : ''
+          }`}>
             <button
               onClick={() => handleViewModeChange('grid')}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+              className={`flex items-center gap-2 ${
+                isMobile ? 'px-4 py-3 text-sm' : 'px-3 py-2 text-sm'
+              } rounded-lg font-medium transition-all duration-200 ${
                 viewMode === 'grid'
                   ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
@@ -347,7 +370,9 @@ export default function SurveysPage() {
             </button>
             <button
               onClick={() => handleViewModeChange('list')}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+              className={`flex items-center gap-2 ${
+                isMobile ? 'px-4 py-3 text-sm' : 'px-3 py-2 text-sm'
+              } rounded-lg font-medium transition-all duration-200 ${
                 viewMode === 'list'
                   ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
@@ -361,9 +386,11 @@ export default function SurveysPage() {
             <motion.span
             whileHover={{ scale: 1.05 }} 
             whileTap={{ scale: 0.95 }} 
-            className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg hover:shadow-xl transition-shadow"
+            className={`flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 font-semibold text-white shadow-lg hover:shadow-xl transition-shadow ${
+              isMobile ? 'px-4 py-3 text-base mobile-btn' : 'px-5 py-2.5 text-sm'
+            }`}
           >
-            <CalendarIcon className="h-5 w-5" />
+            <CalendarIcon className={isMobile ? 'h-5 w-5' : 'h-5 w-5'} />
             Calendar
           </motion.span>
           </Link>
@@ -371,15 +398,19 @@ export default function SurveysPage() {
             <motion.span
             whileHover={{ scale: 1.05 }} 
             whileTap={{ scale: 0.95 }} 
-            className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg hover:shadow-xl transition-shadow"
+            className={`flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 font-semibold text-white shadow-lg hover:shadow-xl transition-shadow ${
+              isMobile ? 'px-4 py-3 text-base mobile-btn' : 'px-5 py-2.5 text-sm'
+            }`}
           >
-            <PaperAirplaneIcon className="h-5 w-5" />
+            <PaperAirplaneIcon className={isMobile ? 'h-5 w-5' : 'h-5 w-5'} />
             Send Survey
           </motion.span>
           </Link>
           <Link href="/surveys/create">
-            <motion.span whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg hover:shadow-xl transition-shadow">
-              <PlusIcon className="h-5 w-5" />
+            <motion.span whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className={`flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 font-semibold text-white shadow-lg hover:shadow-xl transition-shadow ${
+              isMobile ? 'px-4 py-3 text-base mobile-btn' : 'px-5 py-2.5 text-sm'
+            }`}>
+              <PlusIcon className={isMobile ? 'h-5 w-5' : 'h-5 w-5'} />
               Create New Survey
             </motion.span>
           </Link>
@@ -400,7 +431,9 @@ export default function SurveysPage() {
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+            className={`grid gap-6 mt-6 ${
+              isMobile ? 'grid-cols-1 mobile-grid' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
+            }`}>
             {surveys.map((survey, index) => (
               <motion.div 
                 key={survey.id} 
@@ -409,89 +442,193 @@ export default function SurveysPage() {
                 className="relative group"
               >
                 <div className={`absolute inset-0 bg-gradient-to-r ${gradients[index % gradients.length]} rounded-2xl blur-xl opacity-20 group-hover:opacity-30 transition-opacity`} />
-                <div className="relative bg-white dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl shadow-lg border border-gray-200/50 dark:border-gray-700/50 overflow-hidden">
-                  <div className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className={`p-2 bg-gradient-to-br ${gradients[index % gradients.length]} rounded-xl shadow-lg`}>
-                        <Sparkles className="h-6 w-6 text-white" />
+                <div className={`relative bg-white dark:bg-gray-800/80 backdrop-blur-xl shadow-lg border border-gray-200/50 dark:border-gray-700/50 overflow-hidden ${
+                  isMobile ? 'rounded-xl mobile-card' : 'rounded-2xl'
+                }`}>
+                  <div className={isMobile ? 'p-4' : 'p-6'}>
+                    {isMobile ? (
+                      // Mobile: Stack everything vertically with better alignment
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className={`p-2 bg-gradient-to-br ${gradients[index % gradients.length]} rounded-xl shadow-lg`}>
+                            <Sparkles className="h-6 w-6 text-white" />
+                          </div>
+                          <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                            {new Date(survey.created_at).toLocaleDateString()}
+                          </span>
+                        </div>
+                        <h2 className="text-lg font-bold text-gray-900 dark:text-white leading-tight">
+                          {survey.topic}
+                        </h2>
+                        <StatusIndicator survey={survey} currentTime={currentTime} />
                       </div>
-                      <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                        {new Date(survey.created_at).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-2">{survey.topic}</h2>
-                    <StatusIndicator survey={survey} currentTime={currentTime} />
+                    ) : (
+                      // Desktop: Original layout
+                      <>
+                        <div className="flex items-start justify-between mb-4">
+                          <div className={`p-2 bg-gradient-to-br ${gradients[index % gradients.length]} rounded-xl shadow-lg`}>
+                            <Sparkles className="h-6 w-6 text-white" />
+                          </div>
+                          <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                            {new Date(survey.created_at).toLocaleDateString()}
+                          </span>
+                        </div>
+                        <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-3">
+                          {survey.topic}
+                        </h2>
+                        <StatusIndicator survey={survey} currentTime={currentTime} />
+                      </>
+                    )}
                   </div>
-                  <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 p-4">
-                    <div className="flex items-center justify-center gap-2">
-                      <motion.button 
-                        onClick={() => handleCopyLink(survey.id)} 
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        className="p-2 text-gray-500 hover:text-violet-600 dark:hover:text-violet-400 transition-colors rounded-lg hover:bg-white/50 dark:hover:bg-gray-800/50" 
-                        title="Copy Survey Link"
-                      >
-                        <AnimatePresence mode="wait" initial={false}>
-                          <motion.div
-                            key={copiedId === survey.id ? 'check' : 'copy'}
-                            initial={{ opacity: 0, scale: 0.8 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.8 }}
-                            transition={{ duration: 0.2 }}
-                          >
-                            {copiedId === survey.id ? <CheckIcon className="h-5 w-5 text-green-500" /> : <ClipboardDocumentIcon className="h-5 w-5"/>}
-                          </motion.div>
-                        </AnimatePresence>
-                      </motion.button>
-                      
-                      {/* Always show view results button */}
-                      <motion.button 
-                        onClick={() => openModal(survey, 'results')} 
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        className="p-2 text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors rounded-lg hover:bg-white/50 dark:hover:bg-gray-800/50" 
-                        title="View Results"
-                      >
-                        <EyeIcon className="h-5 w-5"/>
-                      </motion.button>
-                      
-                      {/* Show reminder button only for active surveys */}
-                      {getSurveyStatus(survey, currentTime) === 'active' && (
+                  <div className={`bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 ${
+                    isMobile ? 'p-3' : 'p-4'
+                  }`}>
+                    {isMobile ? (
+                      // Mobile: Grid layout for better organization
+                      <div className="grid grid-cols-4 gap-2">
                         <motion.button 
-                          onClick={() => openModal(survey, 'reminder')}
+                          onClick={() => handleCopyLink(survey.id)} 
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
-                          className="p-2 text-gray-500 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors rounded-lg hover:bg-white/50 dark:hover:bg-gray-800/50" 
-                          title="Send Reminder"
+                          className="flex flex-col items-center justify-center p-3 text-gray-500 hover:text-violet-600 dark:hover:text-violet-400 transition-colors rounded-lg hover:bg-white/50 dark:hover:bg-gray-800/50 min-h-[56px]" 
+                          title="Copy Survey Link"
                         >
-                          <PaperAirplaneIcon className="h-5 w-5"/>
+                          <AnimatePresence mode="wait" initial={false}>
+                            <motion.div
+                              key={copiedId === survey.id ? 'check' : 'copy'}
+                              initial={{ opacity: 0, scale: 0.8 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              exit={{ opacity: 0, scale: 0.8 }}
+                              transition={{ duration: 0.2 }}
+                            >
+                              {copiedId === survey.id ? <CheckIcon className="h-5 w-5 text-green-500" /> : <ClipboardDocumentIcon className="h-5 w-5"/>}
+                            </motion.div>
+                          </AnimatePresence>
+                          <span className="text-xs mt-1 font-medium">Copy</span>
                         </motion.button>
-                      )}
-                      
-                      <motion.button 
-                        onClick={() => openModal(survey, 'vapi-call')} 
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        className="p-2 text-gray-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors rounded-lg hover:bg-white/50 dark:hover:bg-gray-800/50" 
-                        title="Demo Voice Call"
-                      >
-                        <PhoneArrowUpRightIcon className="h-5 w-5"/>
-                      </motion.button>
-                      <motion.button 
-                        onClick={() => handleDeleteSurvey(survey.id)} 
-                        disabled={deletingId === survey.id}
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        className="p-2 text-gray-500 hover:text-red-600 dark:hover:text-red-400 transition-colors rounded-lg hover:bg-white/50 dark:hover:bg-gray-800/50 disabled:opacity-50" 
-                        title="Delete Survey"
-                      >
-                        {deletingId === survey.id ? (
-                          <div className="h-5 w-5 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
-                        ) : (
-                          <TrashIcon className="h-5 w-5"/>
+                        
+                        <motion.button 
+                          onClick={() => openModal(survey, 'results')} 
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          className="flex flex-col items-center justify-center p-3 text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors rounded-lg hover:bg-white/50 dark:hover:bg-gray-800/50 min-h-[56px]" 
+                          title="View Results"
+                        >
+                          <EyeIcon className="h-5 w-5"/>
+                          <span className="text-xs mt-1 font-medium">Results</span>
+                        </motion.button>
+                        
+                        {getSurveyStatus(survey, currentTime) === 'active' && (
+                          <motion.button 
+                            onClick={() => openModal(survey, 'reminder')}
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            className="flex flex-col items-center justify-center p-3 text-gray-500 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors rounded-lg hover:bg-white/50 dark:hover:bg-gray-800/50 min-h-[56px]" 
+                            title="Send Reminder"
+                          >
+                            <PaperAirplaneIcon className="h-5 w-5"/>
+                            <span className="text-xs mt-1 font-medium">Remind</span>
+                          </motion.button>
                         )}
-                      </motion.button>
-                    </div>
+                        
+                        <motion.button 
+                          onClick={() => openModal(survey, 'vapi-call')} 
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          className="flex flex-col items-center justify-center p-3 text-gray-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors rounded-lg hover:bg-white/50 dark:hover:bg-gray-800/50 min-h-[56px]" 
+                          title="Demo Voice Call"
+                        >
+                          <PhoneArrowUpRightIcon className="h-5 w-5"/>
+                          <span className="text-xs mt-1 font-medium">Call</span>
+                        </motion.button>
+                        
+                        <motion.button 
+                          onClick={() => handleDeleteSurvey(survey.id)} 
+                          disabled={deletingId === survey.id}
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          className="flex flex-col items-center justify-center p-3 text-gray-500 hover:text-red-600 dark:hover:text-red-400 transition-colors rounded-lg hover:bg-white/50 dark:hover:bg-gray-800/50 disabled:opacity-50 min-h-[56px] col-span-1" 
+                          title="Delete Survey"
+                        >
+                          {deletingId === survey.id ? (
+                            <div className="h-5 w-5 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
+                          ) : (
+                            <TrashIcon className="h-5 w-5"/>
+                          )}
+                          <span className="text-xs mt-1 font-medium">Delete</span>
+                        </motion.button>
+                      </div>
+                    ) : (
+                      // Desktop: Original horizontal layout
+                      <div className="flex items-center justify-center gap-2">
+                        <motion.button 
+                          onClick={() => handleCopyLink(survey.id)} 
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          className="p-2 text-gray-500 hover:text-violet-600 dark:hover:text-violet-400 transition-colors rounded-lg hover:bg-white/50 dark:hover:bg-gray-800/50" 
+                          title="Copy Survey Link"
+                        >
+                          <AnimatePresence mode="wait" initial={false}>
+                            <motion.div
+                              key={copiedId === survey.id ? 'check' : 'copy'}
+                              initial={{ opacity: 0, scale: 0.8 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              exit={{ opacity: 0, scale: 0.8 }}
+                              transition={{ duration: 0.2 }}
+                            >
+                              {copiedId === survey.id ? <CheckIcon className="h-5 w-5 text-green-500" /> : <ClipboardDocumentIcon className="h-5 w-5"/>}
+                            </motion.div>
+                          </AnimatePresence>
+                        </motion.button>
+                        
+                        <motion.button 
+                          onClick={() => openModal(survey, 'results')} 
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          className="p-2 text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors rounded-lg hover:bg-white/50 dark:hover:bg-gray-800/50" 
+                          title="View Results"
+                        >
+                          <EyeIcon className="h-5 w-5"/>
+                        </motion.button>
+                        
+                        {getSurveyStatus(survey, currentTime) === 'active' && (
+                          <motion.button 
+                            onClick={() => openModal(survey, 'reminder')}
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            className="p-2 text-gray-500 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors rounded-lg hover:bg-white/50 dark:hover:bg-gray-800/50" 
+                            title="Send Reminder"
+                          >
+                            <PaperAirplaneIcon className="h-5 w-5"/>
+                          </motion.button>
+                        )}
+                        
+                        <motion.button 
+                          onClick={() => openModal(survey, 'vapi-call')} 
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          className="p-2 text-gray-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors rounded-lg hover:bg-white/50 dark:hover:bg-gray-800/50" 
+                          title="Demo Voice Call"
+                        >
+                          <PhoneArrowUpRightIcon className="h-5 w-5"/>
+                        </motion.button>
+                        
+                        <motion.button 
+                          onClick={() => handleDeleteSurvey(survey.id)} 
+                          disabled={deletingId === survey.id}
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          className="p-2 text-gray-500 hover:text-red-600 dark:hover:text-red-400 transition-colors rounded-lg hover:bg-white/50 dark:hover:bg-gray-800/50 disabled:opacity-50" 
+                          title="Delete Survey"
+                        >
+                          {deletingId === survey.id ? (
+                            <div className="h-5 w-5 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
+                          ) : (
+                            <TrashIcon className="h-5 w-5"/>
+                          )}
+                        </motion.button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </motion.div>
@@ -507,20 +644,30 @@ export default function SurveysPage() {
               <motion.div 
                 key={survey.id} 
                 variants={itemVariants} 
-                whileHover={{ scale: 1.02, transition: { duration: 0.2 } }}
+                whileHover={{ scale: isMobile ? 1.01 : 1.02, transition: { duration: 0.2 } }}
                 className="relative group"
               >
                 <div className={`absolute inset-0 bg-gradient-to-r ${gradients[index % gradients.length]} rounded-xl blur-xl opacity-10 group-hover:opacity-20 transition-opacity`} />
-                <div className="relative bg-white dark:bg-gray-800/80 backdrop-blur-xl rounded-xl shadow-lg border border-gray-200/50 dark:border-gray-700/50 overflow-hidden">
-                  <div className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
+                <div className={`relative bg-white dark:bg-gray-800/80 backdrop-blur-xl shadow-lg border border-gray-200/50 dark:border-gray-700/50 overflow-hidden ${
+                  isMobile ? 'rounded-xl mobile-card' : 'rounded-xl'
+                }`}>
+                  <div className={isMobile ? 'p-4' : 'p-6'}>
+                    <div className={`flex items-center justify-between ${
+                      isMobile ? 'flex-col gap-4' : ''
+                    }`}>
+                      <div className={`flex items-center gap-4 ${
+                        isMobile ? 'self-start w-full' : ''
+                      }`}>
                         <div className={`p-3 bg-gradient-to-br ${gradients[index % gradients.length]} rounded-xl shadow-lg`}>
                           <Sparkles className="h-6 w-6 text-white" />
                         </div>
-                        <div>
-                          <h2 className="text-xl font-bold text-gray-900 dark:text-white">{survey.topic}</h2>
-                          <div className="flex items-center gap-4 mt-2">
+                        <div className={isMobile ? 'flex-1' : ''}>
+                          <h2 className={`font-bold text-gray-900 dark:text-white ${
+                            isMobile ? 'text-lg' : 'text-xl'
+                          }`}>{survey.topic}</h2>
+                          <div className={`flex items-center gap-4 mt-2 ${
+                            isMobile ? 'flex-col items-start gap-2' : ''
+                          }`}>
                             <StatusIndicator survey={survey} currentTime={currentTime} />
                             <span className="text-sm text-gray-500 dark:text-gray-400">
                               Created {new Date(survey.created_at).toLocaleDateString()}
@@ -528,12 +675,16 @@ export default function SurveysPage() {
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className={`flex items-center gap-2 ${
+                        isMobile ? 'self-end' : ''
+                      }`}>
                         <motion.button 
                           onClick={() => handleCopyLink(survey.id)} 
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
-                          className="p-2 text-gray-500 hover:text-violet-600 dark:hover:text-violet-400 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700" 
+                          className={`text-gray-500 hover:text-violet-600 dark:hover:text-violet-400 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                            isMobile ? 'p-3 min-h-[48px] min-w-[48px]' : 'p-2'
+                          }`}
                           title="Copy Survey Link"
                         >
                           <AnimatePresence mode="wait" initial={false}>
@@ -554,7 +705,9 @@ export default function SurveysPage() {
                           onClick={() => openModal(survey, 'results')} 
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
-                          className="p-2 text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700" 
+                          className={`text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                            isMobile ? 'p-3 min-h-[48px] min-w-[48px]' : 'p-2'
+                          }`}
                           title="View Results"
                         >
                           <EyeIcon className="h-5 w-5"/>
@@ -566,7 +719,9 @@ export default function SurveysPage() {
                             onClick={() => openModal(survey, 'reminder')}
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}
-                            className="p-2 text-gray-500 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700" 
+                            className={`text-gray-500 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                              isMobile ? 'p-3 min-h-[48px] min-w-[48px]' : 'p-2'
+                            }`}
                             title="Send Reminder"
                           >
                             <PaperAirplaneIcon className="h-5 w-5"/>
@@ -577,7 +732,9 @@ export default function SurveysPage() {
                           onClick={() => openModal(survey, 'vapi-call')} 
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
-                          className="p-2 text-gray-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700" 
+                          className={`text-gray-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                            isMobile ? 'p-3 min-h-[48px] min-w-[48px]' : 'p-2'
+                          }`}
                           title="Demo Voice Call"
                         >
                           <PhoneArrowUpRightIcon className="h-5 w-5"/>
@@ -587,7 +744,9 @@ export default function SurveysPage() {
                           disabled={deletingId === survey.id}
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
-                          className="p-2 text-gray-500 hover:text-red-600 dark:hover:text-red-400 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50" 
+                          className={`text-gray-500 hover:text-red-600 dark:hover:text-red-400 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 ${
+                            isMobile ? 'p-3 min-h-[48px] min-w-[48px]' : 'p-2'
+                          }`}
                           title="Delete Survey"
                         >
                           {deletingId === survey.id ? (

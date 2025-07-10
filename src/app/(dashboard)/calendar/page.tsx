@@ -27,6 +27,7 @@ export default function CalendarPage() {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     fetchSurveys();
@@ -35,6 +36,16 @@ export default function CalendarPage() {
   useEffect(() => {
     generateEvents();
   }, [surveys]);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const fetchSurveys = async () => {
     try {
@@ -128,7 +139,7 @@ export default function CalendarPage() {
     
     // Empty cells for days before the first day of the month
     for (let i = 0; i < firstDay; i++) {
-      days.push(<div key={`empty-${i}`} className="h-28 bg-gray-50 dark:bg-gray-900"></div>);
+      days.push(<div key={`empty-${i}`} className={`${isMobile ? 'h-16' : 'h-28'} bg-gray-50 dark:bg-gray-900`}></div>);
     }
     
     // Days of the month
@@ -141,48 +152,73 @@ export default function CalendarPage() {
       days.push(
         <motion.div
           key={day}
-          whileHover={{ scale: 1.02 }}
+          whileHover={{ scale: isMobile ? 1.01 : 1.02 }}
           onClick={() => setSelectedDate(isSelected ? null : dateStr)}
-          className={`h-28 p-2 border border-gray-200 dark:border-gray-700 cursor-pointer transition-all ${
+          className={`${isMobile ? 'h-16 p-1' : 'h-28 p-2'} border border-gray-200 dark:border-gray-700 cursor-pointer transition-all ${
             isSelected 
               ? 'bg-violet-50 border-violet-300 dark:bg-violet-900/20 dark:border-violet-600' 
               : 'hover:bg-gray-50 dark:hover:bg-gray-800'
           } ${isToday ? 'ring-2 ring-blue-500' : ''}`}
         >
           <div className="flex justify-between items-start h-full">
-            <span className={`text-sm font-medium ${
+            <span className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium ${
               isToday ? 'text-blue-600 dark:text-blue-400' : 'text-gray-900 dark:text-gray-100'
             }`}>
               {day}
             </span>
             {dayEvents.length > 0 && (
-              <div className="flex flex-col gap-1 flex-1 ml-1 min-w-0">
-                {dayEvents.slice(0, 2).map(event => (
-                  <div
-                    key={event.id}
-                    className={`text-xs px-2 py-1 rounded-md truncate font-medium ${
-                      event.survey.status === 'active'
-                        ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
-                        : event.survey.status === 'expired' || event.type === 'expired'
-                        ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
-                        : 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
-                    }`}
-                    title={event.title}
-                  >
-                    <div className="flex items-center gap-1">
-                      <span className="flex-shrink-0">
-                        {event.survey.status === 'active' ? '✅' : 
-                         event.survey.status === 'expired' || event.type === 'expired' ? '❌' : 
-                         event.type === 'start' ? '🚀' : '🔒'}
-                      </span>
-                      <span className="truncate">{event.survey.topic}</span>
-                    </div>
+              <div className={`flex flex-col gap-1 flex-1 min-w-0 ${isMobile ? 'ml-0' : 'ml-1'}`}>
+                {isMobile ? (
+                  // Mobile: Only show dots for events
+                  <div className="flex gap-1 justify-end">
+                    {dayEvents.slice(0, 3).map(event => (
+                      <div
+                        key={event.id}
+                        className={`w-2 h-2 rounded-full ${
+                          event.survey.status === 'active'
+                            ? 'bg-green-500'
+                            : event.survey.status === 'expired' || event.type === 'expired'
+                            ? 'bg-red-500'
+                            : 'bg-blue-500'
+                        }`}
+                        title={event.title}
+                      />
+                    ))}
+                    {dayEvents.length > 3 && (
+                      <div className="w-2 h-2 rounded-full bg-gray-400" title={`+${dayEvents.length - 3} more`} />
+                    )}
                   </div>
-                ))}
-                {dayEvents.length > 2 && (
-                  <div className="text-xs text-gray-500 dark:text-gray-400 px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded-md">
-                    +{dayEvents.length - 2} more
-                  </div>
+                ) : (
+                  // Desktop: Show event details
+                  <>
+                    {dayEvents.slice(0, 2).map(event => (
+                      <div
+                        key={event.id}
+                        className={`text-xs px-2 py-1 rounded-md truncate font-medium ${
+                          event.survey.status === 'active'
+                            ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+                            : event.survey.status === 'expired' || event.type === 'expired'
+                            ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+                            : 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
+                        }`}
+                        title={event.title}
+                      >
+                        <div className="flex items-center gap-1">
+                          <span className="flex-shrink-0">
+                            {event.survey.status === 'active' ? '✅' : 
+                             event.survey.status === 'expired' || event.type === 'expired' ? '❌' : 
+                             event.type === 'start' ? '🚀' : '🔒'}
+                          </span>
+                          <span className="truncate">{event.survey.topic}</span>
+                        </div>
+                      </div>
+                    ))}
+                    {dayEvents.length > 2 && (
+                      <div className="text-xs text-gray-500 dark:text-gray-400 px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded-md">
+                        +{dayEvents.length - 2} more
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             )}
@@ -213,14 +249,22 @@ export default function CalendarPage() {
       animate={{ opacity: 1, y: 0 }} 
       className="space-y-6"
     >
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Survey Calendar</h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">
+      <div className={`flex items-center ${
+        isMobile ? 'flex-col gap-4' : 'justify-between'
+      }`}>
+        <div className={isMobile ? 'text-center' : ''}>
+          <h1 className={`font-bold text-gray-900 dark:text-white ${
+            isMobile ? 'text-2xl' : 'text-3xl'
+          }`}>Survey Calendar</h1>
+          <p className={`text-gray-500 dark:text-gray-400 mt-1 ${
+            isMobile ? 'text-sm' : 'text-base'
+          }`}>
             Track survey deadlines and reminders
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className={`flex items-center gap-2 ${
+          isMobile ? 'justify-center flex-wrap' : ''
+        }`}>
           <div className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400">
             <div className="w-3 h-3 bg-green-100 border border-green-300 rounded"></div>
             <span>Active</span>
@@ -236,30 +280,44 @@ export default function CalendarPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+      <div className={`grid grid-cols-1 gap-6 ${
+        isMobile ? '' : 'xl:grid-cols-4'
+      }`}>
         {/* Calendar */}
-        <div className="xl:col-span-3 bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700">
+        <div className={`bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700 ${
+          isMobile ? 'rounded-xl mobile-card' : 'xl:col-span-3 rounded-2xl'
+        }`}>
           {/* Calendar Header */}
-          <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+          <div className={`flex items-center justify-between border-b border-gray-200 dark:border-gray-700 ${
+            isMobile ? 'p-4' : 'p-6'
+          }`}>
+            <h2 className={`font-semibold text-gray-900 dark:text-white ${
+              isMobile ? 'text-lg' : 'text-xl'
+            }`}>
               {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
             </h2>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => navigateMonth('prev')}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                className={`hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors ${
+                  isMobile ? 'p-2 min-h-[44px] min-w-[44px]' : 'p-2'
+                }`}
               >
                 <ChevronLeft className="h-5 w-5 text-gray-600 dark:text-gray-400" />
               </button>
               <button
                 onClick={() => setCurrentDate(new Date())}
-                className="px-3 py-1 text-sm bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300 rounded-lg hover:bg-violet-200 dark:hover:bg-violet-900/50 transition-colors"
+                className={`bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300 rounded-lg hover:bg-violet-200 dark:hover:bg-violet-900/50 transition-colors ${
+                  isMobile ? 'px-3 py-2 text-sm min-h-[44px]' : 'px-3 py-1 text-sm'
+                }`}
               >
                 Today
               </button>
               <button
                 onClick={() => navigateMonth('next')}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                className={`hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors ${
+                  isMobile ? 'p-2 min-h-[44px] min-w-[44px]' : 'p-2'
+                }`}
               >
                 <ChevronRight className="h-5 w-5 text-gray-600 dark:text-gray-400" />
               </button>
@@ -267,11 +325,13 @@ export default function CalendarPage() {
           </div>
 
           {/* Calendar Grid */}
-          <div className="p-6">
+          <div className={isMobile ? 'p-3' : 'p-6'}>
             <div className="grid grid-cols-7 gap-px mb-2">
               {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                <div key={day} className="h-10 flex items-center justify-center text-sm font-medium text-gray-500 dark:text-gray-400">
-                  {day}
+                <div key={day} className={`flex items-center justify-center font-medium text-gray-500 dark:text-gray-400 ${
+                  isMobile ? 'h-8 text-xs' : 'h-10 text-sm'
+                }`}>
+                  {isMobile ? day.slice(0, 1) : day}
                 </div>
               ))}
             </div>
@@ -284,8 +344,12 @@ export default function CalendarPage() {
         {/* Selected Date Details */}
         <div className="space-y-4">
           {selectedDate ? (
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            <div className={`bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700 ${
+              isMobile ? 'rounded-xl p-4 mobile-card' : 'rounded-2xl p-6'
+            }`}>
+              <h3 className={`font-semibold text-gray-900 dark:text-white mb-4 ${
+                isMobile ? 'text-base' : 'text-lg'
+              }`}>
                 {new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-US', { 
                   weekday: 'long', 
                   year: 'numeric', 
@@ -297,7 +361,9 @@ export default function CalendarPage() {
               {getEventsForDate(selectedDate).length > 0 ? (
                 <div className="space-y-3">
                   {getEventsForDate(selectedDate).map(event => (
-                    <div key={event.id} className="border border-gray-200 dark:border-gray-600 rounded-lg p-4">
+                    <div key={event.id} className={`border border-gray-200 dark:border-gray-600 rounded-lg ${
+                      isMobile ? 'p-3' : 'p-4'
+                    }`}>
                       <div className="flex items-start gap-3">
                         <div className={`w-3 h-3 rounded-full mt-1 ${
                           event.survey.status === 'active'
@@ -307,22 +373,28 @@ export default function CalendarPage() {
                             : 'bg-blue-500'
                         }`}></div>
                         <div className="flex-1 space-y-2">
-                          <h4 className="font-semibold text-gray-900 dark:text-white text-sm">
+                          <h4 className={`font-semibold text-gray-900 dark:text-white ${
+                            isMobile ? 'text-sm' : 'text-sm'
+                          }`}>
                             {event.survey.topic}
                           </h4>
                           
                           {/* Survey Timeline */}
-                          <div className="space-y-1 text-xs">
-                            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                              <span className="w-16 font-medium">Opens:</span>
+                          <div className={`space-y-1 ${isMobile ? 'text-xs' : 'text-xs'}`}>
+                            <div className={`flex gap-2 text-gray-600 dark:text-gray-400 ${
+                              isMobile ? 'flex-col' : 'items-center'
+                            }`}>
+                              <span className={`font-medium ${isMobile ? '' : 'w-16'}`}>Opens:</span>
                               <span>{new Date(event.survey.start_date).toLocaleDateString('en-US', { 
                                 month: 'short', day: 'numeric', year: 'numeric'
                               })} at {new Date(event.survey.start_date).toLocaleTimeString('en-US', {
                                 hour: 'numeric', minute: '2-digit', hour12: true
                               })}</span>
                             </div>
-                            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                              <span className="w-16 font-medium">Closes:</span>
+                            <div className={`flex gap-2 text-gray-600 dark:text-gray-400 ${
+                              isMobile ? 'flex-col' : 'items-center'
+                            }`}>
+                              <span className={`font-medium ${isMobile ? '' : 'w-16'}`}>Closes:</span>
                               <span>{new Date(event.survey.end_date).toLocaleDateString('en-US', { 
                                 month: 'short', day: 'numeric', year: 'numeric'
                               })} at {new Date(event.survey.end_date).toLocaleTimeString('en-US', {

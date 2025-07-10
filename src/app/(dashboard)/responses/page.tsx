@@ -48,6 +48,7 @@ export default function ResponsesPage() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [selectedResponse, setSelectedResponse] = useState<Response | null>(null);
   const [showAnalytics, setShowAnalytics] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   // Helper function to get the display email for a response
   const getDisplayEmail = (response: Response): string | null => {

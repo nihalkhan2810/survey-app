@@ -8,7 +8,8 @@
   "surveyTopic": "Employee Picnic Survey 2025",
   "surveyLink": "http://localhost:3000/survey/Op89yf3Mxq",
   "reminderTime": "2025-07-04T17:56:00.000Z",
-  "status": "scheduled",
+  "status": "sent",
   "createdAt": "2025-07-03T06:35:48.959Z",
-  "testMode": false
+  "testMode": false,
+  "sentAt": "2025-07-09T04:02:34.816Z"
 }

@@ -29,6 +29,7 @@ export default function AnalyticsPage() {
   const [loadingAI, setLoadingAI] = useState(false);
   const [metricDetailOpen, setMetricDetailOpen] = useState(false);
   const [selectedMetric, setSelectedMetric] = useState<any>(null);
+  const [isMobile, setIsMobile] = useState(false);
   
   // Load surveys
   useEffect(() => {
@@ -141,17 +142,27 @@ export default function AnalyticsPage() {
     setAiSentiment(null);
   }, [selectedSurvey]);
 
-  // Update industry config when component mounts or localStorage changes
+  // Update industry config and detect mobile
   useEffect(() => {
     const updateConfig = () => {
       setIndustryConfig(getCurrentIndustryConfig());
     };
     
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
     updateConfig();
+    checkMobile();
     
     // Listen for storage changes (when industry is changed in admin)
     window.addEventListener('storage', updateConfig);
-    return () => window.removeEventListener('storage', updateConfig);
+    window.addEventListener('resize', checkMobile);
+    
+    return () => {
+      window.removeEventListener('storage', updateConfig);
+      window.removeEventListener('resize', checkMobile);
+    };
   }, []);
 
   // Get basic stats for display
@@ -218,27 +229,39 @@ export default function AnalyticsPage() {
         animate={{ opacity: 1, y: 0 }}
         className="mb-8"
       >
-        <div className="flex flex-col gap-6">
-          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+        <div className="flex flex-col gap-4">
+          <div className={`flex flex-col gap-4 ${
+            isMobile ? '' : 'sm:flex-row sm:items-start sm:justify-between'
+          }`}>
             <div className="flex-1 min-w-0">
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">
+              <h1 className={`font-bold bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent ${
+                isMobile ? 'text-2xl' : 'text-3xl'
+              }`}>
                 Analytics Dashboard
               </h1>
-              <p className="mt-2 text-gray-600 dark:text-gray-400">
+              <p className={`mt-2 text-gray-600 dark:text-gray-400 ${
+                isMobile ? 'text-sm' : 'text-base'
+              }`}>
                 AI-powered insights and real-time performance metrics
               </p>
             </div>
-            <div className="flex-shrink-0 w-full sm:w-80">
+            <div className={`flex-shrink-0 w-full ${
+              isMobile ? '' : 'sm:w-80'
+            }`}>
               {/* Survey Selector */}
               <div className="w-full">
-                <label htmlFor="surveySelect" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="surveySelect" className={`block font-medium text-gray-700 dark:text-gray-300 mb-2 ${
+                  isMobile ? 'text-base' : 'text-sm'
+                }`}>
                   Select Survey
                 </label>
                 <select
                   id="surveySelect"
                   value={selectedSurvey}
                   onChange={(e) => setSelectedSurvey(e.target.value)}
-                  className="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all text-black dark:text-white shadow-sm"
+                  className={`w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all text-black dark:text-white shadow-sm ${
+                    isMobile ? 'px-4 py-4 text-base min-h-[48px]' : 'px-4 py-3'
+                  }`}
                 >
                   <option value="all">📊 All Surveys Combined</option>
                   {surveys.map(survey => (
@@ -279,35 +302,45 @@ export default function AnalyticsPage() {
       </motion.div>
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+      <div className={`grid gap-6 mb-8 ${
+        isMobile ? 'grid-cols-1 mobile-grid' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'
+      }`}>
         {stats.map((stat, index) => (
           <motion.div
             key={stat.title}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
-            whileHover={{ scale: 1.03, y: -4, rotateY: 5 }}
+            whileHover={isMobile ? {} : { scale: 1.03, y: -4, rotateY: 5 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => {
               setSelectedMetric(stat);
               setMetricDetailOpen(true);
             }}
-            className="relative overflow-hidden bg-white dark:bg-gray-800/50 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700/50 p-6 cursor-pointer group hover:shadow-xl hover:shadow-indigo-500/10 hover:border-indigo-300 dark:hover:border-indigo-600 transition-all duration-300"
+            className={`relative overflow-hidden bg-white dark:bg-gray-800/50 shadow-sm border border-gray-200 dark:border-gray-700/50 cursor-pointer group hover:shadow-xl hover:shadow-indigo-500/10 hover:border-indigo-300 dark:hover:border-indigo-600 transition-all duration-300 ${
+              isMobile ? 'rounded-xl p-5 mobile-card' : 'rounded-2xl p-6'
+            }`}
           >
-            {/* Hover Effect Indicator */}
-            <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-              <MousePointer className="h-4 w-4 text-gray-400" />
-            </div>
+            {/* Hover Effect Indicator - Hidden on mobile */}
+            {!isMobile && (
+              <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                <MousePointer className="h-4 w-4 text-gray-400" />
+              </div>
+            )}
             
             <div className="flex items-center justify-between">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-3">
-                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                  <p className={`font-medium text-gray-500 dark:text-gray-400 ${
+                    isMobile ? 'text-base' : 'text-sm'
+                  }`}>
                     {stat.title}
                   </p>
                   <Sparkles className="h-3 w-3 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
-                <p className="text-3xl font-bold text-gray-900 dark:text-white mb-3 group-hover:scale-105 transition-transform">
+                <p className={`font-bold text-gray-900 dark:text-white mb-3 group-hover:scale-105 transition-transform ${
+                  isMobile ? 'text-2xl' : 'text-3xl'
+                }`}>
                   {stat.value}
                 </p>
                 <div className="flex items-center">
@@ -354,17 +387,27 @@ export default function AnalyticsPage() {
         >
           {!aiSentiment && !loadingAI ? (
             // Button to trigger AI analysis
-            <div className="bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 rounded-2xl p-6 border border-purple-200 dark:border-purple-700">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
+            <div className={`bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 border border-purple-200 dark:border-purple-700 ${
+              isMobile ? 'rounded-xl p-4 mobile-card' : 'rounded-2xl p-6'
+            }`}>
+              <div className={`flex items-center ${
+                isMobile ? 'flex-col gap-4' : 'justify-between'
+              }`}>
+                <div className={`flex items-center gap-4 ${
+                  isMobile ? 'flex-col text-center' : ''
+                }`}>
                   <div className="p-3 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl shadow-lg">
                     <Brain className="h-6 w-6 text-white" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold text-purple-900 dark:text-purple-300">
+                    <h3 className={`font-semibold text-purple-900 dark:text-purple-300 ${
+                      isMobile ? 'text-lg' : 'text-xl'
+                    }`}>
                       AI Sentiment Analysis
                     </h3>
-                    <p className="text-purple-700 dark:text-purple-400">
+                    <p className={`text-purple-700 dark:text-purple-400 ${
+                      isMobile ? 'text-sm' : 'text-base'
+                    }`}>
                       Get AI-powered insights from {analysis.totalResponses} responses
                     </p>
                   </div>
@@ -373,7 +416,9 @@ export default function AnalyticsPage() {
                   onClick={loadAISentiment}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all"
+                  className={`flex items-center gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all ${
+                    isMobile ? 'px-4 py-3 text-sm w-full justify-center mobile-btn' : 'px-6 py-3'
+                  }`}
                 >
                   <Zap className="h-5 w-5" />
                   Analyze with AI
@@ -384,10 +429,16 @@ export default function AnalyticsPage() {
             // Results or loading state
             <div
               onClick={() => aiSentiment && setSentimentModalOpen(true)}
-              className={`bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 rounded-2xl p-6 border border-purple-200 dark:border-purple-700 ${aiSentiment ? 'cursor-pointer hover:shadow-lg' : ''} transition-all group`}
+              className={`bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 border border-purple-200 dark:border-purple-700 ${aiSentiment ? 'cursor-pointer hover:shadow-lg' : ''} transition-all group ${
+                isMobile ? 'rounded-xl p-4 mobile-card' : 'rounded-2xl p-6'
+              }`}
             >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
+              <div className={`flex items-center ${
+                isMobile ? 'flex-col gap-4' : 'justify-between'
+              }`}>
+                <div className={`flex items-center gap-4 ${
+                  isMobile ? 'flex-col text-center' : ''
+                }`}>
                   <div className="p-3 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl group-hover:shadow-xl transition-shadow">
                     {loadingAI ? (
                       <div className="h-6 w-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -396,10 +447,14 @@ export default function AnalyticsPage() {
                     )}
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold text-purple-900 dark:text-purple-300">
+                    <h3 className={`font-semibold text-purple-900 dark:text-purple-300 ${
+                      isMobile ? 'text-lg' : 'text-xl'
+                    }`}>
                       AI Sentiment Analysis
                     </h3>
-                    <p className="text-purple-700 dark:text-purple-400">
+                    <p className={`text-purple-700 dark:text-purple-400 ${
+                      isMobile ? 'text-sm' : 'text-base'
+                    }`}>
                       {loadingAI ? (
                         'Analyzing responses with AI...'
                       ) : aiSentiment ? (
@@ -411,26 +466,36 @@ export default function AnalyticsPage() {
                   </div>
                 </div>
                 {aiSentiment && (
-                  <div className="flex items-center gap-3">
-                    <div className="text-right">
-                      <div className="flex items-center gap-2 mb-1">
+                  <div className={`flex items-center gap-3 ${
+                    isMobile ? 'flex-col w-full' : ''
+                  }`}>
+                    <div className={`${
+                      isMobile ? 'grid grid-cols-2 gap-4 w-full' : 'text-right'
+                    }`}>
+                      <div className={`flex items-center gap-2 ${
+                        isMobile ? 'justify-center' : 'mb-1'
+                      }`}>
                         <TrendingUp className="h-4 w-4 text-green-600" />
                         <span className="text-sm font-medium text-green-700 dark:text-green-400">
                           {aiSentiment.sentiment.breakdown.positive}% Positive
                         </span>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className={`flex items-center gap-2 ${
+                        isMobile ? 'justify-center' : ''
+                      }`}>
                         <TrendingDown className="h-4 w-4 text-red-600" />
                         <span className="text-sm font-medium text-red-700 dark:text-red-400">
                           {aiSentiment.sentiment.breakdown.negative}% Negative
                         </span>
                       </div>
                     </div>
-                    <div className="text-purple-400 group-hover:text-purple-600 transition-colors">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </div>
+                    {!isMobile && (
+                      <div className="text-purple-400 group-hover:text-purple-600 transition-colors">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -472,33 +537,53 @@ export default function AnalyticsPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6 }}
-          className="bg-gradient-to-r from-gray-50 to-blue-50 dark:from-gray-800 dark:to-blue-900/20 rounded-2xl p-6 mb-8 border border-gray-200 dark:border-gray-700"
+          className={`bg-gradient-to-r from-gray-50 to-blue-50 dark:from-gray-800 dark:to-blue-900/20 border border-gray-200 dark:border-gray-700 mb-8 ${
+            isMobile ? 'rounded-xl p-4 mobile-card' : 'rounded-2xl p-6'
+          }`}
         >
-          <div className="flex items-center gap-3 mb-4">
+          <div className={`flex items-center gap-3 mb-4 ${
+            isMobile ? 'justify-center' : ''
+          }`}>
             <Activity className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            <h3 className={`font-semibold text-gray-900 dark:text-white ${
+              isMobile ? 'text-base' : 'text-lg'
+            }`}>
               Survey Summary
             </h3>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="text-center p-4 bg-white dark:bg-gray-800 rounded-xl">
-              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+          <div className={`grid gap-4 ${
+            isMobile ? 'grid-cols-1 mobile-grid' : 'grid-cols-1 md:grid-cols-3'
+          }`}>
+            <div className={`text-center bg-white dark:bg-gray-800 rounded-xl ${
+              isMobile ? 'p-4 mobile-card' : 'p-4'
+            }`}>
+              <div className={`font-bold text-blue-600 dark:text-blue-400 ${
+                isMobile ? 'text-xl' : 'text-2xl'
+              }`}>
                 {analysis.responses?.length || 0}
               </div>
               <div className="text-sm text-gray-600 dark:text-gray-400">
                 Total Responses
               </div>
             </div>
-            <div className="text-center p-4 bg-white dark:bg-gray-800 rounded-xl">
-              <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+            <div className={`text-center bg-white dark:bg-gray-800 rounded-xl ${
+              isMobile ? 'p-4 mobile-card' : 'p-4'
+            }`}>
+              <div className={`font-bold text-emerald-600 dark:text-emerald-400 ${
+                isMobile ? 'text-xl' : 'text-2xl'
+              }`}>
                 {analysis.insights?.topKeywords?.length || 0}
               </div>
               <div className="text-sm text-gray-600 dark:text-gray-400">
                 Key Topics
               </div>
             </div>
-            <div className="text-center p-4 bg-white dark:bg-gray-800 rounded-xl">
-              <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+            <div className={`text-center bg-white dark:bg-gray-800 rounded-xl ${
+              isMobile ? 'p-4 mobile-card' : 'p-4'
+            }`}>
+              <div className={`font-bold text-purple-600 dark:text-purple-400 ${
+                isMobile ? 'text-xl' : 'text-2xl'
+              }`}>
                 {Math.round(analysis.averageSatisfaction * 10)/10}/10
               </div>
               <div className="text-sm text-gray-600 dark:text-gray-400">

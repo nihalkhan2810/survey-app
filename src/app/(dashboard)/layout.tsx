@@ -16,6 +16,7 @@ export default function DashboardLayout({
   const router = useRouter()
   const [hasCheckedAuth, setHasCheckedAuth] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
     if (status === 'loading') return
@@ -28,6 +29,16 @@ export default function DashboardLayout({
       return
     }
   }, [session, status, router])
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Show loading spinner while checking authentication
   if (status === 'loading' || !hasCheckedAuth) {
@@ -50,12 +61,13 @@ export default function DashboardLayout({
     <div className="min-h-screen flex bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-gray-950 dark:via-slate-900 dark:to-gray-900">
       <Sidebar 
         isCollapsed={sidebarCollapsed} 
-        onToggle={() => setSidebarCollapsed(!sidebarCollapsed)} 
+        onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
+        isMobile={isMobile}
       />
       <motion.div 
-        className="flex-1 flex flex-col"
+        className="flex-1 flex flex-col w-full"
         animate={{ 
-          marginLeft: sidebarCollapsed ? 64 : 256,
+          marginLeft: isMobile ? 0 : (sidebarCollapsed ? 64 : 256),
           transition: { 
             type: "spring", 
             stiffness: 300, 
@@ -64,14 +76,20 @@ export default function DashboardLayout({
           }
         }}
       >
-        <Header />
+        <Header onMobileMenuToggle={() => setSidebarCollapsed(!sidebarCollapsed)} isMobile={isMobile} />
         <motion.main 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
-          className="flex-1 p-6 lg:p-8 overflow-auto"
+          className={`flex-1 overflow-auto ${
+            isMobile 
+              ? 'p-4 mobile-content' 
+              : 'p-4 sm:p-6 lg:p-8'
+          }`}
         >
-          <div className="max-w-7xl mx-auto space-y-6">
+          <div className={`mx-auto space-y-4 sm:space-y-6 ${
+            isMobile ? 'max-w-full' : 'max-w-7xl'
+          }`}>
             {children}
           </div>
         </motion.main>

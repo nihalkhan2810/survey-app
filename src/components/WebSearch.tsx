@@ -164,7 +164,7 @@ export default function WebSearch() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Search for any topic... (e.g., 'Vini Jr Contract')"
+            placeholder="Search for any topic..."
             className={`w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all text-black dark:text-white shadow-sm ${
               isMobile ? 'pl-12 pr-20 py-4 text-base' : 'pl-12 pr-20 py-3'
             }`}

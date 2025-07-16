@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence, useMotionValue, useSpring } from 'framer-motion';
-import { Home, ClipboardList, Calendar, LayoutGrid, ChartBar, MessageCircle, Menu, X, PanelLeftClose } from 'lucide-react';
+import { Home, ClipboardList, Calendar, LayoutGrid, ChartBar, MessageCircle, Menu, X, PanelLeftClose, Search } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { SayzLogo, SayzIcon } from '@/components/SayzLogo';
 
@@ -11,6 +11,7 @@ const navItems = [
     { name: 'Dashboard', href: '/dashboard', icon: Home, gradient: 'from-violet-500 to-purple-600' },
     { name: 'Surveys', href: '/surveys', icon: ClipboardList, gradient: 'from-blue-500 to-cyan-600' },
     { name: 'Responses', href: '/responses', icon: MessageCircle, gradient: 'from-emerald-500 to-teal-600' },
+    { name: 'Web Search', href: '/web-search', icon: Search, gradient: 'from-cyan-500 to-blue-600' },
     { name: 'Calendar', href: '/calendar', icon: Calendar, gradient: 'from-orange-500 to-pink-600' },
     { name: 'Analytics', href: '/analytics', icon: ChartBar, gradient: 'from-rose-500 to-pink-600' },
     { name: 'Admin', href: '/admin', icon: LayoutGrid, gradient: 'from-indigo-500 to-purple-600' },

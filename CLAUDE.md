@@ -45,6 +45,7 @@ The application supports two storage backends via `src/lib/database.ts`:
 - **Authentication**: `NEXTAUTH_SECRET`, `NEXTAUTH_URL`
 - **Email**: `EMAIL_HOST`, `EMAIL_USER`, `EMAIL_PASS`, `EMAIL_PORT`
 - **Integrations**: `TWILIO_*`, `SALESFORCE_*`, `GEMINI_API_KEY`
+- **Web Search**: `GOOGLE_API_KEY`, `CUSTOM_SEARCH_ENGINE_ID`
 
 ### Route Structure
 - `/` - Landing page with session-based redirects

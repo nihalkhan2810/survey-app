@@ -13,6 +13,8 @@ export interface ApiConfig {
   salesforceConsumerSecret?: string
   salesforceSecurityToken?: string
   salesforceLoginUrl?: string
+  googleApiKey?: string
+  customSearchEngineId?: string
 }
 
 // Map of environment variable names to config keys
@@ -29,6 +31,8 @@ const ENV_VAR_MAP = {
   SALESFORCE_CONSUMER_SECRET: 'salesforceConsumerSecret',
   SALESFORCE_SECURITY_TOKEN: 'salesforceSecurityToken',
   SALESFORCE_LOGIN_URL: 'salesforceLoginUrl',
+  GOOGLE_API_KEY: 'googleApiKey',
+  CUSTOM_SEARCH_ENGINE_ID: 'customSearchEngineId',
 } as const
 
 // Get API configuration with fallback to environment variables
@@ -86,6 +90,7 @@ export async function checkServiceAvailability() {
     vapi: !!config.vapiApiKey,
     twilio: !!(config.twilioAccountSid && config.twilioAuthToken && config.twilioPhoneNumber),
     salesforce: !!(config.salesforceConsumerKey && config.salesforceConsumerSecret && config.salesforceSecurityToken),
+    googleSearch: !!(config.googleApiKey && config.customSearchEngineId),
   }
 }
 

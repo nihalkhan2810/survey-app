@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { RealDataChart } from '@/components/analytics/RealDataChart';
 import { SentimentModal } from '@/components/analytics/SentimentModal';
 import { EnhancedMetricModal } from '@/components/analytics/EnhancedMetricModal';
+import WebSearch from '@/components/WebSearch';
 import { TrendingUp, TrendingDown, Activity, Users, MessageSquare, Brain, Target, Star, BarChart3, Sparkles, Zap, MousePointer } from 'lucide-react';
 import { getUniversitySentimentAnalysis, ProfessorStats, departmentStats } from '@/lib/university-demo-data';
 import { getCurrentIndustryConfig, getIndustryMetrics } from '@/lib/industry-config';
@@ -593,6 +594,16 @@ export default function AnalyticsPage() {
           </div>
         </motion.div>
       )}
+
+      {/* Web Search & AI Summary */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.7 }}
+        className="mb-8"
+      >
+        <WebSearch />
+      </motion.div>
 
       {/* Modals */}
       <SentimentModal

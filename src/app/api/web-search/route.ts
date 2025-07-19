@@ -32,7 +32,7 @@ function getCacheKey(query: string): string {
 }
 
 export async function POST(req: NextRequest) {
-  const { query } = await req.json();
+  const { query, mode = 'normal' } = await req.json();
 
   if (!query) {
     return NextResponse.json({ message: 'Search query is required' }, { status: 400 });
@@ -67,7 +67,18 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const searchUrl = `https://www.googleapis.com/customsearch/v1?key=${googleApiKey}&cx=${customSearchEngineId}&q=${encodeURIComponent(query)}&num=10`;
+  // Enhanced search query based on mode
+  let searchQuery;
+  if (mode === 'hashtag') {
+    // Extract hashtags and search for social media discussions
+    const hashtags = query.match(/#\w+/g) || [];
+    searchQuery = `${hashtags.join(' ')} twitter reddit comments discussions`;
+  } else {
+    // Normal mode: focus on comments, opinions, and social discussions
+    searchQuery = `${query} reddit twitter comments discussions opinions thoughts`;
+  }
+  
+  const searchUrl = `https://www.googleapis.com/customsearch/v1?key=${googleApiKey}&cx=${customSearchEngineId}&q=${encodeURIComponent(searchQuery)}&num=10`;
 
   try {
     const response = await fetch(searchUrl);
@@ -85,14 +96,26 @@ export async function POST(req: NextRequest) {
 
     const data = await response.json();
     
-    // Extract relevant information from search results
+    // Extract and filter for social media comments and discussions
     const searchResults = data.items?.map((item: any) => ({
       title: item.title,
       snippet: item.snippet,
       link: item.link,
       displayLink: item.displayLink,
       formattedUrl: item.formattedUrl,
-    })) || [];
+      isReddit: item.link.includes('reddit.com'),
+      isTwitter: item.link.includes('twitter.com') || item.link.includes('x.com'),
+      isYouTube: item.link.includes('youtube.com'),
+    })).filter((item: any) => {
+      // Prioritize social media discussions and user comments
+      const socialKeywords = ['comments', 'discussion', 'opinion', 'thoughts', 'users say', 'fans', 'thread', 'post'];
+      const hasSocialContent = socialKeywords.some(keyword => 
+        item.title.toLowerCase().includes(keyword) || 
+        item.snippet.toLowerCase().includes(keyword)
+      );
+      // Always include Reddit, Twitter, and social content
+      return item.isReddit || item.isTwitter || item.isYouTube || hasSocialContent;
+    }) || [];
 
     const responseData = { 
       query,

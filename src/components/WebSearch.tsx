@@ -15,49 +15,49 @@ interface SearchResult {
 interface SentimentData {
   overallSentiment: 'positive' | 'negative' | 'neutral' | 'mixed';
   sentimentScore: number;
-  generalOpinion: string;
-  sentimentBreakdown: {
-    positive: number;
-    negative: number;
-    neutral: number;
-  };
-  claimsVsReality: {
-    claim: string;
-    reality: string;
-    verdict: 'accurate' | 'exaggerated' | 'false';
-    evidence: string[];
-    sources: string[];
-  }[];
-  keyFindings: {
-    finding: string;
-    evidence: string;
+  whatsHappening: string;
+  recentDevelopments: {
+    development: string;
+    timestamp: string;
+    sentiment: 'positive' | 'negative' | 'neutral';
     source: string;
-    impact: 'high' | 'medium' | 'low';
+    evidence: string;
   }[];
-  prosAndCons: {
-    pros: {
-      point: string;
-      frequency: string;
+  trendingReactions: {
+    positive: {
+      reaction: string;
+      popularity: 'high' | 'medium' | 'low';
       evidence: string;
-      source: string;
+      platform: string;
     }[];
-    cons: {
-      point: string;
-      frequency: string;
+    negative: {
+      reaction: string;
+      popularity: 'high' | 'medium' | 'low';
       evidence: string;
-      source: string;
+      platform: string;
     }[];
   };
-  trendAnalysis: string;
-  credibilityAssessment: string;
-  recommendationScore: number;
+  breakingPoints: {
+    point: string;
+    intensity: 'high' | 'medium' | 'low';
+    evidence: string;
+    platforms: string[];
+  }[];
+  momentumAnalysis: string;
+  timeframe: string;
+  viralContent: {
+    content: string;
+    platform: string;
+    engagement: 'high' | 'medium' | 'low';
+    quote: string;
+  }[];
   bottomLine: string;
   sources: {
     title: string;
     url: string;
     platform: string;
+    recency: string;
     sentiment: 'positive' | 'negative' | 'neutral';
-    credibility: 'high' | 'medium' | 'low';
     keyQuote: string;
   }[];
   analyzedAt: string;
@@ -220,7 +220,7 @@ export default function WebSearch() {
         className="text-center mb-8"
       >
         <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
-          Social Sentiment
+          What's Happening
         </h2>
       </motion.div>
 
@@ -295,10 +295,10 @@ export default function WebSearch() {
               <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
               <div className="flex-1">
                 <div className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">
-                  Analyzing social sentiment...
+                  Checking what's happening...
                 </div>
                 <div className="text-xs text-gray-500 dark:text-gray-400">
-                  Searching Reddit, Twitter, and social discussions
+                  Finding recent trends, breaking news, and viral content
                 </div>
               </div>
             </div>
@@ -359,103 +359,123 @@ export default function WebSearch() {
           animate={{ opacity: 1, y: 0 }}
           className="grid grid-cols-1 md:grid-cols-3 gap-4"
         >
-          {/* Main Sentiment Card */}
+          {/* What's Happening Card */}
           <div className="md:col-span-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6">
             <div className="flex items-center gap-3 mb-4">
               {getSentimentIcon(sentimentData.overallSentiment)}
               <div>
-                <h3 className="font-semibold text-gray-900 dark:text-gray-100">Social Sentiment</h3>
+                <h3 className="font-semibold text-gray-900 dark:text-gray-100">What's Happening</h3>
                 <span className={`text-sm font-medium ${getSentimentColor(sentimentData.overallSentiment)}`}>
-                  {sentimentData.overallSentiment.toUpperCase()} • {sentimentData.sentimentScore.toFixed(2)}
+                  {sentimentData.overallSentiment.toUpperCase()} • {sentimentData.timeframe}
                 </span>
               </div>
             </div>
-            <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">{sentimentData.generalOpinion}</p>
+            <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">{sentimentData.whatsHappening}</p>
             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-xl p-3">
               <p className="text-blue-800 dark:text-blue-200 font-medium">{sentimentData.bottomLine}</p>
             </div>
           </div>
 
-          {/* Recommendation Score Card */}
+          {/* Momentum Card */}
           <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6">
             <div className="text-center">
-              <div className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1">
-                {sentimentData.recommendationScore}/10
-              </div>
-              <div className="text-sm text-gray-500 dark:text-gray-400 mb-3">User Score</div>
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                <div 
-                  className="bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 h-2 rounded-full transition-all duration-500" 
-                  style={{ width: `${(sentimentData.recommendationScore / 10) * 100}%` }}
-                ></div>
-              </div>
+              <TrendingUp className="w-8 h-8 text-blue-600 mx-auto mb-2" />
+              <div className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">Momentum</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400 mb-3">{sentimentData.timeframe}</div>
+              <p className="text-sm text-gray-700 dark:text-gray-300">{sentimentData.momentumAnalysis}</p>
             </div>
           </div>
 
-          {/* Sentiment Breakdown */}
-          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6">
-            <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-4">Distribution</h4>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <ThumbsUp className="w-4 h-4 text-green-500" />
-                  <span className="text-sm text-gray-700 dark:text-gray-300">Positive</span>
-                </div>
-                <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                  {sentimentData.sentimentBreakdown.positive}%
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <ThumbsDown className="w-4 h-4 text-red-500" />
-                  <span className="text-sm text-gray-700 dark:text-gray-300">Negative</span>
-                </div>
-                <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                  {sentimentData.sentimentBreakdown.negative}%
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Minus className="w-4 h-4 text-gray-500" />
-                  <span className="text-sm text-gray-700 dark:text-gray-300">Neutral</span>
-                </div>
-                <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                  {sentimentData.sentimentBreakdown.neutral}%
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* What Users Love */}
-          {sentimentData.prosAndCons.pros.length > 0 && (
-            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-2xl p-6">
+          {/* Recent Developments */}
+          {sentimentData.recentDevelopments.length > 0 && (
+            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6">
               <div className="flex items-center gap-2 mb-3">
-                <ThumbsUp className="w-4 h-4 text-green-600" />
-                <h4 className="font-medium text-green-900 dark:text-green-300">Users Love</h4>
+                <Clock className="w-4 h-4 text-blue-600" />
+                <h4 className="font-medium text-gray-900 dark:text-gray-100">Recent Developments</h4>
               </div>
-              <div className="space-y-2">
-                {sentimentData.prosAndCons.pros.slice(0, 3).map((pro, index) => (
-                  <div key={index} className="text-sm">
-                    <div className="font-medium text-green-800 dark:text-green-200">{pro.point}</div>
-                    <div className="text-green-600 dark:text-green-400 text-xs">"{pro.evidence}"</div>
+              <div className="space-y-3">
+                {sentimentData.recentDevelopments.slice(0, 3).map((dev, index) => (
+                  <div key={index} className="border-l-2 border-blue-200 dark:border-blue-700 pl-3">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{dev.development}</span>
+                      <span className={`text-xs px-2 py-1 rounded ${getSentimentColor(dev.sentiment)} bg-opacity-20`}>
+                        {dev.sentiment}
+                      </span>
+                    </div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">{dev.timestamp} • {dev.source}</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400 italic">"{dev.evidence}"</div>
                   </div>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Common Complaints */}
-          {sentimentData.prosAndCons.cons.length > 0 && (
-            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-2xl p-6">
+          {/* Trending Positive */}
+          {sentimentData.trendingReactions.positive.length > 0 && (
+            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-2xl p-6">
               <div className="flex items-center gap-2 mb-3">
-                <ThumbsDown className="w-4 h-4 text-red-600" />
-                <h4 className="font-medium text-red-900 dark:text-red-300">Complaints</h4>
+                <TrendingUp className="w-4 h-4 text-green-600" />
+                <h4 className="font-medium text-green-900 dark:text-green-300">Trending Positive</h4>
               </div>
               <div className="space-y-2">
-                {sentimentData.prosAndCons.cons.slice(0, 3).map((con, index) => (
+                {sentimentData.trendingReactions.positive.slice(0, 2).map((reaction, index) => (
                   <div key={index} className="text-sm">
-                    <div className="font-medium text-red-800 dark:text-red-200">{con.point}</div>
-                    <div className="text-red-600 dark:text-red-400 text-xs">"{con.evidence}"</div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-medium text-green-800 dark:text-green-200">{reaction.reaction}</span>
+                      <span className="text-xs bg-green-200 dark:bg-green-800 text-green-700 dark:text-green-300 px-2 py-1 rounded">
+                        {reaction.popularity}
+                      </span>
+                    </div>
+                    <div className="text-green-600 dark:text-green-400 text-xs">"{reaction.evidence}"</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">{reaction.platform}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Trending Negative */}
+          {sentimentData.trendingReactions.negative.length > 0 && (
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-2xl p-6">
+              <div className="flex items-center gap-2 mb-3">
+                <TrendingDown className="w-4 h-4 text-red-600" />
+                <h4 className="font-medium text-red-900 dark:text-red-300">Trending Negative</h4>
+              </div>
+              <div className="space-y-2">
+                {sentimentData.trendingReactions.negative.slice(0, 2).map((reaction, index) => (
+                  <div key={index} className="text-sm">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-medium text-red-800 dark:text-red-200">{reaction.reaction}</span>
+                      <span className="text-xs bg-red-200 dark:bg-red-800 text-red-700 dark:text-red-300 px-2 py-1 rounded">
+                        {reaction.popularity}
+                      </span>
+                    </div>
+                    <div className="text-red-600 dark:text-red-400 text-xs">"{reaction.evidence}"</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">{reaction.platform}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Viral Content */}
+          {sentimentData.viralContent.length > 0 && (
+            <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-700 rounded-2xl p-6">
+              <div className="flex items-center gap-2 mb-3">
+                <Sparkles className="w-4 h-4 text-purple-600" />
+                <h4 className="font-medium text-purple-900 dark:text-purple-300">Viral Content</h4>
+              </div>
+              <div className="space-y-2">
+                {sentimentData.viralContent.slice(0, 2).map((viral, index) => (
+                  <div key={index} className="text-sm">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-medium text-purple-800 dark:text-purple-200">{viral.content}</span>
+                      <span className="text-xs bg-purple-200 dark:bg-purple-800 text-purple-700 dark:text-purple-300 px-2 py-1 rounded">
+                        {viral.engagement}
+                      </span>
+                    </div>
+                    <div className="text-purple-600 dark:text-purple-400 text-xs">"{viral.quote}"</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">{viral.platform}</div>
                   </div>
                 ))}
               </div>
@@ -481,44 +501,47 @@ export default function WebSearch() {
               animate={{ opacity: 1, height: 'auto' }}
               className="md:col-span-3 space-y-4"
             >
-              {/* Claims vs Reality */}
-              {sentimentData.claimsVsReality.length > 0 && (
+              {/* Breaking Points */}
+              {sentimentData.breakingPoints && sentimentData.breakingPoints.length > 0 && (
                 <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6">
                   <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2">
                     <Target className="w-4 h-4 text-orange-500" />
-                    Claims vs Reality
+                    Breaking Discussion Points
                   </h4>
                   <div className="space-y-3">
-                    {sentimentData.claimsVsReality.map((item, index) => (
+                    {sentimentData.breakingPoints.map((item, index) => (
                       <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
                         <div className="flex items-start gap-2 mb-2">
-                          {getVerdictIcon(item.verdict)}
-                          <span className={`text-sm font-medium ${getVerdictColor(item.verdict)}`}>
-                            {item.verdict.toUpperCase()}
+                          <AlertCircle className={`w-4 h-4 ${
+                            item.intensity === 'high' ? 'text-red-500' : 
+                            item.intensity === 'medium' ? 'text-yellow-500' : 'text-gray-500'
+                          }`} />
+                          <span className={`text-sm font-medium ${
+                            item.intensity === 'high' ? 'text-red-600' : 
+                            item.intensity === 'medium' ? 'text-yellow-600' : 'text-gray-600'
+                          }`}>
+                            {item.intensity.toUpperCase()} INTENSITY
                           </span>
                         </div>
                         <div className="space-y-2">
                           <div>
-                            <span className="font-medium text-gray-900 dark:text-gray-100">Claim:</span>
-                            <p className="text-gray-700 dark:text-gray-300">{item.claim}</p>
+                            <span className="font-medium text-gray-900 dark:text-gray-100">Discussion Point:</span>
+                            <p className="text-gray-700 dark:text-gray-300">{item.point}</p>
                           </div>
                           <div>
-                            <span className="font-medium text-gray-900 dark:text-gray-100">Reality:</span>
-                            <p className="text-gray-700 dark:text-gray-300">{item.reality}</p>
-                          </div>
-                          {item.evidence.length > 0 && (
-                            <div>
-                              <span className="font-medium text-gray-900 dark:text-gray-100 text-sm">Evidence:</span>
-                              <div className="mt-1 space-y-1">
-                                {item.evidence.map((evidence, evidenceIndex) => (
-                                  <div key={evidenceIndex} className="flex items-start gap-2 bg-gray-50 dark:bg-gray-700 rounded p-2">
-                                    <Quote className="w-3 h-3 text-gray-400 mt-1 flex-shrink-0" />
-                                    <span className="text-sm text-gray-600 dark:text-gray-400 italic">{evidence}</span>
-                                  </div>
-                                ))}
-                              </div>
+                            <span className="font-medium text-gray-900 dark:text-gray-100 text-sm">Evidence:</span>
+                            <div className="flex items-start gap-2 bg-gray-50 dark:bg-gray-700 rounded p-2 mt-1">
+                              <Quote className="w-3 h-3 text-gray-400 mt-1 flex-shrink-0" />
+                              <span className="text-sm text-gray-600 dark:text-gray-400 italic">{item.evidence}</span>
                             </div>
-                          )}
+                          </div>
+                          <div className="flex gap-2">
+                            {item.platforms.map((platform, platformIndex) => (
+                              <span key={platformIndex} className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-1 rounded">
+                                {platform}
+                              </span>
+                            ))}
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -526,14 +549,41 @@ export default function WebSearch() {
                 </div>
               )}
 
-              {/* Trend Analysis */}
-              {sentimentData.trendAnalysis && (
+              {/* All Viral Content */}
+              {sentimentData.viralContent && sentimentData.viralContent.length > 2 && (
                 <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-700 rounded-2xl p-6">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Sparkles className="w-4 h-4 text-purple-600" />
+                    <h4 className="font-medium text-purple-900 dark:text-purple-300">All Viral Content</h4>
+                  </div>
+                  <div className="space-y-3">
+                    {sentimentData.viralContent.map((viral, index) => (
+                      <div key={index} className="border border-purple-200 dark:border-purple-700 rounded-lg p-3">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="font-medium text-purple-800 dark:text-purple-200">{viral.content}</span>
+                          <span className="text-xs bg-purple-200 dark:bg-purple-800 text-purple-700 dark:text-purple-300 px-2 py-1 rounded">
+                            {viral.engagement}
+                          </span>
+                        </div>
+                        <div className="flex items-start gap-2 bg-purple-100 dark:bg-purple-800 rounded p-2">
+                          <Quote className="w-3 h-3 text-purple-400 mt-1 flex-shrink-0" />
+                          <span className="text-sm text-purple-700 dark:text-purple-300 italic">"{viral.quote}"</span>
+                        </div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{viral.platform}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Momentum Analysis */}
+              {sentimentData.momentumAnalysis && (
+                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-2xl p-6">
                   <div className="flex items-start gap-2">
-                    <TrendingUp className="w-4 h-4 text-purple-600 dark:text-purple-400 mt-0.5 flex-shrink-0" />
+                    <TrendingUp className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
                     <div>
-                      <span className="text-purple-800 dark:text-purple-200 font-medium">Trend Analysis:</span>
-                      <p className="text-purple-700 dark:text-purple-300 mt-1">{sentimentData.trendAnalysis}</p>
+                      <span className="text-blue-800 dark:text-blue-200 font-medium">Momentum Analysis:</span>
+                      <p className="text-blue-700 dark:text-blue-300 mt-1">{sentimentData.momentumAnalysis}</p>
                     </div>
                   </div>
                 </div>
@@ -570,6 +620,9 @@ export default function WebSearch() {
                   <div className="flex items-center gap-2 mt-1">
                     <span className="text-xs bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 px-2 py-1 rounded">
                       {source.platform}
+                    </span>
+                    <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-1 rounded">
+                      {source.recency}
                     </span>
                     <span className={`text-xs font-medium ${getSentimentColor(source.sentiment)}`}>
                       {source.sentiment}

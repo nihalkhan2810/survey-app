@@ -67,18 +67,27 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Enhanced search query based on mode
+  // Enhanced search query for recent trending content with current date targeting
+  const currentDate = new Date();
+  const currentYear = currentDate.getFullYear();
+  const currentMonth = currentDate.toLocaleString('default', { month: 'long' });
+  const currentDay = currentDate.getDate();
+  const yesterday = new Date(currentDate);
+  yesterday.setDate(currentDate.getDate() - 1);
+  const yesterdayDate = yesterday.getDate();
+  
   let searchQuery;
   if (mode === 'hashtag') {
-    // Extract hashtags and search for social media discussions
+    // Extract hashtags and search for recent trending discussions
     const hashtags = query.match(/#\w+/g) || [];
-    searchQuery = `${hashtags.join(' ')} twitter reddit comments discussions`;
+    searchQuery = `${hashtags.join(' ')} (site:twitter.com OR site:reddit.com) ("${currentMonth} ${currentDay}" OR "today" OR "yesterday" OR "hours ago" OR "breaking" OR "trending now" OR "${currentYear}")`;
   } else {
-    // Normal mode: focus on comments, opinions, and social discussions
-    searchQuery = `${query} reddit twitter comments discussions opinions thoughts`;
+    // Normal mode: focus on recent news, trending discussions, what's happening now
+    searchQuery = `"${query}" (site:twitter.com OR site:reddit.com OR site:news.ycombinator.com) ("${currentMonth} ${currentDay}" OR "latest news" OR "breaking" OR "trending" OR "today" OR "hours ago" OR "${currentYear}")`;
   }
   
-  const searchUrl = `https://www.googleapis.com/customsearch/v1?key=${googleApiKey}&cx=${customSearchEngineId}&q=${encodeURIComponent(searchQuery)}&num=10`;
+  // Add date range parameter to prioritize recent content
+  const searchUrl = `https://www.googleapis.com/customsearch/v1?key=${googleApiKey}&cx=${customSearchEngineId}&q=${encodeURIComponent(searchQuery)}&num=10&sort=date`;
 
   try {
     const response = await fetch(searchUrl);
@@ -96,7 +105,7 @@ export async function POST(req: NextRequest) {
 
     const data = await response.json();
     
-    // Extract and filter for social media comments and discussions
+    // Extract and filter for recent trending discussions
     const searchResults = data.items?.map((item: any) => ({
       title: item.title,
       snippet: item.snippet,
@@ -105,16 +114,38 @@ export async function POST(req: NextRequest) {
       formattedUrl: item.formattedUrl,
       isReddit: item.link.includes('reddit.com'),
       isTwitter: item.link.includes('twitter.com') || item.link.includes('x.com'),
-      isYouTube: item.link.includes('youtube.com'),
+      isNews: item.link.includes('news') || item.link.includes('reuters') || item.link.includes('bbc') || item.link.includes('cnn') || item.link.includes('bloomberg') || item.link.includes('ap.org') || item.link.includes('theguardian'),
+      isYoutube: item.link.includes('youtube.com'),
     })).filter((item: any) => {
-      // Prioritize social media discussions and user comments
-      const socialKeywords = ['comments', 'discussion', 'opinion', 'thoughts', 'users say', 'fans', 'thread', 'post'];
-      const hasSocialContent = socialKeywords.some(keyword => 
+      // Prioritize very recent content with time indicators
+      const recentKeywords = [
+        'breaking', 'trending', 'latest', 'hours ago', 'minutes ago', 'today', 
+        currentMonth.toLowerCase(), currentDay.toString(), currentYear.toString(),
+        'happening now', 'live', 'just in', 'update', 'developing'
+      ];
+      const hasRecentContent = recentKeywords.some(keyword => 
         item.title.toLowerCase().includes(keyword) || 
         item.snippet.toLowerCase().includes(keyword)
       );
-      // Always include Reddit, Twitter, and social content
-      return item.isReddit || item.isTwitter || item.isYouTube || hasSocialContent;
+      
+      // Score based on recency and platform
+      const recentScore = hasRecentContent ? 2 : 0;
+      const platformScore = (item.isReddit || item.isTwitter) ? 2 : (item.isNews ? 1 : 0);
+      
+      // Only include if it has good recency or platform score
+      return (recentScore + platformScore) >= 1;
+    }).sort((a: any, b: any) => {
+      // Sort by recency indicators
+      const aRecent = ['breaking', 'trending', 'hours ago', 'today'].some(keyword => 
+        a.title.toLowerCase().includes(keyword) || a.snippet.toLowerCase().includes(keyword)
+      );
+      const bRecent = ['breaking', 'trending', 'hours ago', 'today'].some(keyword => 
+        b.title.toLowerCase().includes(keyword) || b.snippet.toLowerCase().includes(keyword)
+      );
+      
+      if (aRecent && !bRecent) return -1;
+      if (!aRecent && bRecent) return 1;
+      return 0;
     }) || [];
 
     const responseData = { 

@@ -78,85 +78,89 @@ export async function POST(req: NextRequest) {
     `[${index + 1}] ${result.title}\n${result.snippet}\nSource: ${result.displayLink} ${result.isReddit ? '(Reddit)' : ''} ${result.isTwitter ? '(Twitter/X)' : ''}\n`
   ).join('\n');
 
-  const prompt = `You are an expert social media sentiment analyst specializing in analyzing real user comments, discussions, and opinions from platforms like Reddit, Twitter, and social media. Your task is to analyze what people are actually saying and provide insights based on genuine user sentiment.
+  const prompt = `You are a real-time social media trend analyst specializing in analyzing what's happening RIGHT NOW across platforms like Twitter, Reddit, and news sources. Your task is to provide a snapshot of current discussions, trending topics, and what people are actively talking about TODAY.
 
 Search Query: "${query}"
 
-Social Media Comments and Discussions:
+Recent Discussions and Trending Content:
 ${reviewContext}
 
-Please provide a response in the following JSON format:
+Please provide a response in the following JSON format focused on CURRENT activity:
 {
   "overallSentiment": "positive/negative/neutral/mixed",
   "sentimentScore": 0.75,
-  "generalOpinion": "2-3 sentence summary of what users generally think about this product/topic",
-  "sentimentBreakdown": {
-    "positive": 60,
-    "negative": 20,
-    "neutral": 20
-  },
-  "claimsVsReality": [
+  "whatsHappening": "2-3 sentence summary of what's trending or happening RIGHT NOW about this topic",
+  "recentDevelopments": [
     {
-      "claim": "Marketing claim or expectation",
-      "reality": "What users actually experience",
-      "verdict": "accurate/exaggerated/false",
-      "evidence": ["Quote from user review", "Another supporting quote"],
-      "sources": ["Source title 1", "Source title 2"]
+      "development": "Recent news, update, or trending discussion",
+      "timestamp": "when this is happening (today, hours ago, etc)",
+      "sentiment": "positive/negative/neutral",
+      "source": "where this is trending",
+      "evidence": "Key quotes or reactions"
     }
   ],
-  "keyFindings": [
-    {
-      "finding": "Major insight about the product/topic",
-      "evidence": "Supporting quote or data",
-      "source": "Source title",
-      "impact": "high/medium/low"
-    }
-  ],
-  "prosAndCons": {
-    "pros": [
+  "trendingReactions": {
+    "positive": [
       {
-        "point": "What users love",
-        "frequency": "how often mentioned",
-        "evidence": "Supporting quote",
-        "source": "Source"
+        "reaction": "What people are excited/positive about",
+        "popularity": "high/medium/low",
+        "evidence": "Recent quote or example",
+        "platform": "twitter/reddit/news"
       }
     ],
-    "cons": [
+    "negative": [
       {
-        "point": "What users complain about",
-        "frequency": "how often mentioned", 
-        "evidence": "Supporting quote",
-        "source": "Source"
+        "reaction": "What people are upset/concerned about", 
+        "popularity": "high/medium/low",
+        "evidence": "Recent quote or example",
+        "platform": "twitter/reddit/news"
       }
     ]
   },
-  "trendAnalysis": "Analysis of whether sentiment is improving or declining over time",
-  "credibilityAssessment": "Assessment of source credibility and potential bias",
-  "recommendationScore": 7.5,
-  "bottomLine": "Clear, actionable conclusion based on user sentiment",
+  "breakingPoints": [
+    {
+      "point": "Key discussion point or controversy",
+      "intensity": "high/medium/low",
+      "evidence": "Supporting quotes from recent posts",
+      "platforms": ["twitter", "reddit"]
+    }
+  ],
+  "momentumAnalysis": "Is this topic gaining or losing momentum? Is it trending up or down?",
+  "timeframe": "When this activity is happening (last 24 hours, today, this week)",
+  "viralContent": [
+    {
+      "content": "What specific posts, threads, or news are going viral",
+      "platform": "twitter/reddit/news",
+      "engagement": "high/medium/low",
+      "quote": "Key viral quote or headline"
+    }
+  ],
+  "bottomLine": "What's the current state and direction of this topic",
   "sources": [
     {
-      "title": "Source title",
+      "title": "Source title", 
       "url": "source url",
-      "platform": "reddit/twitter/review_site/other",
+      "platform": "twitter/reddit/news",
+      "recency": "how recent (today, hours ago, etc)",
       "sentiment": "positive/negative/neutral",
-      "credibility": "high/medium/low",
-      "keyQuote": "Most relevant quote from this source"
+      "keyQuote": "Most relevant recent quote"
     }
   ]
 }
 
 Guidelines:
-- Focus on extracting genuine user opinions and experiences
-- Distinguish between promotional content and authentic reviews
-- Look for patterns in what users love, hate, or are neutral about
-- Consider the source platform (Reddit tends to be more critical, Twitter more brief)
-- Sentiment score should be between -1 (very negative) and 1 (very positive)
-- Recommendation score should be 1-10 based on overall user sentiment
-- Identify specific themes users discuss (price, quality, customer service, etc.)
-- Include representative quotes that capture the sentiment
-- Assess if reviews seem genuine or potentially fake/biased
-- Note any trending opinions or changes in sentiment over time
+- Focus on RECENT activity and current trends (what's happening now, not historical overview)
+- Identify breaking news, viral posts, trending discussions happening TODAY
+- Distinguish between ongoing conversations vs new developments
+- Look for momentum - is this topic gaining steam or dying down?
+- Prioritize recent quotes and reactions over older content
+- Consider platform dynamics (Twitter for breaking news, Reddit for discussions)
+- Sentiment score should reflect CURRENT mood, not historical sentiment
+- Focus on what's viral, trending, or generating buzz right now
+- Include timestamps and recency indicators when possible
+- Capture the pulse of social media conversations happening in real-time
+- Identify controversy, breaking points, or viral moments
+- Note if this is a developing story or ongoing trend
 
 Do not include any extra text, markdown, or explanation outside of the single JSON object.`;
 

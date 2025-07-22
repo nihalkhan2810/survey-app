@@ -460,24 +460,24 @@ export default function WebSearch() {
         className="relative"
       >
         <div className="relative">
-          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+          <Search className="hidden sm:block absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder={searchMode === 'hashtag' ? '#hashtag1, #hashtag2, #hashtag3...' : 'Search anything...'}
-            className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-black dark:text-white shadow-sm pl-12 pr-24 sm:pr-20 py-4"
+            placeholder={searchMode === 'hashtag' ? (isMobile ? '#hashtag...' : '#hashtag1, #hashtag2, #hashtag3...') : (isMobile ? 'Search...' : 'Search anything...')}
+            className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-black dark:text-white shadow-sm pl-4 sm:pl-12 pr-16 sm:pr-20 py-3 sm:py-4 text-sm sm:text-base"
           />
           <button
             onClick={() => handleSearch()}
             disabled={loading || !query.trim()}
-            className="absolute right-3 top-1/2 transform -translate-y-1/2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-4 py-2 font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg sm:rounded-xl px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
+              <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 animate-spin" />
             ) : (
-              'Search'
+              isMobile ? 'Go' : 'Search'
             )}
           </button>
         </div>

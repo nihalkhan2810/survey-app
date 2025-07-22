@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Sparkles, ExternalLink, Clock, Shield, AlertCircle, CheckCircle, TrendingUp, TrendingDown, Minus, ThumbsUp, ThumbsDown, MessageSquare, ChevronDown, ChevronUp, Quote, Target, Eye, Hash, X, Loader2 } from 'lucide-react';
+import { Search, Sparkles, ExternalLink, Clock, Shield, AlertCircle, CheckCircle, TrendingUp, TrendingDown, Minus, ThumbsUp, ThumbsDown, MessageSquare, ChevronDown, ChevronUp, Quote, Target, Eye, Hash, X, Loader2, Globe, Users, Play } from 'lucide-react';
 
 interface SearchResult {
   title: string;
@@ -63,6 +63,8 @@ interface SentimentData {
   analyzedAt: string;
 }
 
+type Platform = 'all' | 'twitter' | 'reddit' | 'youtube' | 'news';
+
 export default function WebSearch() {
   const [query, setQuery] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
@@ -73,6 +75,8 @@ export default function WebSearch() {
   const [isMobile, setIsMobile] = useState(false);
   const [showDetailedView, setShowDetailedView] = useState(false);
   const [searchMode, setSearchMode] = useState<'normal' | 'hashtag'>('normal');
+  const [selectedPlatform, setSelectedPlatform] = useState<Platform>('all');
+  const [allResults, setAllResults] = useState<SearchResult[]>([]);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -90,6 +94,28 @@ export default function WebSearch() {
     }
   }, []);
 
+  const filterResultsByPlatform = (results: SearchResult[], platform: Platform): SearchResult[] => {
+    if (platform === 'all') return results;
+    
+    return results.filter(result => {
+      const link = result.link.toLowerCase();
+      switch (platform) {
+        case 'twitter':
+          return link.includes('twitter.com') || link.includes('x.com');
+        case 'reddit':
+          return link.includes('reddit.com');
+        case 'youtube':
+          return link.includes('youtube.com');
+        case 'news':
+          return link.includes('news') || link.includes('reuters') || link.includes('bbc') || 
+                 link.includes('cnn') || link.includes('bloomberg') || link.includes('ap.org') || 
+                 link.includes('theguardian') || link.includes('wsj.') || link.includes('nytimes.');
+        default:
+          return true;
+      }
+    });
+  };
+
   const handleSearch = async (searchQuery: string = query) => {
     if (!searchQuery.trim()) return;
     
@@ -106,9 +132,10 @@ export default function WebSearch() {
     setError(null);
     setSentimentData(null);
     setSearchResults([]);
+    setAllResults([]);
 
     try {
-      // Perform web search
+      // Always search all platforms - no platform restriction in API
       const searchResponse = await fetch('/api/web-search', {
         method: 'POST',
         headers: {
@@ -125,9 +152,13 @@ export default function WebSearch() {
       }
 
       const searchData = await searchResponse.json();
-      setSearchResults(searchData.results);
+      setAllResults(searchData.results);
+      
+      // Filter results based on selected platform
+      const filteredResults = filterResultsByPlatform(searchData.results, selectedPlatform);
+      setSearchResults(filteredResults);
 
-      // Generate sentiment analysis
+      // Generate sentiment analysis based on filtered results
       const sentimentResponse = await fetch('/api/sentiment-analysis', {
         method: 'POST',
         headers: {
@@ -135,7 +166,7 @@ export default function WebSearch() {
         },
         body: JSON.stringify({ 
           query: searchQuery, 
-          searchResults: searchData.results 
+          searchResults: filteredResults 
         }),
       });
 
@@ -155,6 +186,81 @@ export default function WebSearch() {
       setError(err.message || 'An error occurred while searching');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Handle platform change and re-filter existing results
+  const handlePlatformChange = async (platform: Platform) => {
+    setSelectedPlatform(platform);
+    
+    if (allResults.length > 0) {
+      const filteredResults = filterResultsByPlatform(allResults, platform);
+      setSearchResults(filteredResults);
+      
+      // Regenerate sentiment analysis for filtered results
+      if (query.trim()) {
+        try {
+          const sentimentResponse = await fetch('/api/sentiment-analysis', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ 
+              query: query, 
+              searchResults: filteredResults 
+            }),
+          });
+
+          if (sentimentResponse.ok) {
+            const sentimentAnalysis = await sentimentResponse.json();
+            setSentimentData(sentimentAnalysis);
+          }
+        } catch (err) {
+          console.error('Failed to update sentiment analysis:', err);
+        }
+      }
+    }
+  };
+
+  const getPlatformIcon = (platform: Platform) => {
+    switch (platform) {
+      case 'twitter': return (
+        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+        </svg>
+      );
+      case 'reddit': return (
+        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"/>
+        </svg>
+      );
+      case 'youtube': return (
+        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+        </svg>
+      );
+      case 'news': return <Globe className="w-4 h-4" />;
+      default: return <Search className="w-4 h-4" />;
+    }
+  };
+
+  const getPlatformName = (platform: Platform) => {
+    switch (platform) {
+      case 'twitter': return 'X';
+      case 'reddit': return 'Reddit';
+      case 'youtube': return 'YouTube';
+      case 'news': return 'News';
+      default: return 'All';
+    }
+  };
+
+  const getPlatformColor = (platform: Platform) => {
+    switch (platform) {
+      case 'twitter': return 'from-black to-gray-800';
+      case 'reddit': return 'from-orange-500 to-red-500';
+      case 'youtube': return 'from-red-500 to-red-600';
+      case 'news': return 'from-blue-500 to-blue-600';
+      default: return 'from-violet-500 to-purple-500';
     }
   };
 
@@ -228,7 +334,7 @@ export default function WebSearch() {
       <motion.div 
         initial={{ opacity: 0 }} 
         animate={{ opacity: 1 }}
-        className="flex justify-center mb-4"
+        className="flex justify-center mb-6"
       >
         <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-1 flex">
           <button
@@ -252,6 +358,122 @@ export default function WebSearch() {
             <Hash className="w-3 h-3" />
             Hashtag
           </button>
+        </div>
+      </motion.div>
+
+      {/* Platform Selector - Bento Grid Layout */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }} 
+        animate={{ opacity: 1, y: 0 }}
+        className="mb-6"
+      >
+        <div className="text-center mb-4">
+          <p className="text-sm text-gray-600 dark:text-gray-400">Choose a platform or search all</p>
+        </div>
+        
+        {/* Mobile Layout - Single Column */}
+        <div className="grid grid-cols-2 sm:hidden gap-3">
+          {(['all', 'twitter', 'reddit', 'youtube', 'news'] as Platform[]).map((platform) => (
+            <button
+              key={platform}
+              onClick={() => handlePlatformChange(platform)}
+              className={`relative overflow-hidden rounded-2xl p-4 transition-all duration-300 transform hover:scale-105 ${
+                selectedPlatform === platform
+                  ? `bg-gradient-to-br ${getPlatformColor(platform)} text-white shadow-lg ring-2 ring-offset-2 ring-offset-gray-100 dark:ring-offset-gray-900 ring-white/50`
+                  : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:shadow-md'
+              }`}
+            >
+              <div className="flex flex-col items-center gap-2">
+                <div className={`p-2 rounded-xl ${
+                  selectedPlatform === platform 
+                    ? 'bg-white/20' 
+                    : 'bg-gray-100 dark:bg-gray-700'
+                }`}>
+                  {getPlatformIcon(platform)}
+                </div>
+                <span className="text-sm font-medium">
+                  {getPlatformName(platform)}
+                </span>
+              </div>
+              {selectedPlatform === platform && (
+                <motion.div
+                  layoutId="selectedPlatformMobile"
+                  className="absolute inset-0 bg-gradient-to-br opacity-10 rounded-2xl"
+                  initial={false}
+                  transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                />
+              )}
+            </button>
+          ))}
+        </div>
+
+        {/* Tablet/Desktop Layout - Bento Grid */}
+        <div className="hidden sm:grid sm:grid-cols-4 lg:grid-cols-5 gap-3 max-w-4xl mx-auto">
+          {/* All - Takes 2 columns on smaller screens, 1 on larger */}
+          <button
+            onClick={() => handlePlatformChange('all')}
+            className={`relative overflow-hidden rounded-2xl p-6 sm:col-span-2 lg:col-span-1 transition-all duration-300 transform hover:scale-105 ${
+              selectedPlatform === 'all'
+                ? `bg-gradient-to-br ${getPlatformColor('all')} text-white shadow-lg ring-2 ring-offset-2 ring-offset-gray-100 dark:ring-offset-gray-900 ring-white/50`
+                : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:shadow-md'
+            }`}
+          >
+            <div className="flex flex-col items-center gap-3">
+              <div className={`p-3 rounded-xl ${
+                selectedPlatform === 'all' 
+                  ? 'bg-white/20' 
+                  : 'bg-gray-100 dark:bg-gray-700'
+              }`}>
+                {getPlatformIcon('all')}
+              </div>
+              <span className="text-lg font-semibold">
+                {getPlatformName('all')}
+              </span>
+              <span className="text-xs opacity-80">Search everywhere</span>
+            </div>
+            {selectedPlatform === 'all' && (
+              <motion.div
+                layoutId="selectedPlatformDesktop"
+                className="absolute inset-0 bg-gradient-to-br opacity-10 rounded-2xl"
+                initial={false}
+                transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+              />
+            )}
+          </button>
+
+          {/* Individual Platforms */}
+          {(['twitter', 'reddit', 'youtube', 'news'] as Platform[]).map((platform) => (
+            <button
+              key={platform}
+              onClick={() => handlePlatformChange(platform)}
+              className={`relative overflow-hidden rounded-2xl p-4 transition-all duration-300 transform hover:scale-105 ${
+                selectedPlatform === platform
+                  ? `bg-gradient-to-br ${getPlatformColor(platform)} text-white shadow-lg ring-2 ring-offset-2 ring-offset-gray-100 dark:ring-offset-gray-900 ring-white/50`
+                  : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:shadow-md'
+              }`}
+            >
+              <div className="flex flex-col items-center gap-2">
+                <div className={`p-2 rounded-xl ${
+                  selectedPlatform === platform 
+                    ? 'bg-white/20' 
+                    : 'bg-gray-100 dark:bg-gray-700'
+                }`}>
+                  {getPlatformIcon(platform)}
+                </div>
+                <span className="text-sm font-medium">
+                  {getPlatformName(platform)}
+                </span>
+              </div>
+              {selectedPlatform === platform && (
+                <motion.div
+                  layoutId="selectedPlatformDesktop"
+                  className="absolute inset-0 bg-gradient-to-br opacity-10 rounded-2xl"
+                  initial={false}
+                  transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                />
+              )}
+            </button>
+          ))}
         </div>
       </motion.div>
 

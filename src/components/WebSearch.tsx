@@ -377,10 +377,10 @@ export default function WebSearch() {
             <button
               key={platform}
               onClick={() => handlePlatformChange(platform)}
-              className={`relative overflow-hidden rounded-2xl p-4 transition-all duration-300 transform hover:scale-105 ${
+              className={`relative overflow-hidden rounded-2xl p-4 transition-all duration-200 transform hover:scale-110 hover:shadow-2xl hover:shadow-black/20 dark:hover:shadow-white/10 ${
                 selectedPlatform === platform
-                  ? `bg-gradient-to-br ${getPlatformColor(platform)} text-white shadow-lg ring-2 ring-offset-2 ring-offset-gray-100 dark:ring-offset-gray-900 ring-white/50`
-                  : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:shadow-md'
+                  ? `bg-gradient-to-br ${getPlatformColor(platform)} text-white shadow-lg`
+                  : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300'
               }`}
             >
               <div className="flex flex-col items-center gap-2">
@@ -395,14 +395,6 @@ export default function WebSearch() {
                   {getPlatformName(platform)}
                 </span>
               </div>
-              {selectedPlatform === platform && (
-                <motion.div
-                  layoutId="selectedPlatformMobile"
-                  className="absolute inset-0 bg-gradient-to-br opacity-10 rounded-2xl"
-                  initial={false}
-                  transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                />
-              )}
             </button>
           ))}
         </div>
@@ -412,10 +404,10 @@ export default function WebSearch() {
           {/* All - Takes 2 columns on smaller screens, 1 on larger */}
           <button
             onClick={() => handlePlatformChange('all')}
-            className={`relative overflow-hidden rounded-2xl p-6 sm:col-span-2 lg:col-span-1 transition-all duration-300 transform hover:scale-105 ${
+            className={`relative overflow-hidden rounded-2xl p-6 sm:col-span-2 lg:col-span-1 transition-all duration-200 transform hover:scale-110 hover:shadow-2xl hover:shadow-black/20 dark:hover:shadow-white/10 ${
               selectedPlatform === 'all'
-                ? `bg-gradient-to-br ${getPlatformColor('all')} text-white shadow-lg ring-2 ring-offset-2 ring-offset-gray-100 dark:ring-offset-gray-900 ring-white/50`
-                : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:shadow-md'
+                ? `bg-gradient-to-br ${getPlatformColor('all')} text-white shadow-lg`
+                : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300'
             }`}
           >
             <div className="flex flex-col items-center gap-3">
@@ -431,14 +423,6 @@ export default function WebSearch() {
               </span>
               <span className="text-xs opacity-80">Search everywhere</span>
             </div>
-            {selectedPlatform === 'all' && (
-              <motion.div
-                layoutId="selectedPlatformDesktop"
-                className="absolute inset-0 bg-gradient-to-br opacity-10 rounded-2xl"
-                initial={false}
-                transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-              />
-            )}
           </button>
 
           {/* Individual Platforms */}
@@ -446,10 +430,10 @@ export default function WebSearch() {
             <button
               key={platform}
               onClick={() => handlePlatformChange(platform)}
-              className={`relative overflow-hidden rounded-2xl p-4 transition-all duration-300 transform hover:scale-105 ${
+              className={`relative overflow-hidden rounded-2xl p-4 transition-all duration-200 transform hover:scale-110 hover:shadow-2xl hover:shadow-black/20 dark:hover:shadow-white/10 ${
                 selectedPlatform === platform
-                  ? `bg-gradient-to-br ${getPlatformColor(platform)} text-white shadow-lg ring-2 ring-offset-2 ring-offset-gray-100 dark:ring-offset-gray-900 ring-white/50`
-                  : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:shadow-md'
+                  ? `bg-gradient-to-br ${getPlatformColor(platform)} text-white shadow-lg`
+                  : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300'
               }`}
             >
               <div className="flex flex-col items-center gap-2">
@@ -464,14 +448,6 @@ export default function WebSearch() {
                   {getPlatformName(platform)}
                 </span>
               </div>
-              {selectedPlatform === platform && (
-                <motion.div
-                  layoutId="selectedPlatformDesktop"
-                  className="absolute inset-0 bg-gradient-to-br opacity-10 rounded-2xl"
-                  initial={false}
-                  transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                />
-              )}
             </button>
           ))}
         </div>
@@ -491,7 +467,7 @@ export default function WebSearch() {
             onChange={(e) => setQuery(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder={searchMode === 'hashtag' ? '#hashtag1, #hashtag2, #hashtag3...' : 'Search anything...'}
-            className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-black dark:text-white shadow-sm pl-12 pr-20 py-4"
+            className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-black dark:text-white shadow-sm pl-12 pr-24 sm:pr-20 py-4"
           />
           <button
             onClick={() => handleSearch()}
